@@ -6,7 +6,7 @@
   <title>QuickRent — Customers</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
@@ -84,97 +84,45 @@
             <th class="px-5 py-3"></th>
           </tr>
         </thead>
-        <tbody id="customerTable">
-
-          <tr class="customer-row" data-name="rahul kumar" style="border-bottom:1px solid var(--border);">
-            <td class="px-5 py-3.5">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#6366f1;">RK</div>
-                <div>
-                  <p class="font-medium" style="color:var(--text-primary);">Rahul Kumar</p>
-                  <p class="text-xs" style="color:var(--text-secondary);">rahul.k@gmail.com</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 98100 12345</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">7</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹8,400</td>
-            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 18, 2026</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Active</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
-            </td>
-          </tr>
-
-          <tr class="customer-row" data-name="priya sharma" style="border-bottom:1px solid var(--border);">
-            <td class="px-5 py-3.5">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#ec4899;">PS</div>
-                <div>
-                  <p class="font-medium" style="color:var(--text-primary);">Priya Sharma</p>
-                  <p class="text-xs" style="color:var(--text-secondary);">priya.s@gmail.com</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 97200 56789</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">3</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹11,200</td>
-            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 19, 2026</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
-            </td>
-          </tr>
-
-          <tr class="customer-row" data-name="arjun mehta" style="border-bottom:1px solid var(--border);">
-            <td class="px-5 py-3.5">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#f97316;">AM</div>
-                <div>
-                  <p class="font-medium" style="color:var(--text-primary);">Arjun Mehta</p>
-                  <p class="text-xs" style="color:var(--text-secondary);">arjun.m@gmail.com</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 96300 33210</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">5</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹6,300</td>
-            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 15, 2026</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Overdue</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
-            </td>
-          </tr>
-
-          <tr class="customer-row" data-name="neha kapoor">
-            <td class="px-5 py-3.5">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#14b8a6;">NK</div>
-                <div>
-                  <p class="font-medium" style="color:var(--text-primary);">Neha Kapoor</p>
-                  <p class="text-xs" style="color:var(--text-secondary);">neha.k@gmail.com</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 99100 77654</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">2</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹7,800</td>
-            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 20, 2026</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Active</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
-            </td>
-          </tr>
-
-        </tbody>
+                  <tbody id="customerTable">
+                  {% for customer in customers %}
+                  <tr class="customer-row" data-name="{{ customer.name|lower }}"
+                      style="border-bottom:1px solid var(--border);">
+                    <td class="px-5 py-3.5">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                            style="background:#6366f1;">
+                          {{ customer.name[:2].upper() }}
+                        </div>
+                        <div>
+                          <p class="font-medium" style="color:var(--text-primary);">{{ customer.name }}</p>
+                          <p class="text-xs" style="color:var(--text-secondary);">{{ customer.email }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">{{ customer.phone or '—' }}</td>
+                    <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">{{ customer.total_rentals }}</td>
+                    <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹{{ "{:,}".format(customer.total_spent) }}</td>
+                    <td class="px-5 py-3.5" style="color:var(--text-secondary);">
+                      {{ customer.created_at[:10] if customer.created_at else '—' }}
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                            style="background:#dcfce7;color:#16a34a;">Active</span>
+                    </td>
+                    <td class="px-5 py-3.5">
+                      <button class="text-xs px-2.5 py-1 rounded-md font-medium"
+                              style="background:#eff6ff;color:#2563eb;">View</button>
+                    </td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="7" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
+                      No customers yet.
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  </tbody>
       </table>
     </div>
 
@@ -184,9 +132,11 @@
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
 
-<script src="js/theme.js"></script>
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'customers';</script>
-<script src="js/sidebar.js"></script>
+<script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+
+
 <script>
 // Live search — filters table rows as you type in the search box.
 // This is more advanced than button filtering: it runs on every keypress.

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Bookings</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
+
+<div id="sidebar-mount"></div>
+
+<div class="flex flex-col flex-1 overflow-hidden">
+
+  <!-- TOP BAR -->
+  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+          style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Bookings</h1>
+    <div class="ml-auto flex items-center gap-3">
+      <input type="text" placeholder="Search bookings..."
+             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
+             style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+             onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+      <button onclick="toggleTheme()" id="themeToggle"
+              class="flex items-center justify-center w-8 h-8 rounded-md"
+              style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+      </button>
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
+
+    <!-- Page header -->
+    <!-- This row has the page title on the left and an action button on the right.
+         This pattern repeats on every page. -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Bookings</h2>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage and track all vehicle bookings</p>
+      </div>
+      <button class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md"
+              style="background:#2563eb;"
+              onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        New Booking
+      </button>
+    </div>
+
+    <!-- Summary strip -->
+    <!-- 4 small inline stat pills. These give a quick number snapshot without
+         taking up the space of full cards. Good pattern for sub-pages. -->
+    
+            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+                style="background:var(--bg-surface);border:1px solid var(--border);">
+              <span style="color:var(--text-secondary);">Total</span>
+              <span class="font-bold" style="color:var(--text-primary);">{{ counts.all }}</span>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+                style="background:var(--bg-surface);border:1px solid var(--border);">
+              <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+              <span style="color:var(--text-secondary);">Active</span>
+              <span class="font-bold" style="color:var(--text-primary);">{{ counts.active }}</span>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+                style="background:var(--bg-surface);border:1px solid var(--border);">
+              <span class="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
+              <span style="color:var(--text-secondary);">Pending</span>
+              <span class="font-bold" style="color:var(--text-primary);">{{ counts.pending }}</span>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+                style="background:var(--bg-surface);border:1px solid var(--border);">
+              <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+              <span style="color:var(--text-secondary);">Overdue</span>
+              <span class="font-bold" style="color:var(--text-primary);">{{ counts.overdue }}</span>
+            </div>
+
+    <!-- Filter tabs -->
+    <!-- data-filter attribute is read by JavaScript below to show/hide cards.
+         This is your first example of JavaScript controlling UI state. -->
+    <!-- Replace filter buttons with anchor links -->
+            <div class="flex gap-1.5 mb-4">
+              <a href="/bookings" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
+              <a href="/bookings?status=active" class="filter-btn {% if active_filter == 'active' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Active</a>
+              <a href="/bookings?status=pending" class="filter-btn {% if active_filter == 'pending' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Pending</a>
+              <a href="/bookings?status=overdue" class="filter-btn {% if active_filter == 'overdue' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Overdue</a>
+              <a href="/bookings?status=completed" class="filter-btn {% if active_filter == 'completed' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Completed</a>
+            </div>
+
+    <!-- Booking list -->
+    <!-- Each card has data-status so JavaScript can show/hide it by filter.
+         Structure of each card: avatar | customer+vehicle info | dates | amount+status | action -->
+         <div class="flex flex-col gap-2.5" id="bookingList">
+{% for booking in bookings %}
+<div class="flex items-center gap-4 p-4 rounded-xl"
+     style="background:var(--bg-surface);border:1px solid var(--border);">
+  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+       style="background:#6366f1;">
+    {{ booking.customers.name[:2].upper() if booking.customers else 'NA' }}
+  </div>
+  <div class="flex-1 min-w-0">
+    <p class="text-sm font-semibold" style="color:var(--text-primary);">
+      {{ booking.customers.name if booking.customers else 'Unknown' }}
+    </p>
+    <p class="text-xs mt-0.5" style="color:var(--text-secondary);">
+      {{ booking.vehicles.name if booking.vehicles else 'Unknown' }} ·
+      {{ booking.vehicles.type|capitalize if booking.vehicles else '' }} ·
+      {{ booking.booking_ref }}
+    </p>
+  </div>
+  <div class="text-center hidden sm:block">
+    <p class="text-xs" style="color:var(--text-secondary);">Duration</p>
+    <p class="text-sm font-medium mt-0.5" style="color:var(--text-primary);">
+      {{ booking.start_date }} – {{ booking.end_date }}
+    </p>
+  </div>
+  <div class="text-right shrink-0">
+    <p class="text-sm font-semibold" style="color:#2563eb;">₹{{ "{:,}".format(booking.total_amount) }}</p>
+    {% if booking.status == 'active' %}
+      <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+            style="background:#dcfce7;color:#16a34a;">Active</span>
+    {% elif booking.status == 'pending' %}
+      <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+            style="background:#fef9c3;color:#a16207;">Pending</span>
+    {% elif booking.status == 'overdue' %}
+      <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+            style="background:#fee2e2;color:#dc2626;">Overdue</span>
+    {% else %}
+      <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+            style="background:#f1f5f9;color:#64748b;">Completed</span>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<p class="text-sm text-center py-12" style="color:var(--text-secondary);">No bookings found.</p>
+{% endfor %}
+</div>
+   <!-- end bookingList -->
+
+  </main>
+</div>
+
+<div id="mobileOverlay" onclick="toggleMobileSidebar()"
+     class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
+
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script>window.QR_PAGE = 'bookings';</script>
+<script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+
+
+<script>
+// ── FILTER LOGIC ──
+// This reads data-status on each card and shows/hides
+// based on which tab button was clicked.
+// This is your first real JavaScript DOM manipulation.
+
+function filterBookings(status) {
+  // Update button styles
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active-filter');
+  });
+  document.querySelector(`[data-filter="${status}"]`).classList.add('active-filter');
+
+  // Show/hide cards
+  document.querySelectorAll('.booking-card').forEach(card => {
+    if (status === 'all' || card.getAttribute('data-status') === status) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+</script>
+
+</body>
+</html>

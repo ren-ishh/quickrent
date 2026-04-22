@@ -6,7 +6,7 @@
   <title>QuickRent — Payments</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
@@ -60,13 +60,13 @@
 
       <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
         <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Total Collected</p>
-        <p class="text-3xl font-bold" style="color:var(--text-primary);">₹1,84,600</p>
+        <p class="text-3xl font-bold" style="color:var(--text-primary);">₹{{ "{:,}".format(total_collected) }}</p>
         <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">▲ All time</p>
       </div>
 
       <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
         <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Pending Collection</p>
-        <p class="text-3xl font-bold" style="color:#dc2626;">₹9,300</p>
+        <p class="text-3xl font-bold" style="color:#dc2626;">₹{{ "{:,}".format(total_pending) }}</p>
         <p class="text-xs mt-1.5 font-medium" style="color:#dc2626;">3 overdue payments</p>
       </div>
 
@@ -100,87 +100,45 @@
           </tr>
         </thead>
         <tbody>
-
-          <tr class="payment-row" data-status="paid" style="border-bottom:1px solid var(--border);">
+          {% for payment in payments %}
+          <tr class="payment-row" data-status="{{ payment.status }}"
+              style="border-bottom:1px solid var(--border);">
             <td class="px-5 py-3.5">
-              <p class="font-medium" style="color:var(--text-primary);">#TXN-8821</p>
-              <p class="text-xs" style="color:var(--text-secondary);">BK-2401</p>
+              <p class="font-medium" style="color:var(--text-primary);">{{ payment.transaction_ref }}</p>
+              <p class="text-xs" style="color:var(--text-secondary);">
+                {{ payment.bookings.booking_ref if payment.bookings else '—' }}
+              </p>
             </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Rahul Kumar</td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">
+              {{ payment.customers.name if payment.customers else '—' }}
+            </td>
             <td class="px-5 py-3.5 hidden md:table-cell">
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#eff6ff;color:#2563eb;">UPI</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium"
+                    style="background:#eff6ff;color:#2563eb;">{{ payment.method or 'UPI' }}</span>
             </td>
-            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 18, 2026</td>
-            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹1,200</td>
+            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">
+              {{ payment.created_at[:10] if payment.created_at else '—' }}
+            </td>
+            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">
+              ₹{{ "{:,}".format(payment.amount) }}
+            </td>
             <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
+              {% if payment.status == 'paid' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
+              {% elif payment.status == 'pending' %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
+              {% else %}
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Failed</span>
+              {% endif %}
             </td>
           </tr>
-
-          <tr class="payment-row" data-status="pending" style="border-bottom:1px solid var(--border);">
-            <td class="px-5 py-3.5">
-              <p class="font-medium" style="color:var(--text-primary);">#TXN-8822</p>
-              <p class="text-xs" style="color:var(--text-secondary);">BK-2402</p>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Priya Sharma</td>
-            <td class="px-5 py-3.5 hidden md:table-cell">
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#fef9c3;color:#a16207;">Cash</span>
-            </td>
-            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 19, 2026</td>
-            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹3,600</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
+          {% else %}
+          <tr>
+            <td colspan="6" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
+              No transactions yet.
             </td>
           </tr>
-
-          <tr class="payment-row" data-status="failed" style="border-bottom:1px solid var(--border);">
-            <td class="px-5 py-3.5">
-              <p class="font-medium" style="color:var(--text-primary);">#TXN-8819</p>
-              <p class="text-xs" style="color:var(--text-secondary);">BK-2398</p>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Arjun Mehta</td>
-            <td class="px-5 py-3.5 hidden md:table-cell">
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#fee2e2;color:#dc2626;">Card</span>
-            </td>
-            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 15, 2026</td>
-            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹2,100</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Failed</span>
-            </td>
-          </tr>
-
-          <tr class="payment-row" data-status="paid" style="border-bottom:1px solid var(--border);">
-            <td class="px-5 py-3.5">
-              <p class="font-medium" style="color:var(--text-primary);">#TXN-8823</p>
-              <p class="text-xs" style="color:var(--text-secondary);">BK-2403</p>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Neha Kapoor</td>
-            <td class="px-5 py-3.5 hidden md:table-cell">
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#eff6ff;color:#2563eb;">Razorpay</span>
-            </td>
-            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 20, 2026</td>
-            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹6,000</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
-            </td>
-          </tr>
-
-          <tr class="payment-row" data-status="paid">
-            <td class="px-5 py-3.5">
-              <p class="font-medium" style="color:var(--text-primary);">#TXN-8810</p>
-              <p class="text-xs" style="color:var(--text-secondary);">BK-2390</p>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Vikram Rao</td>
-            <td class="px-5 py-3.5 hidden md:table-cell">
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#eff6ff;color:#2563eb;">UPI</span>
-            </td>
-            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 13, 2026</td>
-            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹900</td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
-            </td>
-          </tr>
-
+          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -191,9 +149,11 @@
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
 
-<script src="js/theme.js"></script>
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'payments';</script>
-<script src="js/sidebar.js"></script>
+<script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+
+
 <script>
 function filterPayments(status) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-filter'));

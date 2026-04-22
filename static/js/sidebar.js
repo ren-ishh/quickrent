@@ -7,7 +7,7 @@
 async function loadSidebar() {
   try {
     // fetch() loads any file like a browser would
-    const res = await fetch('components/sidebar.html');
+    const res = await fetch('/components/sidebar');
     const html = await res.text();
 
     // Find the mount point and inject the sidebar HTML

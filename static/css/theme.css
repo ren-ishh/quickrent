@@ -73,23 +73,3 @@ html.dark .active-filter {
   color: #58a6ff !important;
   border-color: #58a6ff !important;
 }
-
-/* Settings tabs */
-.settings-tab {
-  color: var(--text-secondary);
-  background: transparent;
-  transition: background 0.15s, color 0.15s;
-}
-.settings-tab:hover {
-  background: var(--bg-row);
-  color: var(--text-primary);
-}
-.active-tab {
-  background: #eff6ff !important;
-  color: #2563eb !important;
-  font-weight: 600;
-}
-html.dark .active-tab {
-  background: #1f3a5f !important;
-  color: #58a6ff !important;
-}

@@ -6,7 +6,7 @@
   <title>QuickRent — My Rentals</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="css/theme.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
@@ -40,7 +40,7 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">My Rentals</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Active and past rental history</p>
       </div>
-      <a href="bookings.html" class="text-sm font-medium px-3.5 py-2 rounded-md"
+      <a href="/bookings" class="text-sm font-medium px-3.5 py-2 rounded-md"
          style="border:1px solid var(--border);color:var(--text-secondary);background:var(--bg-surface);">
         View All Bookings →
       </a>
@@ -188,9 +188,11 @@
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
 
-<script src="js/theme.js"></script>
+
+
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'rentals';</script>
-<script src="js/sidebar.js"></script>
+<script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
 
 </body>
 </html>
