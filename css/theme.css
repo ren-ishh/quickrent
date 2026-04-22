@@ -52,3 +52,24 @@ html.dark .nav-active {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* Filter tab buttons */
+.filter-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.filter-btn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+.active-filter {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+html.dark .active-filter {
+  background: #1f3a5f !important;
+  color: #58a6ff !important;
+  border-color: #58a6ff !important;
+}

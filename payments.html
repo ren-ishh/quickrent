@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Payments</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
+
+<div id="sidebar-mount"></div>
+
+<div class="flex flex-col flex-1 overflow-hidden">
+  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+          style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Payments</h1>
+    <div class="ml-auto flex items-center gap-3">
+      <input type="text" placeholder="Search transactions..."
+             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
+             style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+             onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+      <button onclick="toggleTheme()" id="themeToggle"
+              class="flex items-center justify-center w-8 h-8 rounded-md"
+              style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+      </button>
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
+
+    <!-- Page header -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Payment Transactions</h2>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Track all incoming payments and dues</p>
+      </div>
+      <button class="flex items-center gap-1.5 text-sm font-medium px-3.5 py-2 rounded-md"
+              style="border:1px solid var(--border);color:var(--text-secondary);background:var(--bg-surface);"
+              onmouseover="this.style.background='var(--bg-row)'" onmouseout="this.style.background='var(--bg-surface)'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+        </svg>
+        Export
+      </button>
+    </div>
+
+    <!-- Revenue stat cards -->
+    <!-- 3 equal-width cards. Notice the pattern: label on top, big number, subtle subtext.
+         This same card pattern is reusable across any page that needs numbers. -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+      <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Total Collected</p>
+        <p class="text-3xl font-bold" style="color:var(--text-primary);">₹1,84,600</p>
+        <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">▲ All time</p>
+      </div>
+
+      <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Pending Collection</p>
+        <p class="text-3xl font-bold" style="color:#dc2626;">₹9,300</p>
+        <p class="text-xs mt-1.5 font-medium" style="color:#dc2626;">3 overdue payments</p>
+      </div>
+
+      <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">This Month</p>
+        <p class="text-3xl font-bold" style="color:var(--text-primary);">₹48,200</p>
+        <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">▲ +12% vs last month</p>
+      </div>
+
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="flex gap-1.5 mb-4">
+      <button onclick="filterPayments('all')" data-filter="all" class="filter-btn active-filter px-3.5 py-1.5 rounded-md text-sm font-medium">All</button>
+      <button onclick="filterPayments('paid')" data-filter="paid" class="filter-btn px-3.5 py-1.5 rounded-md text-sm font-medium">Paid</button>
+      <button onclick="filterPayments('pending')" data-filter="pending" class="filter-btn px-3.5 py-1.5 rounded-md text-sm font-medium">Pending</button>
+      <button onclick="filterPayments('failed')" data-filter="failed" class="filter-btn px-3.5 py-1.5 rounded-md text-sm font-medium">Failed</button>
+    </div>
+
+    <!-- Transactions table -->
+    <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);background:var(--bg-row);">
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Transaction</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden sm:table-cell" style="color:var(--text-secondary);">Customer</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Method</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Date</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Amount</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="payment-row" data-status="paid" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <p class="font-medium" style="color:var(--text-primary);">#TXN-8821</p>
+              <p class="text-xs" style="color:var(--text-secondary);">BK-2401</p>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Rahul Kumar</td>
+            <td class="px-5 py-3.5 hidden md:table-cell">
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#eff6ff;color:#2563eb;">UPI</span>
+            </td>
+            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 18, 2026</td>
+            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹1,200</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
+            </td>
+          </tr>
+
+          <tr class="payment-row" data-status="pending" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <p class="font-medium" style="color:var(--text-primary);">#TXN-8822</p>
+              <p class="text-xs" style="color:var(--text-secondary);">BK-2402</p>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Priya Sharma</td>
+            <td class="px-5 py-3.5 hidden md:table-cell">
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#fef9c3;color:#a16207;">Cash</span>
+            </td>
+            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 19, 2026</td>
+            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹3,600</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
+            </td>
+          </tr>
+
+          <tr class="payment-row" data-status="failed" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <p class="font-medium" style="color:var(--text-primary);">#TXN-8819</p>
+              <p class="text-xs" style="color:var(--text-secondary);">BK-2398</p>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Arjun Mehta</td>
+            <td class="px-5 py-3.5 hidden md:table-cell">
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#fee2e2;color:#dc2626;">Card</span>
+            </td>
+            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 15, 2026</td>
+            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹2,100</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Failed</span>
+            </td>
+          </tr>
+
+          <tr class="payment-row" data-status="paid" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <p class="font-medium" style="color:var(--text-primary);">#TXN-8823</p>
+              <p class="text-xs" style="color:var(--text-secondary);">BK-2403</p>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Neha Kapoor</td>
+            <td class="px-5 py-3.5 hidden md:table-cell">
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#eff6ff;color:#2563eb;">Razorpay</span>
+            </td>
+            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 20, 2026</td>
+            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹6,000</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
+            </td>
+          </tr>
+
+          <tr class="payment-row" data-status="paid">
+            <td class="px-5 py-3.5">
+              <p class="font-medium" style="color:var(--text-primary);">#TXN-8810</p>
+              <p class="text-xs" style="color:var(--text-secondary);">BK-2390</p>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">Vikram Rao</td>
+            <td class="px-5 py-3.5 hidden md:table-cell">
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium" style="background:#eff6ff;color:#2563eb;">UPI</span>
+            </td>
+            <td class="px-5 py-3.5 hidden md:table-cell" style="color:var(--text-secondary);">Apr 13, 2026</td>
+            <td class="px-5 py-3.5 font-semibold" style="color:var(--text-primary);">₹900</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<div id="mobileOverlay" onclick="toggleMobileSidebar()"
+     class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
+
+<script src="js/theme.js"></script>
+<script>window.QR_PAGE = 'payments';</script>
+<script src="js/sidebar.js"></script>
+<script>
+function filterPayments(status) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-filter'));
+  document.querySelector(`[data-filter="${status}"]`).classList.add('active-filter');
+  document.querySelectorAll('.payment-row').forEach(row => {
+    row.style.display = (status === 'all' || row.getAttribute('data-status') === status) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

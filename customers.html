@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Customers</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
+
+<div id="sidebar-mount"></div>
+
+<div class="flex flex-col flex-1 overflow-hidden">
+  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+          style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Customers</h1>
+    <div class="ml-auto flex items-center gap-3">
+      <input type="text" id="customerSearch" oninput="searchCustomers()" placeholder="Search customers..."
+             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
+             style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+             onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+      <button onclick="toggleTheme()" id="themeToggle"
+              class="flex items-center justify-center w-8 h-8 rounded-md"
+              style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+      </button>
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
+
+    <!-- Page header -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Customers</h2>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">View and manage your customer base</p>
+      </div>
+      <button class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md"
+              style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add Customer
+      </button>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="flex flex-wrap gap-3 mb-5">
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <span style="color:var(--text-secondary);">Total Customers</span>
+        <span class="font-bold" style="color:var(--text-primary);">48</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+        <span style="color:var(--text-secondary);">New this month</span>
+        <span class="font-bold" style="color:var(--text-primary);">6</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+        <span style="color:var(--text-secondary);">Active renters</span>
+        <span class="font-bold" style="color:var(--text-primary);">9</span>
+      </div>
+    </div>
+
+    <!-- Customer table -->
+    <!-- This is an HTML table styled with Tailwind. The <thead> is the header row,
+         <tbody> contains data rows. Each row has data-name for live search. -->
+    <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);background:var(--bg-row);">
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Customer</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden sm:table-cell" style="color:var(--text-secondary);">Phone</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Rentals</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Spent</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Last Rental</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Status</th>
+            <th class="px-5 py-3"></th>
+          </tr>
+        </thead>
+        <tbody id="customerTable">
+
+          <tr class="customer-row" data-name="rahul kumar" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#6366f1;">RK</div>
+                <div>
+                  <p class="font-medium" style="color:var(--text-primary);">Rahul Kumar</p>
+                  <p class="text-xs" style="color:var(--text-secondary);">rahul.k@gmail.com</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 98100 12345</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">7</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹8,400</td>
+            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 18, 2026</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Active</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+            </td>
+          </tr>
+
+          <tr class="customer-row" data-name="priya sharma" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#ec4899;">PS</div>
+                <div>
+                  <p class="font-medium" style="color:var(--text-primary);">Priya Sharma</p>
+                  <p class="text-xs" style="color:var(--text-secondary);">priya.s@gmail.com</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 97200 56789</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">3</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹11,200</td>
+            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 19, 2026</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+            </td>
+          </tr>
+
+          <tr class="customer-row" data-name="arjun mehta" style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#f97316;">AM</div>
+                <div>
+                  <p class="font-medium" style="color:var(--text-primary);">Arjun Mehta</p>
+                  <p class="text-xs" style="color:var(--text-secondary);">arjun.m@gmail.com</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 96300 33210</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">5</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹6,300</td>
+            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 15, 2026</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Overdue</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+            </td>
+          </tr>
+
+          <tr class="customer-row" data-name="neha kapoor">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#14b8a6;">NK</div>
+                <div>
+                  <p class="font-medium" style="color:var(--text-primary);">Neha Kapoor</p>
+                  <p class="text-xs" style="color:var(--text-secondary);">neha.k@gmail.com</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">+91 99100 77654</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">2</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹7,800</td>
+            <td class="px-5 py-3.5" style="color:var(--text-secondary);">Apr 20, 2026</td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Active</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<div id="mobileOverlay" onclick="toggleMobileSidebar()"
+     class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
+
+<script src="js/theme.js"></script>
+<script>window.QR_PAGE = 'customers';</script>
+<script src="js/sidebar.js"></script>
+<script>
+// Live search — filters table rows as you type in the search box.
+// This is more advanced than button filtering: it runs on every keypress.
+function searchCustomers() {
+  const query = document.getElementById('customerSearch').value.toLowerCase();
+  document.querySelectorAll('.customer-row').forEach(row => {
+    const name = row.getAttribute('data-name');
+    row.style.display = name.includes(query) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

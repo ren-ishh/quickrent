@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Vehicles</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
+
+<div id="sidebar-mount"></div>
+
+<div class="flex flex-col flex-1 overflow-hidden">
+  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+          style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Vehicles</h1>
+    <div class="ml-auto flex items-center gap-3">
+      <input type="text" placeholder="Search vehicles..."
+             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
+             style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+             onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+      <button onclick="toggleTheme()" id="themeToggle"
+              class="flex items-center justify-center w-8 h-8 rounded-md"
+              style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+      </button>
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
+
+    <!-- Page header -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Fleet Inventory</h2>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">24 vehicles total · 19 available</p>
+      </div>
+      <button class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md"
+              style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add Vehicle
+      </button>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="flex gap-1.5 mb-5">
+      <button onclick="filterVehicles('all')" data-filter="all" class="filter-btn active-filter px-3.5 py-1.5 rounded-md text-sm font-medium">All</button>
+      <button onclick="filterVehicles('car')" data-filter="car" class="filter-btn px-3.5 py-1.5 rounded-md text-sm font-medium">Cars</button>
+      <button onclick="filterVehicles('bike')" data-filter="bike" class="filter-btn px-3.5 py-1.5 rounded-md text-sm font-medium">Bikes</button>
+      <button onclick="filterVehicles('unavailable')" data-filter="unavailable" class="filter-btn px-3.5 py-1.5 rounded-md text-sm font-medium">Unavailable</button>
+    </div>
+
+    <!-- Vehicle grid -->
+    <!-- CSS Grid with 3 columns on desktop, 2 on tablet, 1 on mobile.
+         Each card has a colored top band as a visual placeholder for a real image later. -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="vehicleGrid">
+
+      <!-- Car 1 — Available -->
+      <div class="vehicle-card rounded-xl overflow-hidden" data-type="car" data-avail="available"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <!-- Image placeholder — replace with <img> tag when you have real photos -->
+        <div class="h-32 flex items-center justify-center text-4xl" style="background:#eff6ff;">🚗</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-semibold text-sm" style="color:var(--text-primary);">Swift Dzire</p>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Available</span>
+          </div>
+          <p class="text-xs mb-3" style="color:var(--text-secondary);">
+            <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">Car</span>
+            Sedan · Petrol · 2022
+          </p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold" style="color:#2563eb;">₹1,200 <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span></p>
+            <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Car 2 — Rented -->
+      <div class="vehicle-card rounded-xl overflow-hidden" data-type="car" data-avail="unavailable"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="h-32 flex items-center justify-center text-4xl" style="background:#fef9c3;">🚙</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-semibold text-sm" style="color:var(--text-primary);">Hyundai i20</p>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fef9c3;color:#a16207;">Rented</span>
+          </div>
+          <p class="text-xs mb-3" style="color:var(--text-secondary);">
+            <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">Car</span>
+            Hatchback · Petrol · 2023
+          </p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold" style="color:#2563eb;">₹1,400 <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span></p>
+            <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bike 1 — Available -->
+      <div class="vehicle-card rounded-xl overflow-hidden" data-type="bike" data-avail="available"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="h-32 flex items-center justify-center text-4xl" style="background:#f0fdf4;">🏍️</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-semibold text-sm" style="color:var(--text-primary);">Royal Enfield Classic</p>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Available</span>
+          </div>
+          <p class="text-xs mb-3" style="color:var(--text-secondary);">
+            <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">Bike</span>
+            350cc · Petrol · 2022
+          </p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold" style="color:#2563eb;">₹700 <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span></p>
+            <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bike 2 — Available -->
+      <div class="vehicle-card rounded-xl overflow-hidden" data-type="bike" data-avail="available"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="h-32 flex items-center justify-center text-4xl" style="background:#fdf4ff;">🛵</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-semibold text-sm" style="color:var(--text-primary);">Honda Activa 6G</p>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Available</span>
+          </div>
+          <p class="text-xs mb-3" style="color:var(--text-secondary);">
+            <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">Scooter</span>
+            110cc · Petrol · 2023
+          </p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold" style="color:#2563eb;">₹300 <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span></p>
+            <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Car 3 — Available -->
+      <div class="vehicle-card rounded-xl overflow-hidden" data-type="car" data-avail="available"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="h-32 flex items-center justify-center text-4xl" style="background:#fff7ed;">🚕</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-semibold text-sm" style="color:var(--text-primary);">Tata Nexon</p>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Available</span>
+          </div>
+          <p class="text-xs mb-3" style="color:var(--text-secondary);">
+            <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">Car</span>
+            SUV · Diesel · 2023
+          </p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold" style="color:#2563eb;">₹1,800 <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span></p>
+            <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bike 3 — Unavailable/Maintenance -->
+      <div class="vehicle-card rounded-xl overflow-hidden" data-type="bike" data-avail="unavailable"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="h-32 flex items-center justify-center text-4xl" style="background:#fef2f2;">🔧</div>
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-semibold text-sm" style="color:var(--text-primary);">TVS Apache 200</p>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fee2e2;color:#dc2626;">Maintenance</span>
+          </div>
+          <p class="text-xs mb-3" style="color:var(--text-secondary);">
+            <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">Bike</span>
+            200cc · Petrol · 2021
+          </p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold" style="color:#2563eb;">₹600 <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span></p>
+            <button class="text-xs px-2.5 py-1 rounded-md font-medium" style="background:#eff6ff;color:#2563eb;">View</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<div id="mobileOverlay" onclick="toggleMobileSidebar()"
+     class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
+
+<script src="js/theme.js"></script>
+<script>window.QR_PAGE = 'vehicles';</script>
+<script src="js/sidebar.js"></script>
+<script>
+function filterVehicles(filter) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-filter'));
+  document.querySelector(`[data-filter="${filter}"]`).classList.add('active-filter');
+
+  document.querySelectorAll('.vehicle-card').forEach(card => {
+    const type = card.getAttribute('data-type');
+    const avail = card.getAttribute('data-avail');
+    let show = false;
+    if (filter === 'all') show = true;
+    else if (filter === 'car' && type === 'car') show = true;
+    else if (filter === 'bike' && type === 'bike') show = true;
+    else if (filter === 'unavailable' && avail === 'unavailable') show = true;
+    card.style.display = show ? 'block' : 'none';
+  });
+}
+</script>
+</body>
+</html>
