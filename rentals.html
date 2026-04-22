@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — My Rentals</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
+
+<div id="sidebar-mount"></div>
+
+<div class="flex flex-col flex-1 overflow-hidden">
+
+  <!-- TOP BAR -->
+  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+          style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">My Rentals</h1>
+    <div class="ml-auto flex items-center gap-3">
+      <button onclick="toggleTheme()" id="themeToggle"
+              class="flex items-center justify-center w-8 h-8 rounded-md"
+              style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+      </button>
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
+
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-semibold" style="color:var(--text-primary);">My Rentals</h2>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Active and past rental history</p>
+      </div>
+      <a href="bookings.html" class="text-sm font-medium px-3.5 py-2 rounded-md"
+         style="border:1px solid var(--border);color:var(--text-secondary);background:var(--bg-surface);">
+        View All Bookings →
+      </a>
+    </div>
+
+    <!-- ACTIVE RENTALS -->
+    <!-- These are visually prominent — larger cards with a colored top stripe.
+         The stripe is a div with a fixed height and accent color background. -->
+    <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-secondary);">
+      Currently Active · <span style="color:#16a34a;">2 rentals</span>
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+
+      <!-- Active rental card 1 -->
+      <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <!-- Top accent stripe — green for active -->
+        <div class="h-1.5" style="background:#16a34a;"></div>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🏍️</span>
+              <div>
+                <p class="font-semibold text-sm" style="color:var(--text-primary);">Honda Activa 6G</p>
+                <p class="text-xs" style="color:var(--text-secondary);">Scooter · BK-2401</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Active</span>
+          </div>
+          <!-- Rental details grid — 2 items side by side -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="rounded-lg p-3" style="background:var(--bg-row);">
+              <p class="text-[10px] font-medium uppercase" style="color:var(--text-secondary);">Pick Up</p>
+              <p class="text-sm font-semibold mt-0.5" style="color:var(--text-primary);">Apr 18</p>
+            </div>
+            <div class="rounded-lg p-3" style="background:var(--bg-row);">
+              <p class="text-[10px] font-medium uppercase" style="color:var(--text-secondary);">Return</p>
+              <p class="text-sm font-semibold mt-0.5" style="color:var(--text-primary);">Apr 22</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-sm" style="color:var(--text-secondary);">Total: <span class="font-bold" style="color:#2563eb;">₹1,200</span></p>
+            <button class="text-xs px-3 py-1.5 rounded-md font-medium text-white" style="background:#2563eb;">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active rental card 2 -->
+      <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="h-1.5" style="background:#16a34a;"></div>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">🚗</span>
+              <div>
+                <p class="font-semibold text-sm" style="color:var(--text-primary);">Hyundai i20</p>
+                <p class="text-xs" style="color:var(--text-secondary);">Car · BK-2403</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Active</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="rounded-lg p-3" style="background:var(--bg-row);">
+              <p class="text-[10px] font-medium uppercase" style="color:var(--text-secondary);">Pick Up</p>
+              <p class="text-sm font-semibold mt-0.5" style="color:var(--text-primary);">Apr 20</p>
+            </div>
+            <div class="rounded-lg p-3" style="background:var(--bg-row);">
+              <p class="text-[10px] font-medium uppercase" style="color:var(--text-secondary);">Return</p>
+              <p class="text-sm font-semibold mt-0.5" style="color:var(--text-primary);">Apr 25</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-sm" style="color:var(--text-secondary);">Total: <span class="font-bold" style="color:#2563eb;">₹6,000</span></p>
+            <button class="text-xs px-3 py-1.5 rounded-md font-medium text-white" style="background:#2563eb;">
+              View Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAST RENTALS -->
+    <!-- Simpler list format — less visual weight than active cards.
+         Shows completed history without overwhelming the page. -->
+    <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Past Rentals</p>
+
+    <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
+
+      <div class="flex items-center gap-4 p-4" style="border-bottom:1px solid var(--border);">
+        <span class="text-xl shrink-0">🛵</span>
+        <div class="flex-1">
+          <p class="text-sm font-medium" style="color:var(--text-primary);">TVS Jupiter · BK-2390</p>
+          <p class="text-xs mt-0.5" style="color:var(--text-secondary);">Apr 10 – Apr 13 · 3 days</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="text-sm font-semibold" style="color:#2563eb;">₹900</p>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#f1f5f9;color:#64748b;">Completed</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 p-4" style="border-bottom:1px solid var(--border);">
+        <span class="text-xl shrink-0">🚗</span>
+        <div class="flex-1">
+          <p class="text-sm font-medium" style="color:var(--text-primary);">Swift Dzire · BK-2381</p>
+          <p class="text-xs mt-0.5" style="color:var(--text-secondary);">Apr 2 – Apr 5 · 3 days</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="text-sm font-semibold" style="color:#2563eb;">₹3,600</p>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#f1f5f9;color:#64748b;">Completed</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 p-4" style="border-bottom:1px solid var(--border);">
+        <span class="text-xl shrink-0">🏍️</span>
+        <div class="flex-1">
+          <p class="text-sm font-medium" style="color:var(--text-primary);">Royal Enfield Classic · BK-2370</p>
+          <p class="text-xs mt-0.5" style="color:var(--text-secondary);">Mar 22 – Mar 25 · 3 days</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="text-sm font-semibold" style="color:#2563eb;">₹2,100</p>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#f1f5f9;color:#64748b;">Completed</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 p-4">
+        <span class="text-xl shrink-0">🚙</span>
+        <div class="flex-1">
+          <p class="text-sm font-medium" style="color:var(--text-primary);">Tata Nexon · BK-2355</p>
+          <p class="text-xs mt-0.5" style="color:var(--text-secondary);">Mar 10 – Mar 14 · 4 days</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="text-sm font-semibold" style="color:#2563eb;">₹7,200</p>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#f1f5f9;color:#64748b;">Completed</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<div id="mobileOverlay" onclick="toggleMobileSidebar()"
+     class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
+
+<script src="js/theme.js"></script>
+<script>window.QR_PAGE = 'rentals';</script>
+<script src="js/sidebar.js"></script>
+
+</body>
+</html>

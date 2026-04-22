@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Notifications</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/theme.css"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
+
+<div id="sidebar-mount"></div>
+
+<div class="flex flex-col flex-1 overflow-hidden">
+
+  <!-- TOP BAR -->
+  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+          style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Notifications</h1>
+    <div class="ml-auto flex items-center gap-3">
+      <button onclick="toggleTheme()" id="themeToggle"
+              class="flex items-center justify-center w-8 h-8 rounded-md"
+              style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+      </button>
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
+
+    <!-- Page header with unread count + mark all read -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Notifications</h2>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">
+          <span id="unreadCount">3</span> unread notifications
+        </p>
+      </div>
+      <button onclick="markAllRead()"
+              class="text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
+              style="border:1px solid var(--border);color:var(--text-secondary);background:var(--bg-surface);"
+              onmouseover="this.style.background='var(--bg-row)'" onmouseout="this.style.background='var(--bg-surface)'">
+        Mark all as read
+      </button>
+    </div>
+
+    <!-- Max width container for readability — notifications should not stretch full width -->
+    <div class="max-w-2xl">
+
+      <!-- TODAY GROUP -->
+      <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Today</p>
+
+      <!-- Unread notification — has blue left border + tinted background -->
+      <!-- data-read="false" is read by markAllRead() to identify unread items -->
+      <div class="notif-item mb-2.5 rounded-xl p-4 border-l-4 transition-all cursor-pointer"
+           data-read="false"
+           style="background:#eff6ff;border-color:#2563eb;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);"
+           onclick="markRead(this)">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#16a34a;">✓</div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold" style="color:var(--text-primary);">New booking confirmed</p>
+              <span class="text-[10px]" style="color:var(--text-secondary);">10 min ago</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">Rahul Kumar booked Honda Activa for Apr 18–22. Booking ID: BK-2401</p>
+          </div>
+          <span class="w-2 h-2 rounded-full shrink-0 mt-1.5" style="background:#2563eb;"></span>
+        </div>
+      </div>
+
+      <!-- Unread notification -->
+      <div class="notif-item mb-2.5 rounded-xl p-4 border-l-4 transition-all cursor-pointer"
+           data-read="false"
+           style="background:#eff6ff;border-color:#2563eb;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);"
+           onclick="markRead(this)">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#2563eb;">₹</div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold" style="color:var(--text-primary);">Payment received</p>
+              <span class="text-[10px]" style="color:var(--text-secondary);">45 min ago</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">₹6,000 received from Neha Kapoor via Razorpay. Transaction #TXN-8823</p>
+          </div>
+          <span class="w-2 h-2 rounded-full shrink-0 mt-1.5" style="background:#2563eb;"></span>
+        </div>
+      </div>
+
+      <!-- Unread notification — warning type -->
+      <div class="notif-item mb-2.5 rounded-xl p-4 border-l-4 transition-all cursor-pointer"
+           data-read="false"
+           style="background:#fef9c3;border-color:#a16207;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);"
+           onclick="markRead(this)">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#a16207;">!</div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold" style="color:var(--text-primary);">Rental overdue</p>
+              <span class="text-[10px]" style="color:var(--text-secondary);">2 hrs ago</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">Arjun Mehta's rental of Royal Enfield was due on Apr 18. 3 days overdue.</p>
+          </div>
+          <span class="w-2 h-2 rounded-full shrink-0 mt-1.5" style="background:#a16207;"></span>
+        </div>
+      </div>
+
+      <!-- YESTERDAY GROUP -->
+      <p class="text-xs font-semibold uppercase tracking-wide mb-3 mt-5" style="color:var(--text-secondary);">Yesterday</p>
+
+      <!-- Read notification — plain background, no left border highlight, no dot -->
+      <div class="notif-item mb-2.5 rounded-xl p-4 transition-all cursor-pointer"
+           data-read="true"
+           style="background:var(--bg-surface);border:1px solid var(--border);"
+           onclick="markRead(this)">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#6366f1;">★</div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-medium" style="color:var(--text-primary);">Booking completed</p>
+              <span class="text-[10px]" style="color:var(--text-secondary);">Yesterday, 4:30 PM</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">Vikram Rao's rental of TVS Jupiter was completed. 3 days, ₹900.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="notif-item mb-2.5 rounded-xl p-4 transition-all cursor-pointer"
+           data-read="true"
+           style="background:var(--bg-surface);border:1px solid var(--border);"
+           onclick="markRead(this)">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#14b8a6;">+</div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-medium" style="color:var(--text-primary);">New vehicle added</p>
+              <span class="text-[10px]" style="color:var(--text-secondary);">Yesterday, 11:00 AM</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">Tata Nexon (2023, SUV) was added to the fleet. Vehicle ID: VH-024.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- EARLIER GROUP -->
+      <p class="text-xs font-semibold uppercase tracking-wide mb-3 mt-5" style="color:var(--text-secondary);">Earlier</p>
+
+      <div class="notif-item mb-2.5 rounded-xl p-4 transition-all cursor-pointer"
+           data-read="true"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#8b5cf6;">R</div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-medium" style="color:var(--text-primary);">Weekly report ready</p>
+              <span class="text-[10px]" style="color:var(--text-secondary);">Apr 14, 2026</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">Your weekly performance summary for Apr 7–13 is ready. 22 bookings, ₹41,200 revenue.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<div id="mobileOverlay" onclick="toggleMobileSidebar()"
+     class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
+
+<script src="js/theme.js"></script>
+<script>window.QR_PAGE = 'notifications';</script>
+<script src="js/sidebar.js"></script>
+
+<script>
+// ── MARK SINGLE NOTIFICATION AS READ ──
+// When you click a notification, this removes the blue border and tinted bg.
+// It then recounts how many unread remain and updates the counter.
+function markRead(el) {
+  if (el.getAttribute('data-read') === 'true') return; // already read
+  el.setAttribute('data-read', 'true');
+  // Remove unread styling — plain surface background + no special border
+  el.style.background = 'var(--bg-surface)';
+  el.style.borderLeft = '1px solid var(--border)';
+  el.style.borderColor = 'var(--border)';
+  // Remove the blue dot if present
+  const dot = el.querySelector('span.rounded-full.shrink-0');
+  if (dot) dot.remove();
+  updateUnreadCount();
+}
+
+// ── MARK ALL AS READ ──
+// querySelectorAll returns ALL matching elements as a NodeList.
+// forEach loops over each one and calls markRead.
+function markAllRead() {
+  document.querySelectorAll('.notif-item[data-read="false"]').forEach(el => markRead(el));
+}
+
+// ── UPDATE UNREAD COUNT IN HEADER ──
+function updateUnreadCount() {
+  const count = document.querySelectorAll('.notif-item[data-read="false"]').length;
+  document.getElementById('unreadCount').textContent = count;
+}
+</script>
+
+</body>
+</html>
