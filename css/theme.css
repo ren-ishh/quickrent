@@ -1,0 +1,54 @@
+/* ── LIGHT MODE (Notion-style warm white) ── */
+:root,
+html.light {
+  --bg-page:       #f7f6f3;
+  --bg-surface:    #ffffff;
+  --bg-input:      #f3f2ef;
+  --bg-row:        #fafaf9;
+  --border:        #e8e6e1;
+  --text-primary:  #1a1a1a;
+  --text-secondary:#6b6b6b;
+  --badge-bg:      #f0ede8;
+}
+
+/* ── DARK MODE (GitHub dark navy) ── */
+html.dark {
+  --bg-page:       #0d1117;
+  --bg-surface:    #161b22;
+  --bg-input:      #21262d;
+  --bg-row:        #1c2128;
+  --border:        #30363d;
+  --text-primary:  #e6edf3;
+  --text-secondary:#8b949e;
+  --badge-bg:      #21262d;
+}
+
+/* Smooth global transitions */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+
+/* Sidebar nav items */
+.nav-item {
+  color: var(--text-secondary);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-item:hover {
+  background: var(--bg-row);
+  color: var(--text-primary);
+}
+.nav-active {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border-left: 3px solid #2563eb;
+}
+html.dark .nav-active {
+  background: #1f3a5f !important;
+  color: #58a6ff !important;
+  border-left: 3px solid #58a6ff;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
