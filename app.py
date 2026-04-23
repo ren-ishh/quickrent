@@ -369,6 +369,18 @@ def update_booking_status():
             db.table('vehicles').update({'status': 'available'}).eq('id', booking.data[0]['vehicle_id']).execute()
     return jsonify({'success': True})
 
+@app.route('/api/customers/list')
+@login_required
+def list_customers():
+    res = db.table('customers').select('id, name').order('name').execute()
+    return jsonify({'customers': res.data or []})
+
+@app.route('/api/vehicles/list')
+@login_required
+def list_vehicles():
+    res = db.table('vehicles').select('id, name, type, daily_rate')\
+        .eq('status', 'available').order('name').execute()
+    return jsonify({'vehicles': res.data or []})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

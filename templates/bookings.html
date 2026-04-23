@@ -48,12 +48,8 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Bookings</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage and track all vehicle bookings</p>
       </div>
-      <button class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md"
-              style="background:#2563eb;"
-              onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
+      <button onclick="openBookingModal()" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
         New Booking
       </button>
     </div>
@@ -182,6 +178,129 @@ function filterBookings(status) {
   });
 }
 </script>
+<!-- BOOKING MODAL -->
+<div id="bookingModal" class="modal-backdrop hidden">
+  <div class="modal-box">
 
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);">New Booking</h2>
+      <button onclick="closeModal('bookingModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+    </div>
+
+    <div class="flex flex-col gap-3 mb-3">
+      <div>
+        <label class="modal-label">Customer</label>
+        <select id="b_customer" class="modal-input">
+          <option value="">Loading customers...</option>
+        </select>
+      </div>
+      <div>
+        <label class="modal-label">Vehicle</label>
+        <select id="b_vehicle" class="modal-input">
+          <option value="">Loading vehicles...</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="modal-label">Start Date</label>
+          <input id="b_start" class="modal-input" type="date"/>
+        </div>
+        <div>
+          <label class="modal-label">End Date</label>
+          <input id="b_end" class="modal-input" type="date"/>
+        </div>
+      </div>
+      <div>
+        <label class="modal-label">Total Amount (₹)</label>
+        <input id="b_amount" class="modal-input" type="number" placeholder="e.g. 2100"/>
+      </div>
+    </div>
+
+    <p id="b_error" class="text-xs text-red-500 mb-3 hidden"></p>
+
+    <div class="flex gap-2 justify-end mt-4">
+      <button onclick="closeModal('bookingModal')"
+              class="text-sm px-4 py-2 rounded-lg font-medium"
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
+        Cancel
+      </button>
+      <button onclick="submitBooking()"
+              class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+              style="background:#2563eb;">
+        Create Booking
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+document.getElementById('bookingModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('bookingModal');
+});
+
+// Load customers and vehicles into dropdowns when modal opens
+async function openBookingModal() {
+  openModal('bookingModal');
+
+  // Fetch customers from a new API route we add below
+  const [custRes, vehRes] = await Promise.all([
+    fetch('/api/customers/list').then(r => r.json()),
+    fetch('/api/vehicles/list').then(r => r.json())
+  ]);
+
+  const custSelect = document.getElementById('b_customer');
+  const vehSelect = document.getElementById('b_vehicle');
+
+  custSelect.innerHTML = custRes.customers.map(c =>
+    `<option value="${c.id}">${c.name}</option>`
+  ).join('');
+
+  vehSelect.innerHTML = vehRes.vehicles.map(v =>
+    `<option value="${v.id}">${v.name} (${v.type}) — ₹${v.daily_rate}/day</option>`
+  ).join('');
+}
+
+async function submitBooking() {
+  const customer_id = document.getElementById('b_customer').value;
+  const vehicle_id = document.getElementById('b_vehicle').value;
+  const start_date = document.getElementById('b_start').value;
+  const end_date = document.getElementById('b_end').value;
+  const total_amount = parseInt(document.getElementById('b_amount').value);
+  const err = document.getElementById('b_error');
+
+  if (!customer_id || !vehicle_id || !start_date || !end_date || !total_amount) {
+    err.textContent = 'All fields are required.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  if (end_date <= start_date) {
+    err.textContent = 'End date must be after start date.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  err.classList.add('hidden');
+
+  const res = await fetch('/api/bookings/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ customer_id, vehicle_id, start_date, end_date, total_amount })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    window.location.reload();
+  } else {
+    err.textContent = 'Something went wrong. Please try again.';
+    err.classList.remove('hidden');
+  }
+}
+</script>
 </body>
 </html>

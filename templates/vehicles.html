@@ -43,8 +43,7 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Fleet Inventory</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">24 vehicles total · 19 available</p>
       </div>
-      <button class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md"
-              style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+      <button onclick="openModal('vehicleModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
         Add Vehicle
       </button>
@@ -125,6 +124,114 @@ function filterVehicles(filter) {
     else if (filter === 'unavailable' && avail === 'unavailable') show = true;
     card.style.display = show ? 'block' : 'none';
   });
+}
+</script>
+<!-- VEHICLE MODAL -->
+<div id="vehicleModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Add New Vehicle</h2>
+      <button onclick="closeModal('vehicleModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div class="col-span-2">
+        <label class="modal-label">Vehicle Name</label>
+        <input id="v_name" class="modal-input" placeholder="e.g. Honda Activa 6G"/>
+      </div>
+      <div>
+        <label class="modal-label">Type</label>
+        <select id="v_type" class="modal-input">
+          <option value="car">Car</option>
+          <option value="bike">Bike</option>
+          <option value="scooter">Scooter</option>
+        </select>
+      </div>
+      <div>
+        <label class="modal-label">Brand</label>
+        <input id="v_brand" class="modal-input" placeholder="e.g. Honda"/>
+      </div>
+      <div>
+        <label class="modal-label">Year</label>
+        <input id="v_year" class="modal-input" type="number" placeholder="2023"/>
+      </div>
+      <div>
+        <label class="modal-label">Fuel</label>
+        <select id="v_fuel" class="modal-input">
+          <option value="Petrol">Petrol</option>
+          <option value="Diesel">Diesel</option>
+          <option value="Electric">Electric</option>
+        </select>
+      </div>
+      <div class="col-span-2">
+        <label class="modal-label">Daily Rate (₹)</label>
+        <input id="v_rate" class="modal-input" type="number" placeholder="e.g. 700"/>
+      </div>
+    </div>
+
+    <p id="v_error" class="text-xs text-red-500 mb-3 hidden"></p>
+
+    <div class="flex gap-2 justify-end mt-4">
+      <button onclick="closeModal('vehicleModal')"
+              class="text-sm px-4 py-2 rounded-lg font-medium"
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
+        Cancel
+      </button>
+      <button onclick="submitVehicle()"
+              class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+              style="background:#2563eb;">
+        Save Vehicle
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// Close modal if backdrop is clicked
+document.getElementById('vehicleModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('vehicleModal');
+});
+
+async function submitVehicle() {
+  const name = document.getElementById('v_name').value.trim();
+  const type = document.getElementById('v_type').value;
+  const brand = document.getElementById('v_brand').value.trim();
+  const year = parseInt(document.getElementById('v_year').value);
+  const fuel = document.getElementById('v_fuel').value;
+  const rate = parseInt(document.getElementById('v_rate').value);
+  const err = document.getElementById('v_error');
+
+  // Basic validation
+  if (!name || !rate) {
+    err.textContent = 'Vehicle name and daily rate are required.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  err.classList.add('hidden');
+
+  // fetch() sends a POST request to your Flask API
+  // JSON.stringify() converts the JavaScript object to a JSON string
+  const res = await fetch('/api/vehicles/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, type, brand, year, fuel, daily_rate: rate })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    // Reload the page to show the new vehicle
+    window.location.reload();
+  } else {
+    err.textContent = 'Something went wrong. Please try again.';
+    err.classList.remove('hidden');
+  }
 }
 </script>
 </body>

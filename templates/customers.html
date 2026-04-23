@@ -43,10 +43,8 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Customers</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">View and manage your customer base</p>
       </div>
-      <button class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md"
-              style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        Add Customer
+      <button onclick="openModal('customerModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Add Customer
       </button>
     </div>
 
@@ -146,6 +144,91 @@ function searchCustomers() {
     const name = row.getAttribute('data-name');
     row.style.display = name.includes(query) ? '' : 'none';
   });
+}
+</script>
+<!-- CUSTOMER MODAL -->
+<div id="customerModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Add New Customer</h2>
+      <button onclick="closeModal('customerModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+    </div>
+
+    <div class="flex flex-col gap-3 mb-3">
+      <div>
+        <label class="modal-label">Full Name</label>
+        <input id="c_name" class="modal-input" placeholder="e.g. Rahul Kumar"/>
+      </div>
+      <div>
+        <label class="modal-label">Email Address</label>
+        <input id="c_email" class="modal-input" type="email" placeholder="rahul@gmail.com"/>
+      </div>
+      <div>
+        <label class="modal-label">Phone Number</label>
+        <input id="c_phone" class="modal-input" placeholder="+91 98100 00000"/>
+      </div>
+      <div>
+        <label class="modal-label">City</label>
+        <input id="c_city" class="modal-input" placeholder="Delhi"/>
+      </div>
+    </div>
+
+    <p id="c_error" class="text-xs text-red-500 mb-3 hidden"></p>
+
+    <div class="flex gap-2 justify-end mt-4">
+      <button onclick="closeModal('customerModal')"
+              class="text-sm px-4 py-2 rounded-lg font-medium"
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
+        Cancel
+      </button>
+      <button onclick="submitCustomer()"
+              class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+              style="background:#2563eb;">
+        Save Customer
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+document.getElementById('customerModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('customerModal');
+});
+
+async function submitCustomer() {
+  const name = document.getElementById('c_name').value.trim();
+  const email = document.getElementById('c_email').value.trim();
+  const phone = document.getElementById('c_phone').value.trim();
+  const city = document.getElementById('c_city').value.trim();
+  const err = document.getElementById('c_error');
+
+  if (!name || !email) {
+    err.textContent = 'Name and email are required.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  err.classList.add('hidden');
+
+  const res = await fetch('/api/customers/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, phone, city })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    window.location.reload();
+  } else {
+    err.textContent = 'Email may already exist or something went wrong.';
+    err.classList.remove('hidden');
+  }
 }
 </script>
 </body>
