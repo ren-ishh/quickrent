@@ -37,7 +37,6 @@
 
   <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
 
-    <!-- Page header -->
     <div class="flex items-center justify-between mb-5">
       <div>
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Customers</h2>
@@ -52,7 +51,7 @@
     <div class="flex flex-wrap gap-3 mb-5">
       <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
         <span style="color:var(--text-secondary);">Total Customers</span>
-        <span class="font-bold" style="color:var(--text-primary);">48</span>
+        <span class="font-bold" style="color:var(--text-primary);">{{ customers|length }}</span>
       </div>
       <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
         <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
@@ -67,8 +66,6 @@
     </div>
 
     <!-- Customer table -->
-    <!-- This is an HTML table styled with Tailwind. The <thead> is the header row,
-         <tbody> contains data rows. Each row has data-name for live search. -->
     <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
       <table class="w-full text-sm">
         <thead>
@@ -77,51 +74,51 @@
             <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden sm:table-cell" style="color:var(--text-secondary);">Phone</th>
             <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Rentals</th>
             <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Spent</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Last Rental</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Joined</th>
             <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Status</th>
             <th class="px-5 py-3"></th>
           </tr>
         </thead>
-                  <tbody id="customerTable">
-                    {% for customer in customers %}
-                    <tr class="customer-row" data-name="{{ customer.name|lower }}"
-                        style="border-bottom:1px solid var(--border);">
-                      <td class="px-5 py-3.5">
-                        <div class="flex items-center gap-3">
-                          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                              style="background:#6366f1;">
-                            {{ customer.name[:2].upper() }}
-                          </div>
-                          <div>
-                            <p class="font-medium" style="color:var(--text-primary);">{{ customer.name }}</p>
-                            <p class="text-xs" style="color:var(--text-secondary);">{{ customer.email }}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">{{ customer.phone or '—' }}</td>
-                      <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">{{ customer.total_rentals }}</td>
-                      <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹{{ "{:,}".format(customer.total_spent) }}</td>
-                      <td class="px-5 py-3.5" style="color:var(--text-secondary);">
-                        {{ customer.created_at[:10] if customer.created_at else '—' }}
-                      </td>
-                      <td class="px-5 py-3.5">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                              style="background:#dcfce7;color:#16a34a;">Active</span>
-                      </td>
-                      <td class="px-5 py-3.5">
-                        <button onclick="openCustomerModal('{{ customer.id }}')"
-                                class="text-xs px-2.5 py-1 rounded-md font-medium"
-                                style="background:#eff6ff;color:#2563eb;">View</button>
-                      </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                      <td colspan="7" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
-                        No customers yet.
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
+        <tbody id="customerTable">
+          {% for customer in customers %}
+          <tr class="customer-row" data-name="{{ customer.name|lower }}"
+              style="border-bottom:1px solid var(--border);">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                     style="background:#6366f1;">
+                  {{ customer.name[:2].upper() }}
+                </div>
+                <div>
+                  <p class="font-medium" style="color:var(--text-primary);">{{ customer.name }}</p>
+                  <p class="text-xs" style="color:var(--text-secondary);">{{ customer.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">{{ customer.phone or '—' }}</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">{{ customer.total_rentals or 0 }}</td>
+            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹{{ "{:,}".format(customer.total_spent or 0) }}</td>
+            <td class="px-5 py-3.5" style="color:var(--text-secondary);">
+              {{ customer.created_at[:10] if customer.created_at else '—' }}
+            </td>
+            <td class="px-5 py-3.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                    style="background:#dcfce7;color:#16a34a;">Active</span>
+            </td>
+            <td class="px-5 py-3.5">
+              <button onclick="openCustomerModal('{{ customer.id }}')"
+                      class="text-xs px-2.5 py-1 rounded-md font-medium"
+                      style="background:#eff6ff;color:#2563eb;">View</button>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
+              No customers yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
 
@@ -135,50 +132,37 @@
 <script>window.QR_PAGE = 'customers';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
 
-
-<script>
-// Live search — filters table rows as you type in the search box.
-// This is more advanced than button filtering: it runs on every keypress.
-function searchCustomers() {
-  const query = document.getElementById('customerSearch').value.toLowerCase();
-  document.querySelectorAll('.customer-row').forEach(row => {
-    const name = row.getAttribute('data-name');
-    row.style.display = name.includes(query) ? '' : 'none';
-  });
-}
-</script>
-<!-- CUSTOMER MODAL -->
+<!-- ═══════════════════════════════════════════
+     ADD CUSTOMER MODAL
+     id="customerAddModal" — opened by Add Customer button
+════════════════════════════════════════════ -->
 <div id="customerAddModal" class="modal-backdrop hidden">
   <div class="modal-box">
-
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-base font-semibold" style="color:var(--text-primary);">Add New Customer</h2>
-      <button onclick="closeModal('customerModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+      <button onclick="closeModal('customerAddModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
-
     <div class="flex flex-col gap-3 mb-3">
       <div>
         <label class="modal-label">Full Name</label>
-        <input id="c_name" class="modal-input" placeholder="e.g. Rahul Kumar"/>
+        <input id="ca_name" class="modal-input" placeholder="e.g. Rahul Kumar"/>
       </div>
       <div>
         <label class="modal-label">Email Address</label>
-        <input id="c_email" class="modal-input" type="email" placeholder="rahul@gmail.com"/>
+        <input id="ca_email" class="modal-input" type="email" placeholder="rahul@gmail.com"/>
       </div>
       <div>
         <label class="modal-label">Phone Number</label>
-        <input id="c_phone" class="modal-input" placeholder="+91 98100 00000"/>
+        <input id="ca_phone" class="modal-input" placeholder="+91 98100 00000"/>
       </div>
       <div>
         <label class="modal-label">City</label>
-        <input id="c_city" class="modal-input" placeholder="Delhi"/>
+        <input id="ca_city" class="modal-input" placeholder="Delhi"/>
       </div>
     </div>
-
-    <p id="c_error" class="text-xs text-red-500 mb-3 hidden"></p>
-
+    <p id="ca_error" class="text-xs text-red-500 mb-3 hidden"></p>
     <div class="flex gap-2 justify-end mt-4">
-      <button onclick="closeModal('customerModal')"
+      <button onclick="closeModal('customerAddModal')"
               class="text-sm px-4 py-2 rounded-lg font-medium"
               style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
         Cancel
@@ -189,62 +173,22 @@ function searchCustomers() {
         Save Customer
       </button>
     </div>
-
   </div>
 </div>
 
-<script>
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-document.getElementById('customerModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal('customerModal');
-});
-
-async function submitCustomer() {
-  const name = document.getElementById('c_name').value.trim();
-  const email = document.getElementById('c_email').value.trim();
-  const phone = document.getElementById('c_phone').value.trim();
-  const city = document.getElementById('c_city').value.trim();
-  const err = document.getElementById('c_error');
-
-  if (!name || !email) {
-    err.textContent = 'Name and email are required.';
-    err.classList.remove('hidden');
-    return;
-  }
-
-  err.classList.add('hidden');
-
-  const res = await fetch('/api/customers/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, phone, city })
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    window.location.reload();
-  } else {
-    err.textContent = 'Email may already exist or something went wrong.';
-    err.classList.remove('hidden');
-  }
-}
-</script>
-<!-- CUSTOMER DETAIL / EDIT / DELETE MODAL -->
-<div id="customerModal" class="modal-backdrop hidden">
+<!-- ═══════════════════════════════════════════
+     CUSTOMER VIEW / EDIT / DELETE MODAL
+     id="customerViewModal" — opened by View button in table
+════════════════════════════════════════════ -->
+<div id="customerViewModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:520px;">
-
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-base font-semibold" style="color:var(--text-primary);">Customer Details</h2>
       <button onclick="closeCustomerModal()" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
 
-    <!-- View mode -->
+    <!-- VIEW MODE -->
     <div id="c_view_mode">
-
-      <!-- Profile header -->
       <div class="flex items-center gap-4 p-4 rounded-xl mb-4" style="background:var(--bg-row);">
         <div class="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold shrink-0"
              id="c_avatar" style="background:#6366f1;"></div>
@@ -254,8 +198,6 @@ async function submitCustomer() {
           <p class="text-xs mt-0.5" id="c_phone_display" style="color:var(--text-secondary);"></p>
         </div>
       </div>
-
-      <!-- Stats row -->
       <div class="grid grid-cols-3 gap-3 mb-4">
         <div class="rounded-lg p-3 text-center" style="background:var(--bg-row);">
           <p class="text-[10px] font-medium uppercase mb-1" style="color:var(--text-secondary);">City</p>
@@ -270,26 +212,19 @@ async function submitCustomer() {
           <p class="text-sm font-semibold" id="c_spent_display" style="color:#2563eb;"></p>
         </div>
       </div>
-
-      <!-- Booking history -->
       <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-secondary);">Booking History</p>
       <div id="c_bookings_list" class="flex flex-col gap-2 mb-4 max-h-48 overflow-y-auto"></div>
-
       <div class="flex gap-2 justify-end">
         <button onclick="confirmDeleteCustomer()"
                 class="text-sm px-4 py-2 rounded-lg font-medium"
-                style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">
-          Delete
-        </button>
+                style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">Delete</button>
         <button onclick="switchToCustomerEdit()"
                 class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-                style="background:#2563eb;">
-          Edit
-        </button>
+                style="background:#2563eb;">Edit</button>
       </div>
     </div>
 
-    <!-- Edit mode -->
+    <!-- EDIT MODE -->
     <div id="c_edit_mode" class="hidden">
       <div class="flex flex-col gap-3 mb-3">
         <div>
@@ -313,18 +248,14 @@ async function submitCustomer() {
       <div class="flex gap-2 justify-end">
         <button onclick="switchToCustomerView()"
                 class="text-sm px-4 py-2 rounded-lg font-medium"
-                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-          Cancel
-        </button>
+                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
         <button onclick="saveCustomerEdit()"
                 class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-                style="background:#2563eb;">
-          Save Changes
-        </button>
+                style="background:#2563eb;">Save Changes</button>
       </div>
     </div>
 
-    <!-- Delete confirm -->
+    <!-- DELETE CONFIRM MODE -->
     <div id="c_delete_mode" class="hidden">
       <div class="rounded-xl p-4 mb-4 text-center" style="background:#fee2e2;border:1px solid #fecaca;">
         <p class="text-sm font-semibold mb-1" style="color:#dc2626;">Delete this customer?</p>
@@ -333,106 +264,130 @@ async function submitCustomer() {
       <div class="flex gap-2 justify-end">
         <button onclick="switchToCustomerView()"
                 class="text-sm px-4 py-2 rounded-lg font-medium"
-                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-          Cancel
-        </button>
+                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
         <button onclick="executeDeleteCustomer()"
                 class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-                style="background:#dc2626;">
-          Yes, Delete
-        </button>
+                style="background:#dc2626;">Yes, Delete</button>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ADD CUSTOMER MODAL — keep your existing one, just make sure its id is customerAddModal -->
-
+<!-- ═══════════════════════════════════════════
+     ALL JAVASCRIPT — single block, no duplicates
+════════════════════════════════════════════ -->
 <script>
-let currentCustomerId = null;
+// ── Generic modal helpers ──────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-function closeCustomerModal() {
-  document.getElementById('customerModal').classList.add('hidden');
-  currentCustomerId = null;
-}
+// Close customerAddModal on backdrop click
+document.getElementById('customerAddModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('customerAddModal');
+});
 
-document.getElementById('customerModal').addEventListener('click', function(e) {
+// Close customerViewModal on backdrop click
+document.getElementById('customerViewModal').addEventListener('click', function(e) {
   if (e.target === this) closeCustomerModal();
 });
 
+// ── Live search ────────────────────────────────────────────────
+function searchCustomers() {
+  const q = document.getElementById('customerSearch').value.toLowerCase();
+  document.querySelectorAll('.customer-row').forEach(row => {
+    row.style.display = row.getAttribute('data-name').includes(q) ? '' : 'none';
+  });
+}
+
+// ── Customer View/Edit/Delete modal state ──────────────────────
+let currentCustomerId = null;
+
+function closeCustomerModal() {
+  document.getElementById('customerViewModal').classList.add('hidden');
+  currentCustomerId = null;
+}
+
 function showCustomerMode(mode) {
-  document.getElementById('c_view_mode').classList.toggle('hidden', mode !== 'view');
-  document.getElementById('c_edit_mode').classList.toggle('hidden', mode !== 'edit');
+  document.getElementById('c_view_mode').classList.toggle('hidden',   mode !== 'view');
+  document.getElementById('c_edit_mode').classList.toggle('hidden',   mode !== 'edit');
   document.getElementById('c_delete_mode').classList.toggle('hidden', mode !== 'delete');
 }
 
 function switchToCustomerView() { showCustomerMode('view'); }
+
 function switchToCustomerEdit() {
-  document.getElementById('ce_name').value = document.getElementById('c_name_display').textContent;
+  document.getElementById('ce_name').value  = document.getElementById('c_name_display').textContent;
   document.getElementById('ce_email').value = document.getElementById('c_email_display').textContent;
   document.getElementById('ce_phone').value = document.getElementById('c_phone_display').textContent;
-  document.getElementById('ce_city').value = document.getElementById('c_city_display').textContent;
+  document.getElementById('ce_city').value  = document.getElementById('c_city_display').textContent;
   showCustomerMode('edit');
 }
+
 function confirmDeleteCustomer() { showCustomerMode('delete'); }
 
+// Open view modal and fetch customer data from API
 async function openCustomerModal(customerId) {
   currentCustomerId = customerId;
-  document.getElementById('customerModal').classList.remove('hidden');
+  document.getElementById('customerViewModal').classList.remove('hidden');
   showCustomerMode('view');
+
+  // Show loading state
+  document.getElementById('c_name_display').textContent = 'Loading...';
   document.getElementById('c_bookings_list').innerHTML =
     '<p class="text-xs text-center py-4" style="color:var(--text-secondary);">Loading...</p>';
 
-  const res = await fetch(`/api/customers/${customerId}`);
-  const data = await res.json();
-  const c = data.customer;
-  const bookings = data.bookings;
+  try {
+    const res  = await fetch(`/api/customers/${customerId}`);
+    const data = await res.json();
+    const c    = data.customer;
+    const bookings = data.bookings;
 
-  // Populate profile
-  const initials = c.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('c_avatar').textContent = initials;
-  document.getElementById('c_name_display').textContent = c.name;
-  document.getElementById('c_email_display').textContent = c.email;
-  document.getElementById('c_phone_display').textContent = c.phone || '—';
-  document.getElementById('c_city_display').textContent = c.city || '—';
-  document.getElementById('c_rentals_display').textContent = c.total_rentals || bookings.length;
-  document.getElementById('c_spent_display').textContent = '₹' + (c.total_spent || 0).toLocaleString('en-IN');
+    const initials = c.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('c_avatar').textContent         = initials;
+    document.getElementById('c_name_display').textContent   = c.name;
+    document.getElementById('c_email_display').textContent  = c.email;
+    document.getElementById('c_phone_display').textContent  = c.phone || '—';
+    document.getElementById('c_city_display').textContent   = c.city  || '—';
+    document.getElementById('c_rentals_display').textContent = c.total_rentals || bookings.length;
+    document.getElementById('c_spent_display').textContent  = '₹' + (c.total_spent || 0).toLocaleString('en-IN');
 
-  // Populate booking history
-  const list = document.getElementById('c_bookings_list');
-  if (bookings.length === 0) {
-    list.innerHTML = '<p class="text-xs text-center py-3" style="color:var(--text-secondary);">No bookings yet.</p>';
-  } else {
-    list.innerHTML = bookings.map(b => {
+    const list = document.getElementById('c_bookings_list');
+    if (!bookings.length) {
+      list.innerHTML = '<p class="text-xs text-center py-3" style="color:var(--text-secondary);">No bookings yet.</p>';
+    } else {
       const statusColors = {
-        active: 'background:#dcfce7;color:#16a34a',
-        pending: 'background:#fef9c3;color:#a16207',
-        overdue: 'background:#fee2e2;color:#dc2626',
+        active:    'background:#dcfce7;color:#16a34a',
+        pending:   'background:#fef9c3;color:#a16207',
+        overdue:   'background:#fee2e2;color:#dc2626',
         completed: 'background:#f1f5f9;color:#64748b'
       };
-      const sc = statusColors[b.status] || statusColors.completed;
-      const vName = b.vehicles ? b.vehicles.name : '—';
-      return `
-        <div class="flex items-center justify-between p-3 rounded-lg"
-             style="background:var(--bg-row);border:1px solid var(--border);">
-          <div>
-            <p class="text-xs font-medium" style="color:var(--text-primary);">${vName}</p>
-            <p class="text-[11px] mt-0.5" style="color:var(--text-secondary);">${b.start_date} – ${b.end_date}</p>
-          </div>
-          <div class="text-right">
-            <p class="text-xs font-semibold" style="color:#2563eb;">₹${b.total_amount.toLocaleString('en-IN')}</p>
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="${sc};">${b.status}</span>
-          </div>
-        </div>`;
-    }).join('');
+      list.innerHTML = bookings.map(b => {
+        const sc    = statusColors[b.status] || statusColors.completed;
+        const vName = b.vehicles ? b.vehicles.name : '—';
+        return `
+          <div class="flex items-center justify-between p-3 rounded-lg"
+               style="background:var(--bg-row);border:1px solid var(--border);">
+            <div>
+              <p class="text-xs font-medium" style="color:var(--text-primary);">${vName}</p>
+              <p class="text-[11px] mt-0.5" style="color:var(--text-secondary);">${b.start_date} – ${b.end_date}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-semibold" style="color:#2563eb;">₹${b.total_amount.toLocaleString('en-IN')}</p>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="${sc};">${b.status}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+  } catch(err) {
+    document.getElementById('c_name_display').textContent = 'Failed to load.';
   }
 }
 
+// Save edited customer
 async function saveCustomerEdit() {
-  const name = document.getElementById('ce_name').value.trim();
+  const name  = document.getElementById('ce_name').value.trim();
   const email = document.getElementById('ce_email').value.trim();
-  const err = document.getElementById('ce_error');
+  const err   = document.getElementById('ce_error');
 
   if (!name || !email) {
     err.textContent = 'Name and email are required.';
@@ -441,54 +396,51 @@ async function saveCustomerEdit() {
   }
   err.classList.add('hidden');
 
-  const res = await fetch(`/api/customers/${currentCustomerId}/update`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name,
-      email,
-      phone: document.getElementById('ce_phone').value.trim(),
-      city: document.getElementById('ce_city').value.trim()
-    })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    window.location.reload();
-  } else {
-    err.textContent = 'Update failed. Please try again.';
+  try {
+    const res  = await fetch(`/api/customers/${currentCustomerId}/update`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phone: document.getElementById('ce_phone').value.trim(),
+        city:  document.getElementById('ce_city').value.trim()
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.reload();
+    } else {
+      err.textContent = 'Update failed. Please try again.';
+      err.classList.remove('hidden');
+    }
+  } catch(e) {
+    err.textContent = 'Network error. Please try again.';
     err.classList.remove('hidden');
   }
 }
 
+// Delete customer
 async function executeDeleteCustomer() {
-  const res = await fetch(`/api/customers/${currentCustomerId}/delete`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  });
-  const data = await res.json();
-  if (data.success) {
-    window.location.reload();
+  try {
+    const res  = await fetch(`/api/customers/${currentCustomerId}/delete`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) window.location.reload();
+  } catch(e) {
+    alert('Delete failed. Please try again.');
   }
 }
 
-// existing search + add customer functions stay here
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-function searchCustomers() {
-  const q = document.getElementById('customerSearch').value.toLowerCase();
-  document.querySelectorAll('.customer-row').forEach(r => {
-    r.style.display = r.getAttribute('data-name').includes(q) ? '' : 'none';
-  });
-}
-
+// ── Add Customer ───────────────────────────────────────────────
 async function submitCustomer() {
-  const name = document.getElementById('c_name').value.trim();
-  const email = document.getElementById('c_email').value.trim();
-  const phone = document.getElementById('c_phone').value.trim();
-  const city = document.getElementById('c_city').value.trim();
-  const err = document.getElementById('c_error');
+  const name  = document.getElementById('ca_name').value.trim();
+  const email = document.getElementById('ca_email').value.trim();
+  const phone = document.getElementById('ca_phone').value.trim();
+  const city  = document.getElementById('ca_city').value.trim();
+  const err   = document.getElementById('ca_error');
 
   if (!name || !email) {
     err.textContent = 'Name and email are required.';
@@ -497,16 +449,21 @@ async function submitCustomer() {
   }
   err.classList.add('hidden');
 
-  const res = await fetch('/api/customers/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, phone, city })
-  });
-  const data = await res.json();
-  if (data.success) {
-    window.location.reload();
-  } else {
-    err.textContent = 'Email may already exist.';
+  try {
+    const res  = await fetch('/api/customers/add', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, city })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.reload();
+    } else {
+      err.textContent = 'Email may already exist or something went wrong.';
+      err.classList.remove('hidden');
+    }
+  } catch(e) {
+    err.textContent = 'Network error. Please try again.';
     err.classList.remove('hidden');
   }
 }

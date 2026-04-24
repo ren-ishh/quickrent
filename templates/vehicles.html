@@ -21,7 +21,7 @@
     </button>
     <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Vehicles</h1>
     <div class="ml-auto flex items-center gap-3">
-      <input type="text" placeholder="Search vehicles..."
+      <input type="text" id="vehicleSearch" oninput="searchVehicles()" placeholder="Search vehicles..."
              class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
              style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
              onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
@@ -57,16 +57,17 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="vehicleGrid">
     {% for vehicle in vehicles %}
-      <div class="vehicle-card rounded-xl overflow-hidden" 
-           data-type="{{ vehicle.type }}" 
-           data-avail="{{ 'available' if vehicle.status == 'available' else 'unavailable' }}" 
+      <div class="vehicle-card rounded-xl overflow-hidden"
+           data-name="{{ vehicle.name|lower }}"
+           data-type="{{ vehicle.type }}"
+           data-avail="{{ 'available' if vehicle.status == 'available' else 'unavailable' }}"
            style="background:var(--bg-surface);border:1px solid var(--border);">
-        
-        <div class="h-32 flex items-center justify-center text-4xl" 
+
+        <div class="h-32 flex items-center justify-center text-4xl"
              style="background:{% if vehicle.type == 'car' %}#eff6ff{% elif vehicle.type == 'bike' %}#f0fdf4{% else %}#fdf4ff{% endif %};">
           {% if vehicle.type == 'car' %}🚗{% elif vehicle.type == 'bike' %}🏍️{% else %}🛵{% endif %}
         </div>
-        
+
         <div class="p-4">
           <div class="flex items-center justify-between mb-1">
             <p class="font-semibold text-sm" style="color:var(--text-primary);">{{ vehicle.name }}</p>
@@ -87,8 +88,8 @@
               ₹{{ vehicle.daily_rate }}
               <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span>
             </p>
-            <button onclick="openVehicleModal('{{ vehicle.id }}')" 
-                    class="text-xs px-2.5 py-1 rounded-md font-medium" 
+            <button onclick="openVehicleModal('{{ vehicle.id }}')"
+                    class="text-xs px-2.5 py-1 rounded-md font-medium"
                     style="background:#eff6ff;color:#2563eb;">View</button>
           </div>
         </div>
@@ -106,6 +107,10 @@
 <script>window.QR_PAGE = 'vehicles';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
 
+<!-- ═══════════════════════════════════════════
+     VEHICLE VIEW / EDIT / DELETE MODAL
+     Opens when View button is clicked on a card
+════════════════════════════════════════════ -->
 <div id="vehicleModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:500px;">
     <div class="flex items-center justify-between mb-5">
@@ -113,6 +118,7 @@
       <button onclick="closeVehicleModal()" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
 
+    <!-- VIEW MODE -->
     <div id="v_view_mode">
       <div class="h-24 rounded-xl flex items-center justify-center text-5xl mb-4" id="v_emoji_display" style="background:var(--bg-row);"></div>
       <div class="grid grid-cols-2 gap-3 mb-4">
@@ -151,6 +157,7 @@
       </div>
     </div>
 
+    <!-- EDIT MODE -->
     <div id="v_edit_mode" class="hidden">
       <div class="grid grid-cols-2 gap-3 mb-3">
         <div class="col-span-2">
@@ -201,6 +208,7 @@
       </div>
     </div>
 
+    <!-- DELETE CONFIRM MODE -->
     <div id="v_delete_mode" class="hidden">
       <div class="rounded-xl p-4 mb-4 text-center" style="background:#fee2e2;border:1px solid #fecaca;">
         <p class="text-sm font-semibold mb-1" style="color:#dc2626;">Delete this vehicle?</p>
@@ -214,6 +222,10 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     ADD VEHICLE MODAL
+     Opens when Add Vehicle button is clicked
+════════════════════════════════════════════ -->
 <div id="vehicleAddModal" class="modal-backdrop hidden">
   <div class="modal-box">
     <div class="flex items-center justify-between mb-5">
@@ -223,11 +235,11 @@
     <div class="grid grid-cols-2 gap-3 mb-3">
       <div class="col-span-2">
         <label class="modal-label">Vehicle Name</label>
-        <input id="v_name" class="modal-input" placeholder="e.g. Honda Activa 6G"/>
+        <input id="va_name" class="modal-input" placeholder="e.g. Honda Activa 6G"/>
       </div>
       <div>
         <label class="modal-label">Type</label>
-        <select id="v_type" class="modal-input">
+        <select id="va_type" class="modal-input">
           <option value="car">Car</option>
           <option value="bike">Bike</option>
           <option value="scooter">Scooter</option>
@@ -235,15 +247,15 @@
       </div>
       <div>
         <label class="modal-label">Brand</label>
-        <input id="v_brand" class="modal-input" placeholder="e.g. Honda"/>
+        <input id="va_brand" class="modal-input" placeholder="e.g. Honda"/>
       </div>
       <div>
         <label class="modal-label">Year</label>
-        <input id="v_year" class="modal-input" type="number" placeholder="2023"/>
+        <input id="va_year" class="modal-input" type="number" placeholder="2023"/>
       </div>
       <div>
         <label class="modal-label">Fuel</label>
-        <select id="v_fuel" class="modal-input">
+        <select id="va_fuel" class="modal-input">
           <option value="Petrol">Petrol</option>
           <option value="Diesel">Diesel</option>
           <option value="Electric">Electric</option>
@@ -251,10 +263,10 @@
       </div>
       <div class="col-span-2">
         <label class="modal-label">Daily Rate (₹)</label>
-        <input id="v_rate" class="modal-input" type="number" placeholder="e.g. 700"/>
+        <input id="va_rate" class="modal-input" type="number" placeholder="e.g. 700"/>
       </div>
     </div>
-    <p id="v_error" class="text-xs text-red-500 mb-3 hidden"></p>
+    <p id="va_error" class="text-xs text-red-500 mb-3 hidden"></p>
     <div class="flex gap-2 justify-end mt-4">
       <button onclick="closeModal('vehicleAddModal')" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
       <button onclick="submitVehicle()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Save Vehicle</button>
@@ -262,12 +274,29 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     ALL JAVASCRIPT — single block, no duplicates
+════════════════════════════════════════════ -->
 <script>
-// ── GENERAL FUNCTIONS ──
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+// ── Generic modal helpers ──────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-// ── VEHICLE MODAL STATE (View/Edit/Delete) ──
+// Close vehicleAddModal on backdrop click
+document.getElementById('vehicleAddModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('vehicleAddModal');
+});
+
+// ── Vehicle search ─────────────────────────────────────────────
+function searchVehicles() {
+  const q = document.getElementById('vehicleSearch').value.toLowerCase();
+  document.querySelectorAll('.vehicle-card').forEach(card => {
+    const name = card.getAttribute('data-name') || '';
+    card.style.display = name.includes(q) ? '' : 'none';
+  });
+}
+
+// ── Vehicle View/Edit/Delete modal state ───────────────────────
 let currentVehicleId = null;
 
 function closeVehicleModal() {
@@ -275,57 +304,65 @@ function closeVehicleModal() {
   currentVehicleId = null;
 }
 
+// Close vehicleModal on backdrop click
 document.getElementById('vehicleModal').addEventListener('click', function(e) {
   if (e.target === this) closeVehicleModal();
 });
 
-function showOnly(mode) {
+// Show only one mode inside vehicleModal
+function showVehicleMode(mode) {
   document.getElementById('v_view_mode').classList.toggle('hidden', mode !== 'view');
   document.getElementById('v_edit_mode').classList.toggle('hidden', mode !== 'edit');
   document.getElementById('v_delete_mode').classList.toggle('hidden', mode !== 'delete');
 }
 
-function switchToEditMode() {
-  document.getElementById('ve_name').value = document.getElementById('v_name_display').textContent;
+function switchToViewMode()    { showVehicleMode('view'); }
+function switchToEditMode()    {
+  // Pre-fill edit fields from what's displayed in view mode
+  document.getElementById('ve_name').value  = document.getElementById('v_name_display').textContent;
   document.getElementById('ve_brand').value = document.getElementById('v_brand_display').textContent;
-  document.getElementById('ve_year').value = document.getElementById('v_year_display').textContent;
-  document.getElementById('ve_rate').value = document.getElementById('v_rate_display').textContent.replace('₹','').replace('/day','').trim();
-  const type = document.getElementById('v_type_display').textContent.toLowerCase();
-  const fuel = document.getElementById('v_fuel_display').textContent;
-  const status = document.getElementById('v_status_display').textContent.toLowerCase();
-  document.getElementById('ve_type').value = type;
-  document.getElementById('ve_fuel').value = fuel;
-  document.getElementById('ve_status').value = status;
-  showOnly('edit');
+  document.getElementById('ve_year').value  = document.getElementById('v_year_display').textContent;
+  document.getElementById('ve_rate').value  = document.getElementById('v_rate_display').textContent.replace('₹','').replace('/day','').trim();
+  document.getElementById('ve_type').value   = document.getElementById('v_type_display').textContent.toLowerCase();
+  document.getElementById('ve_fuel').value   = document.getElementById('v_fuel_display').textContent;
+  document.getElementById('ve_status').value = document.getElementById('v_status_display').textContent.toLowerCase();
+  showVehicleMode('edit');
 }
+function confirmDeleteVehicle() { showVehicleMode('delete'); }
 
-function switchToViewMode() { showOnly('view'); }
-function confirmDeleteVehicle() { showOnly('delete'); }
-
+// Open View modal and fetch vehicle data from API
 async function openVehicleModal(vehicleId) {
   currentVehicleId = vehicleId;
   document.getElementById('vehicleModal').classList.remove('hidden');
-  showOnly('view');
+  showVehicleMode('view');
 
-  const res = await fetch(`/api/vehicles/${vehicleId}`);
-  const data = await res.json();
-  const v = data.vehicle;
+  // Show loading state
+  document.getElementById('v_name_display').textContent = 'Loading...';
 
-  const emojis = { car: '🚗', bike: '🏍️', scooter: '🛵' };
-  document.getElementById('v_emoji_display').textContent = emojis[v.type] || '🚗';
-  document.getElementById('v_name_display').textContent = v.name;
-  document.getElementById('v_type_display').textContent = v.type.charAt(0).toUpperCase() + v.type.slice(1);
-  document.getElementById('v_brand_display').textContent = v.brand || '—';
-  document.getElementById('v_year_display').textContent = v.year || '—';
-  document.getElementById('v_fuel_display').textContent = v.fuel || '—';
-  document.getElementById('v_rate_display').textContent = '₹' + v.daily_rate + '/day';
-  document.getElementById('v_status_display').textContent = v.status.charAt(0).toUpperCase() + v.status.slice(1);
+  try {
+    const res  = await fetch(`/api/vehicles/${vehicleId}`);
+    const data = await res.json();
+    const v    = data.vehicle;
+
+    const emojis = { car: '🚗', bike: '🏍️', scooter: '🛵' };
+    document.getElementById('v_emoji_display').textContent   = emojis[v.type] || '🚗';
+    document.getElementById('v_name_display').textContent    = v.name;
+    document.getElementById('v_type_display').textContent    = v.type.charAt(0).toUpperCase() + v.type.slice(1);
+    document.getElementById('v_brand_display').textContent   = v.brand || '—';
+    document.getElementById('v_year_display').textContent    = v.year  || '—';
+    document.getElementById('v_fuel_display').textContent    = v.fuel  || '—';
+    document.getElementById('v_rate_display').textContent    = '₹' + v.daily_rate + '/day';
+    document.getElementById('v_status_display').textContent  = v.status.charAt(0).toUpperCase() + v.status.slice(1);
+  } catch(err) {
+    document.getElementById('v_name_display').textContent = 'Failed to load.';
+  }
 }
 
+// Save edited vehicle
 async function saveVehicleEdit() {
   const name = document.getElementById('ve_name').value.trim();
   const rate = parseInt(document.getElementById('ve_rate').value);
-  const err = document.getElementById('ve_error');
+  const err  = document.getElementById('ve_error');
 
   if (!name || !rate) {
     err.textContent = 'Name and daily rate are required.';
@@ -334,53 +371,52 @@ async function saveVehicleEdit() {
   }
   err.classList.add('hidden');
 
-  const res = await fetch(`/api/vehicles/${currentVehicleId}/update`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name,
-      type: document.getElementById('ve_type').value,
-      brand: document.getElementById('ve_brand').value,
-      year: parseInt(document.getElementById('ve_year').value),
-      fuel: document.getElementById('ve_fuel').value,
-      daily_rate: rate,
-      status: document.getElementById('ve_status').value
-    })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    window.location.reload();
-  } else {
-    err.textContent = 'Update failed. Please try again.';
+  try {
+    const res  = await fetch(`/api/vehicles/${currentVehicleId}/update`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        type:       document.getElementById('ve_type').value,
+        brand:      document.getElementById('ve_brand').value,
+        year:       parseInt(document.getElementById('ve_year').value) || null,
+        fuel:       document.getElementById('ve_fuel').value,
+        daily_rate: rate,
+        status:     document.getElementById('ve_status').value
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.reload();
+    } else {
+      err.textContent = 'Update failed. Please try again.';
+      err.classList.remove('hidden');
+    }
+  } catch(e) {
+    err.textContent = 'Network error. Please try again.';
     err.classList.remove('hidden');
   }
 }
 
+// Delete vehicle
 async function executeDeleteVehicle() {
-  const res = await fetch(`/api/vehicles/${currentVehicleId}/delete`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
-  });
-  const data = await res.json();
-  if (data.success) {
-    window.location.reload();
+  try {
+    const res  = await fetch(`/api/vehicles/${currentVehicleId}/delete`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) window.location.reload();
+  } catch(e) {
+    alert('Delete failed. Please try again.');
   }
 }
 
-// ── ADD VEHICLE LOGIC ──
-document.getElementById('vehicleAddModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal('vehicleAddModal');
-});
-
+// ── Add Vehicle ────────────────────────────────────────────────
 async function submitVehicle() {
-  const name = document.getElementById('v_name').value.trim();
-  const type = document.getElementById('v_type').value;
-  const brand = document.getElementById('v_brand').value.trim();
-  const year = parseInt(document.getElementById('v_year').value);
-  const fuel = document.getElementById('v_fuel').value;
-  const rate = parseInt(document.getElementById('v_rate').value);
-  const err = document.getElementById('v_error');
+  const name = document.getElementById('va_name').value.trim();
+  const rate = parseInt(document.getElementById('va_rate').value);
+  const err  = document.getElementById('va_error');
 
   if (!name || !rate) {
     err.textContent = 'Vehicle name and daily rate are required.';
@@ -389,16 +425,28 @@ async function submitVehicle() {
   }
   err.classList.add('hidden');
 
-  const res = await fetch('/api/vehicles/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, type, brand, year, fuel, daily_rate: rate })
-  });
-  const data = await res.json();
-  if (data.success) {
-    window.location.reload();
-  } else {
-    err.textContent = 'Something went wrong. Please try again.';
+  try {
+    const res  = await fetch('/api/vehicles/add', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        type:       document.getElementById('va_type').value,
+        brand:      document.getElementById('va_brand').value.trim(),
+        year:       parseInt(document.getElementById('va_year').value) || null,
+        fuel:       document.getElementById('va_fuel').value,
+        daily_rate: rate
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.reload();
+    } else {
+      err.textContent = 'Something went wrong. Please try again.';
+      err.classList.remove('hidden');
+    }
+  } catch(e) {
+    err.textContent = 'Network error. Please try again.';
     err.classList.remove('hidden');
   }
 }
