@@ -43,7 +43,7 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Customers</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">View and manage your customer base</p>
       </div>
-      <button onclick="openModal('customerModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+      <button onclick="openModal('customerAddModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Add Customer
       </button>
     </div>
@@ -83,43 +83,44 @@
           </tr>
         </thead>
                   <tbody id="customerTable">
-                  {% for customer in customers %}
-                  <tr class="customer-row" data-name="{{ customer.name|lower }}"
-                      style="border-bottom:1px solid var(--border);">
-                    <td class="px-5 py-3.5">
-                      <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                            style="background:#6366f1;">
-                          {{ customer.name[:2].upper() }}
+                    {% for customer in customers %}
+                    <tr class="customer-row" data-name="{{ customer.name|lower }}"
+                        style="border-bottom:1px solid var(--border);">
+                      <td class="px-5 py-3.5">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                              style="background:#6366f1;">
+                            {{ customer.name[:2].upper() }}
+                          </div>
+                          <div>
+                            <p class="font-medium" style="color:var(--text-primary);">{{ customer.name }}</p>
+                            <p class="text-xs" style="color:var(--text-secondary);">{{ customer.email }}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p class="font-medium" style="color:var(--text-primary);">{{ customer.name }}</p>
-                          <p class="text-xs" style="color:var(--text-secondary);">{{ customer.email }}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">{{ customer.phone or '—' }}</td>
-                    <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">{{ customer.total_rentals }}</td>
-                    <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹{{ "{:,}".format(customer.total_spent) }}</td>
-                    <td class="px-5 py-3.5" style="color:var(--text-secondary);">
-                      {{ customer.created_at[:10] if customer.created_at else '—' }}
-                    </td>
-                    <td class="px-5 py-3.5">
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                            style="background:#dcfce7;color:#16a34a;">Active</span>
-                    </td>
-                    <td class="px-5 py-3.5">
-                      <button class="text-xs px-2.5 py-1 rounded-md font-medium"
-                              style="background:#eff6ff;color:#2563eb;">View</button>
-                    </td>
-                  </tr>
-                  {% else %}
-                  <tr>
-                    <td colspan="7" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
-                      No customers yet.
-                    </td>
-                  </tr>
-                  {% endfor %}
+                      </td>
+                      <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">{{ customer.phone or '—' }}</td>
+                      <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">{{ customer.total_rentals }}</td>
+                      <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹{{ "{:,}".format(customer.total_spent) }}</td>
+                      <td class="px-5 py-3.5" style="color:var(--text-secondary);">
+                        {{ customer.created_at[:10] if customer.created_at else '—' }}
+                      </td>
+                      <td class="px-5 py-3.5">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                              style="background:#dcfce7;color:#16a34a;">Active</span>
+                      </td>
+                      <td class="px-5 py-3.5">
+                        <button onclick="openCustomerModal('{{ customer.id }}')"
+                                class="text-xs px-2.5 py-1 rounded-md font-medium"
+                                style="background:#eff6ff;color:#2563eb;">View</button>
+                      </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td colspan="7" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
+                        No customers yet.
+                      </td>
+                    </tr>
+                    {% endfor %}
                   </tbody>
       </table>
     </div>
@@ -147,7 +148,7 @@ function searchCustomers() {
 }
 </script>
 <!-- CUSTOMER MODAL -->
-<div id="customerModal" class="modal-backdrop hidden">
+<div id="customerAddModal" class="modal-backdrop hidden">
   <div class="modal-box">
 
     <div class="flex items-center justify-between mb-5">
@@ -227,6 +228,285 @@ async function submitCustomer() {
     window.location.reload();
   } else {
     err.textContent = 'Email may already exist or something went wrong.';
+    err.classList.remove('hidden');
+  }
+}
+</script>
+<!-- CUSTOMER DETAIL / EDIT / DELETE MODAL -->
+<div id="customerModal" class="modal-backdrop hidden">
+  <div class="modal-box" style="max-width:520px;">
+
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Customer Details</h2>
+      <button onclick="closeCustomerModal()" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+    </div>
+
+    <!-- View mode -->
+    <div id="c_view_mode">
+
+      <!-- Profile header -->
+      <div class="flex items-center gap-4 p-4 rounded-xl mb-4" style="background:var(--bg-row);">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold shrink-0"
+             id="c_avatar" style="background:#6366f1;"></div>
+        <div>
+          <p class="font-semibold text-base" id="c_name_display" style="color:var(--text-primary);"></p>
+          <p class="text-xs mt-0.5" id="c_email_display" style="color:var(--text-secondary);"></p>
+          <p class="text-xs mt-0.5" id="c_phone_display" style="color:var(--text-secondary);"></p>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="rounded-lg p-3 text-center" style="background:var(--bg-row);">
+          <p class="text-[10px] font-medium uppercase mb-1" style="color:var(--text-secondary);">City</p>
+          <p class="text-sm font-semibold" id="c_city_display" style="color:var(--text-primary);"></p>
+        </div>
+        <div class="rounded-lg p-3 text-center" style="background:var(--bg-row);">
+          <p class="text-[10px] font-medium uppercase mb-1" style="color:var(--text-secondary);">Rentals</p>
+          <p class="text-sm font-semibold" id="c_rentals_display" style="color:var(--text-primary);"></p>
+        </div>
+        <div class="rounded-lg p-3 text-center" style="background:var(--bg-row);">
+          <p class="text-[10px] font-medium uppercase mb-1" style="color:var(--text-secondary);">Total Spent</p>
+          <p class="text-sm font-semibold" id="c_spent_display" style="color:#2563eb;"></p>
+        </div>
+      </div>
+
+      <!-- Booking history -->
+      <p class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-secondary);">Booking History</p>
+      <div id="c_bookings_list" class="flex flex-col gap-2 mb-4 max-h-48 overflow-y-auto"></div>
+
+      <div class="flex gap-2 justify-end">
+        <button onclick="confirmDeleteCustomer()"
+                class="text-sm px-4 py-2 rounded-lg font-medium"
+                style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">
+          Delete
+        </button>
+        <button onclick="switchToCustomerEdit()"
+                class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+                style="background:#2563eb;">
+          Edit
+        </button>
+      </div>
+    </div>
+
+    <!-- Edit mode -->
+    <div id="c_edit_mode" class="hidden">
+      <div class="flex flex-col gap-3 mb-3">
+        <div>
+          <label class="modal-label">Full Name</label>
+          <input id="ce_name" class="modal-input"/>
+        </div>
+        <div>
+          <label class="modal-label">Email Address</label>
+          <input id="ce_email" class="modal-input" type="email"/>
+        </div>
+        <div>
+          <label class="modal-label">Phone Number</label>
+          <input id="ce_phone" class="modal-input"/>
+        </div>
+        <div>
+          <label class="modal-label">City</label>
+          <input id="ce_city" class="modal-input"/>
+        </div>
+      </div>
+      <p id="ce_error" class="text-xs text-red-500 mb-3 hidden"></p>
+      <div class="flex gap-2 justify-end">
+        <button onclick="switchToCustomerView()"
+                class="text-sm px-4 py-2 rounded-lg font-medium"
+                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
+          Cancel
+        </button>
+        <button onclick="saveCustomerEdit()"
+                class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+                style="background:#2563eb;">
+          Save Changes
+        </button>
+      </div>
+    </div>
+
+    <!-- Delete confirm -->
+    <div id="c_delete_mode" class="hidden">
+      <div class="rounded-xl p-4 mb-4 text-center" style="background:#fee2e2;border:1px solid #fecaca;">
+        <p class="text-sm font-semibold mb-1" style="color:#dc2626;">Delete this customer?</p>
+        <p class="text-xs" style="color:#dc2626;">This will permanently remove the customer and their data.</p>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button onclick="switchToCustomerView()"
+                class="text-sm px-4 py-2 rounded-lg font-medium"
+                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
+          Cancel
+        </button>
+        <button onclick="executeDeleteCustomer()"
+                class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+                style="background:#dc2626;">
+          Yes, Delete
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD CUSTOMER MODAL — keep your existing one, just make sure its id is customerAddModal -->
+
+<script>
+let currentCustomerId = null;
+
+function closeCustomerModal() {
+  document.getElementById('customerModal').classList.add('hidden');
+  currentCustomerId = null;
+}
+
+document.getElementById('customerModal').addEventListener('click', function(e) {
+  if (e.target === this) closeCustomerModal();
+});
+
+function showCustomerMode(mode) {
+  document.getElementById('c_view_mode').classList.toggle('hidden', mode !== 'view');
+  document.getElementById('c_edit_mode').classList.toggle('hidden', mode !== 'edit');
+  document.getElementById('c_delete_mode').classList.toggle('hidden', mode !== 'delete');
+}
+
+function switchToCustomerView() { showCustomerMode('view'); }
+function switchToCustomerEdit() {
+  document.getElementById('ce_name').value = document.getElementById('c_name_display').textContent;
+  document.getElementById('ce_email').value = document.getElementById('c_email_display').textContent;
+  document.getElementById('ce_phone').value = document.getElementById('c_phone_display').textContent;
+  document.getElementById('ce_city').value = document.getElementById('c_city_display').textContent;
+  showCustomerMode('edit');
+}
+function confirmDeleteCustomer() { showCustomerMode('delete'); }
+
+async function openCustomerModal(customerId) {
+  currentCustomerId = customerId;
+  document.getElementById('customerModal').classList.remove('hidden');
+  showCustomerMode('view');
+  document.getElementById('c_bookings_list').innerHTML =
+    '<p class="text-xs text-center py-4" style="color:var(--text-secondary);">Loading...</p>';
+
+  const res = await fetch(`/api/customers/${customerId}`);
+  const data = await res.json();
+  const c = data.customer;
+  const bookings = data.bookings;
+
+  // Populate profile
+  const initials = c.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('c_avatar').textContent = initials;
+  document.getElementById('c_name_display').textContent = c.name;
+  document.getElementById('c_email_display').textContent = c.email;
+  document.getElementById('c_phone_display').textContent = c.phone || '—';
+  document.getElementById('c_city_display').textContent = c.city || '—';
+  document.getElementById('c_rentals_display').textContent = c.total_rentals || bookings.length;
+  document.getElementById('c_spent_display').textContent = '₹' + (c.total_spent || 0).toLocaleString('en-IN');
+
+  // Populate booking history
+  const list = document.getElementById('c_bookings_list');
+  if (bookings.length === 0) {
+    list.innerHTML = '<p class="text-xs text-center py-3" style="color:var(--text-secondary);">No bookings yet.</p>';
+  } else {
+    list.innerHTML = bookings.map(b => {
+      const statusColors = {
+        active: 'background:#dcfce7;color:#16a34a',
+        pending: 'background:#fef9c3;color:#a16207',
+        overdue: 'background:#fee2e2;color:#dc2626',
+        completed: 'background:#f1f5f9;color:#64748b'
+      };
+      const sc = statusColors[b.status] || statusColors.completed;
+      const vName = b.vehicles ? b.vehicles.name : '—';
+      return `
+        <div class="flex items-center justify-between p-3 rounded-lg"
+             style="background:var(--bg-row);border:1px solid var(--border);">
+          <div>
+            <p class="text-xs font-medium" style="color:var(--text-primary);">${vName}</p>
+            <p class="text-[11px] mt-0.5" style="color:var(--text-secondary);">${b.start_date} – ${b.end_date}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs font-semibold" style="color:#2563eb;">₹${b.total_amount.toLocaleString('en-IN')}</p>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="${sc};">${b.status}</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+}
+
+async function saveCustomerEdit() {
+  const name = document.getElementById('ce_name').value.trim();
+  const email = document.getElementById('ce_email').value.trim();
+  const err = document.getElementById('ce_error');
+
+  if (!name || !email) {
+    err.textContent = 'Name and email are required.';
+    err.classList.remove('hidden');
+    return;
+  }
+  err.classList.add('hidden');
+
+  const res = await fetch(`/api/customers/${currentCustomerId}/update`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name,
+      email,
+      phone: document.getElementById('ce_phone').value.trim(),
+      city: document.getElementById('ce_city').value.trim()
+    })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    window.location.reload();
+  } else {
+    err.textContent = 'Update failed. Please try again.';
+    err.classList.remove('hidden');
+  }
+}
+
+async function executeDeleteCustomer() {
+  const res = await fetch(`/api/customers/${currentCustomerId}/delete`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  const data = await res.json();
+  if (data.success) {
+    window.location.reload();
+  }
+}
+
+// existing search + add customer functions stay here
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+function searchCustomers() {
+  const q = document.getElementById('customerSearch').value.toLowerCase();
+  document.querySelectorAll('.customer-row').forEach(r => {
+    r.style.display = r.getAttribute('data-name').includes(q) ? '' : 'none';
+  });
+}
+
+async function submitCustomer() {
+  const name = document.getElementById('c_name').value.trim();
+  const email = document.getElementById('c_email').value.trim();
+  const phone = document.getElementById('c_phone').value.trim();
+  const city = document.getElementById('c_city').value.trim();
+  const err = document.getElementById('c_error');
+
+  if (!name || !email) {
+    err.textContent = 'Name and email are required.';
+    err.classList.remove('hidden');
+    return;
+  }
+  err.classList.add('hidden');
+
+  const res = await fetch('/api/customers/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, phone, city })
+  });
+  const data = await res.json();
+  if (data.success) {
+    window.location.reload();
+  } else {
+    err.textContent = 'Email may already exist.';
     err.classList.remove('hidden');
   }
 }

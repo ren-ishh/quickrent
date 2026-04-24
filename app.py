@@ -382,5 +382,97 @@ def list_vehicles():
         .eq('status', 'available').order('name').execute()
     return jsonify({'vehicles': res.data or []})
 
+# ══════════════════════════════════════
+# VEHICLE — GET, UPDATE, DELETE
+# ══════════════════════════════════════
+@app.route('/api/vehicles/<vehicle_id>', methods=['GET'])
+@login_required
+def get_vehicle(vehicle_id):
+    res = db.table('vehicles').select('*').eq('id', vehicle_id).execute()
+    if not res.data:
+        return jsonify({'error': 'Vehicle not found'}), 404
+    return jsonify({'vehicle': res.data[0]})
+
+@app.route('/api/vehicles/<vehicle_id>/update', methods=['POST'])
+@login_required
+def update_vehicle(vehicle_id):
+    data = request.json
+    db.table('vehicles').update({
+        'name': data['name'],
+        'type': data['type'],
+        'brand': data.get('brand', ''),
+        'year': data.get('year'),
+        'fuel': data.get('fuel', 'Petrol'),
+        'daily_rate': data['daily_rate'],
+        'status': data['status']
+    }).eq('id', vehicle_id).execute()
+    return jsonify({'success': True})
+
+@app.route('/api/vehicles/<vehicle_id>/delete', methods=['POST'])
+@login_required
+def delete_vehicle(vehicle_id):
+    db.table('vehicles').delete().eq('id', vehicle_id).execute()
+    return jsonify({'success': True})
+
+
+# ══════════════════════════════════════
+# CUSTOMER — GET, UPDATE, DELETE
+# ══════════════════════════════════════
+@app.route('/api/customers/<customer_id>', methods=['GET'])
+@login_required
+def get_customer(customer_id):
+    res = db.table('customers').select('*').eq('id', customer_id).execute()
+    if not res.data:
+        return jsonify({'error': 'Customer not found'}), 404
+    # Also fetch their booking history
+    bookings = db.table('bookings')\
+        .select('*, vehicles(name, type)')\
+        .eq('customer_id', customer_id)\
+        .order('created_at', desc=True)\
+        .execute()
+    return jsonify({'customer': res.data[0], 'bookings': bookings.data or []})
+
+@app.route('/api/customers/<customer_id>/update', methods=['POST'])
+@login_required
+def update_customer(customer_id):
+    data = request.json
+    db.table('customers').update({
+        'name': data['name'],
+        'email': data['email'],
+        'phone': data.get('phone', ''),
+        'city': data.get('city', '')
+    }).eq('id', customer_id).execute()
+    return jsonify({'success': True})
+
+@app.route('/api/customers/<customer_id>/delete', methods=['POST'])
+@login_required
+def delete_customer(customer_id):
+    db.table('customers').delete().eq('id', customer_id).execute()
+    return jsonify({'success': True})
+
+
+# ══════════════════════════════════════
+# BOOKING — UPDATE STATUS
+# ══════════════════════════════════════
+@app.route('/api/bookings/<booking_id>/update', methods=['POST'])
+@login_required
+def update_booking(booking_id):
+    data = request.json
+    db.table('bookings').update({
+        'status': data['status']
+    }).eq('id', booking_id).execute()
+    if data['status'] == 'completed':
+        booking = db.table('bookings').select('vehicle_id').eq('id', booking_id).execute()
+        if booking.data:
+            db.table('vehicles').update({'status': 'available'})\
+                .eq('id', booking.data[0]['vehicle_id']).execute()
+    return jsonify({'success': True})
+
+@app.route('/api/bookings/<booking_id>/delete', methods=['POST'])
+@login_required
+def delete_booking(booking_id):
+    db.table('bookings').delete().eq('id', booking_id).execute()
+    return jsonify({'success': True})
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
