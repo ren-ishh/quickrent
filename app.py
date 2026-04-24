@@ -411,8 +411,16 @@ def update_vehicle(vehicle_id):
 @app.route('/api/vehicles/<vehicle_id>/delete', methods=['POST'])
 @login_required
 def delete_vehicle(vehicle_id):
-    db.table('vehicles').delete().eq('id', vehicle_id).execute()
-    return jsonify({'success': True})
+    try:
+        # First nullify vehicle_id in any bookings that reference this vehicle
+        # This prevents the foreign key constraint error
+        db.table('bookings').update({'vehicle_id': None}).eq('vehicle_id', vehicle_id).execute()
+        # Now safe to delete the vehicle
+        db.table('vehicles').delete().eq('id', vehicle_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print('Delete vehicle error:', e)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ══════════════════════════════════════
@@ -447,8 +455,17 @@ def update_customer(customer_id):
 @app.route('/api/customers/<customer_id>/delete', methods=['POST'])
 @login_required
 def delete_customer(customer_id):
-    db.table('customers').delete().eq('id', customer_id).execute()
-    return jsonify({'success': True})
+    try:
+        # Delete payments linked to this customer first
+        db.table('payments').delete().eq('customer_id', customer_id).execute()
+        # Then nullify customer_id in bookings
+        db.table('bookings').update({'customer_id': None}).eq('customer_id', customer_id).execute()
+        # Now safe to delete the customer
+        db.table('customers').delete().eq('id', customer_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print('Delete customer error:', e)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ══════════════════════════════════════
