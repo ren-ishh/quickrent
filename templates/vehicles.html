@@ -37,11 +37,10 @@
 
   <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
 
-    <!-- Page header -->
     <div class="flex items-center justify-between mb-5">
       <div>
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Fleet Inventory</h2>
-        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">24 vehicles total · 19 available</p>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage your vehicles</p>
       </div>
       <button onclick="openModal('vehicleAddModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
@@ -49,210 +48,73 @@
       </button>
     </div>
 
-    <!-- Filter tabs -->
-    <!-- REPLACE the filter tab buttons with anchor links: -->
-        <div class="flex gap-1.5 mb-5">
-          <a href="/vehicles" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
-          <a href="/vehicles?type=car" class="filter-btn {% if active_filter == 'car' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Cars</a>
-          <a href="/vehicles?type=bike" class="filter-btn {% if active_filter == 'bike' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Bikes</a>
-          <a href="/vehicles?type=unavailable" class="filter-btn {% if active_filter == 'unavailable' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Unavailable</a>
-        </div>
+    <div class="flex gap-1.5 mb-5">
+      <a href="/vehicles" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
+      <a href="/vehicles?type=car" class="filter-btn {% if active_filter == 'car' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Cars</a>
+      <a href="/vehicles?type=bike" class="filter-btn {% if active_filter == 'bike' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Bikes</a>
+      <a href="/vehicles?type=unavailable" class="filter-btn {% if active_filter == 'unavailable' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Unavailable</a>
+    </div>
 
-    <!-- Vehicle grid -->
-    <!-- CSS Grid with 3 columns on desktop, 2 on tablet, 1 on mobile.
-         Each card has a colored top band as a visual placeholder for a real image later. -->
-                <!-- Replace the grid contents with: -->
-      
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="vehicleGrid">
-        {% for vehicle in vehicles %}
-        <div class="vehicle-card rounded-xl overflow-hidden"
-            data-type="{{ vehicle.type }}"
-            data-avail="{{ 'available' if vehicle.status == 'available' else 'unavailable' }}"
-            style="background:var(--bg-surface);border:1px solid var(--border);">
-          <div class="h-32 flex items-center justify-center text-4xl"
-              style="background:{% if vehicle.type == 'car' %}#eff6ff{% elif vehicle.type == 'bike' %}#f0fdf4{% else %}#fdf4ff{% endif %};">
-            {% if vehicle.type == 'car' %}🚗{% elif vehicle.type == 'bike' %}🏍️{% else %}🛵{% endif %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="vehicleGrid">
+    {% for vehicle in vehicles %}
+      <div class="vehicle-card rounded-xl overflow-hidden" 
+           data-type="{{ vehicle.type }}" 
+           data-avail="{{ 'available' if vehicle.status == 'available' else 'unavailable' }}" 
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        
+        <div class="h-32 flex items-center justify-center text-4xl" 
+             style="background:{% if vehicle.type == 'car' %}#eff6ff{% elif vehicle.type == 'bike' %}#f0fdf4{% else %}#fdf4ff{% endif %};">
+          {% if vehicle.type == 'car' %}🚗{% elif vehicle.type == 'bike' %}🏍️{% else %}🛵{% endif %}
+        </div>
+        
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-semibold text-sm" style="color:var(--text-primary);">{{ vehicle.name }}</p>
+            {% if vehicle.status == 'available' %}
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Available</span>
+            {% elif vehicle.status == 'rented' %}
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fef9c3;color:#a16207;">Rented</span>
+            {% else %}
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fee2e2;color:#dc2626;">Maintenance</span>
+            {% endif %}
           </div>
-          <div class="p-4">
-            <div class="flex items-center justify-between mb-1">
-              <p class="font-semibold text-sm" style="color:var(--text-primary);">{{ vehicle.name }}</p>
-              {% if vehicle.status == 'available' %}
-                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Available</span>
-              {% elif vehicle.status == 'rented' %}
-                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fef9c3;color:#a16207;">Rented</span>
-              {% else %}
-                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fee2e2;color:#dc2626;">Maintenance</span>
-              {% endif %}
-            </div>
-            <p class="text-xs mb-3" style="color:var(--text-secondary);">
-              <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">{{ vehicle.type|capitalize }}</span>
-              {{ vehicle.fuel }} · {{ vehicle.year }}
+          <p class="text-xs mb-3" style="color:var(--text-secondary);">
+            <span class="px-1.5 py-0.5 rounded mr-1" style="background:var(--badge-bg);">{{ vehicle.type|capitalize }}</span>
+            {{ vehicle.fuel }} · {{ vehicle.year }}
+          </p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold" style="color:#2563eb;">
+              ₹{{ vehicle.daily_rate }}
+              <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span>
             </p>
-            <div class="flex items-center justify-between">
-              <p class="text-sm font-bold" style="color:#2563eb;">
-                ₹{{ vehicle.daily_rate }}
-                <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span>
-              </p>
-              <button onclick="openVehicleModal('{{ vehicle.id }}')"
-                      class="text-xs px-2.5 py-1 rounded-md font-medium"
-                      style="background:#eff6ff;color:#2563eb;">View</button>
-            </div>
+            <button onclick="openVehicleModal('{{ vehicle.id }}')" 
+                    class="text-xs px-2.5 py-1 rounded-md font-medium" 
+                    style="background:#eff6ff;color:#2563eb;">View</button>
           </div>
         </div>
-        {% else %}
-        <p class="col-span-3 text-sm text-center py-12" style="color:var(--text-secondary);">No vehicles found.</p>
-        {% endfor %}
-        </div>
+      </div>
+    {% else %}
+      <p class="col-span-3 text-sm text-center py-12" style="color:var(--text-secondary);">No vehicles found.</p>
+    {% endfor %}
+    </div>
   </main>
 </div>
 
-<div id="mobileOverlay" onclick="toggleMobileSidebar()"
-     class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
+<div id="mobileOverlay" onclick="toggleMobileSidebar()" class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
 
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'vehicles';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
 
-
-<script>
-function filterVehicles(filter) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-filter'));
-  document.querySelector(`[data-filter="${filter}"]`).classList.add('active-filter');
-
-  document.querySelectorAll('.vehicle-card').forEach(card => {
-    const type = card.getAttribute('data-type');
-    const avail = card.getAttribute('data-avail');
-    let show = false;
-    if (filter === 'all') show = true;
-    else if (filter === 'car' && type === 'car') show = true;
-    else if (filter === 'bike' && type === 'bike') show = true;
-    else if (filter === 'unavailable' && avail === 'unavailable') show = true;
-    card.style.display = show ? 'block' : 'none';
-  });
-}
-</script>
-<!-- VEHICLE MODAL -->
-<div id="vehicleModal" class="modal-backdrop hidden">
-  <div class="modal-box">
-
-    <div class="flex items-center justify-between mb-5">
-      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Add New Vehicle</h2>
-      <button onclick="closeModal('vehicleModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
-    </div>
-
-    <div class="grid grid-cols-2 gap-3 mb-3">
-      <div class="col-span-2">
-        <label class="modal-label">Vehicle Name</label>
-        <input id="v_name" class="modal-input" placeholder="e.g. Honda Activa 6G"/>
-      </div>
-      <div>
-        <label class="modal-label">Type</label>
-        <select id="v_type" class="modal-input">
-          <option value="car">Car</option>
-          <option value="bike">Bike</option>
-          <option value="scooter">Scooter</option>
-        </select>
-      </div>
-      <div>
-        <label class="modal-label">Brand</label>
-        <input id="v_brand" class="modal-input" placeholder="e.g. Honda"/>
-      </div>
-      <div>
-        <label class="modal-label">Year</label>
-        <input id="v_year" class="modal-input" type="number" placeholder="2023"/>
-      </div>
-      <div>
-        <label class="modal-label">Fuel</label>
-        <select id="v_fuel" class="modal-input">
-          <option value="Petrol">Petrol</option>
-          <option value="Diesel">Diesel</option>
-          <option value="Electric">Electric</option>
-        </select>
-      </div>
-      <div class="col-span-2">
-        <label class="modal-label">Daily Rate (₹)</label>
-        <input id="v_rate" class="modal-input" type="number" placeholder="e.g. 700"/>
-      </div>
-    </div>
-
-    <p id="v_error" class="text-xs text-red-500 mb-3 hidden"></p>
-
-    <div class="flex gap-2 justify-end mt-4">
-      <button onclick="closeModal('vehicleModal')"
-              class="text-sm px-4 py-2 rounded-lg font-medium"
-              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-        Cancel
-      </button>
-      <button onclick="submitVehicle()"
-              class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-              style="background:#2563eb;">
-        Save Vehicle
-      </button>
-    </div>
-
-  </div>
-</div>
-
-<script>
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-// Close modal if backdrop is clicked
-document.getElementById('vehicleModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal('vehicleModal');
-});
-
-async function submitVehicle() {
-  const name = document.getElementById('v_name').value.trim();
-  const type = document.getElementById('v_type').value;
-  const brand = document.getElementById('v_brand').value.trim();
-  const year = parseInt(document.getElementById('v_year').value);
-  const fuel = document.getElementById('v_fuel').value;
-  const rate = parseInt(document.getElementById('v_rate').value);
-  const err = document.getElementById('v_error');
-
-  // Basic validation
-  if (!name || !rate) {
-    err.textContent = 'Vehicle name and daily rate are required.';
-    err.classList.remove('hidden');
-    return;
-  }
-
-  err.classList.add('hidden');
-
-  // fetch() sends a POST request to your Flask API
-  // JSON.stringify() converts the JavaScript object to a JSON string
-  const res = await fetch('/api/vehicles/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, type, brand, year, fuel, daily_rate: rate })
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    // Reload the page to show the new vehicle
-    window.location.reload();
-  } else {
-    err.textContent = 'Something went wrong. Please try again.';
-    err.classList.remove('hidden');
-  }
-}
-</script>
-
-<!-- VEHICLE DETAIL / EDIT / DELETE MODAL -->
 <div id="vehicleModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:500px;">
-
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-base font-semibold" style="color:var(--text-primary);">Vehicle Details</h2>
       <button onclick="closeVehicleModal()" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
 
-    <!-- View mode -->
     <div id="v_view_mode">
-      <div class="h-24 rounded-xl flex items-center justify-center text-5xl mb-4" id="v_emoji_display"
-           style="background:var(--bg-row);"></div>
+      <div class="h-24 rounded-xl flex items-center justify-center text-5xl mb-4" id="v_emoji_display" style="background:var(--bg-row);"></div>
       <div class="grid grid-cols-2 gap-3 mb-4">
         <div class="rounded-lg p-3" style="background:var(--bg-row);">
           <p class="text-[10px] font-medium uppercase mb-1" style="color:var(--text-secondary);">Name</p>
@@ -284,20 +146,11 @@ async function submitVehicle() {
         </div>
       </div>
       <div class="flex gap-2 justify-end">
-        <button onclick="confirmDeleteVehicle()"
-                class="text-sm px-4 py-2 rounded-lg font-medium"
-                style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">
-          Delete
-        </button>
-        <button onclick="switchToEditMode()"
-                class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-                style="background:#2563eb;">
-          Edit
-        </button>
+        <button onclick="confirmDeleteVehicle()" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">Delete</button>
+        <button onclick="switchToEditMode()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Edit</button>
       </div>
     </div>
 
-    <!-- Edit mode (hidden by default) -->
     <div id="v_edit_mode" class="hidden">
       <div class="grid grid-cols-2 gap-3 mb-3">
         <div class="col-span-2">
@@ -343,46 +196,78 @@ async function submitVehicle() {
       </div>
       <p id="ve_error" class="text-xs text-red-500 mb-3 hidden"></p>
       <div class="flex gap-2 justify-end">
-        <button onclick="switchToViewMode()"
-                class="text-sm px-4 py-2 rounded-lg font-medium"
-                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-          Cancel
-        </button>
-        <button onclick="saveVehicleEdit()"
-                class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-                style="background:#2563eb;">
-          Save Changes
-        </button>
+        <button onclick="switchToViewMode()" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
+        <button onclick="saveVehicleEdit()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Save Changes</button>
       </div>
     </div>
 
-    <!-- Delete confirm (hidden by default) -->
     <div id="v_delete_mode" class="hidden">
       <div class="rounded-xl p-4 mb-4 text-center" style="background:#fee2e2;border:1px solid #fecaca;">
         <p class="text-sm font-semibold mb-1" style="color:#dc2626;">Delete this vehicle?</p>
         <p class="text-xs" style="color:#dc2626;">This action cannot be undone. All associated bookings may be affected.</p>
       </div>
       <div class="flex gap-2 justify-end">
-        <button onclick="switchToViewMode()"
-                class="text-sm px-4 py-2 rounded-lg font-medium"
-                style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-          Cancel
-        </button>
-        <button onclick="executeDeleteVehicle()"
-                class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-                style="background:#dc2626;">
-          Yes, Delete
-        </button>
+        <button onclick="switchToViewMode()" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
+        <button onclick="executeDeleteVehicle()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#dc2626;">Yes, Delete</button>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ADD VEHICLE MODAL (keep your existing one here) -->
+<div id="vehicleAddModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Add New Vehicle</h2>
+      <button onclick="closeModal('vehicleAddModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+    </div>
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div class="col-span-2">
+        <label class="modal-label">Vehicle Name</label>
+        <input id="v_name" class="modal-input" placeholder="e.g. Honda Activa 6G"/>
+      </div>
+      <div>
+        <label class="modal-label">Type</label>
+        <select id="v_type" class="modal-input">
+          <option value="car">Car</option>
+          <option value="bike">Bike</option>
+          <option value="scooter">Scooter</option>
+        </select>
+      </div>
+      <div>
+        <label class="modal-label">Brand</label>
+        <input id="v_brand" class="modal-input" placeholder="e.g. Honda"/>
+      </div>
+      <div>
+        <label class="modal-label">Year</label>
+        <input id="v_year" class="modal-input" type="number" placeholder="2023"/>
+      </div>
+      <div>
+        <label class="modal-label">Fuel</label>
+        <select id="v_fuel" class="modal-input">
+          <option value="Petrol">Petrol</option>
+          <option value="Diesel">Diesel</option>
+          <option value="Electric">Electric</option>
+        </select>
+      </div>
+      <div class="col-span-2">
+        <label class="modal-label">Daily Rate (₹)</label>
+        <input id="v_rate" class="modal-input" type="number" placeholder="e.g. 700"/>
+      </div>
+    </div>
+    <p id="v_error" class="text-xs text-red-500 mb-3 hidden"></p>
+    <div class="flex gap-2 justify-end mt-4">
+      <button onclick="closeModal('vehicleAddModal')" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
+      <button onclick="submitVehicle()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Save Vehicle</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ── VEHICLE MODAL STATE ──
+// ── GENERAL FUNCTIONS ──
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// ── VEHICLE MODAL STATE (View/Edit/Delete) ──
 let currentVehicleId = null;
 
 function closeVehicleModal() {
@@ -395,19 +280,16 @@ document.getElementById('vehicleModal').addEventListener('click', function(e) {
 });
 
 function showOnly(mode) {
-  // mode = 'view' | 'edit' | 'delete'
   document.getElementById('v_view_mode').classList.toggle('hidden', mode !== 'view');
   document.getElementById('v_edit_mode').classList.toggle('hidden', mode !== 'edit');
   document.getElementById('v_delete_mode').classList.toggle('hidden', mode !== 'delete');
 }
 
 function switchToEditMode() {
-  // Pre-fill edit fields with current display values
   document.getElementById('ve_name').value = document.getElementById('v_name_display').textContent;
   document.getElementById('ve_brand').value = document.getElementById('v_brand_display').textContent;
   document.getElementById('ve_year').value = document.getElementById('v_year_display').textContent;
   document.getElementById('ve_rate').value = document.getElementById('v_rate_display').textContent.replace('₹','').replace('/day','').trim();
-  // Set selects
   const type = document.getElementById('v_type_display').textContent.toLowerCase();
   const fuel = document.getElementById('v_fuel_display').textContent;
   const status = document.getElementById('v_status_display').textContent.toLowerCase();
@@ -425,12 +307,10 @@ async function openVehicleModal(vehicleId) {
   document.getElementById('vehicleModal').classList.remove('hidden');
   showOnly('view');
 
-  // Fetch vehicle data from Flask API
   const res = await fetch(`/api/vehicles/${vehicleId}`);
   const data = await res.json();
   const v = data.vehicle;
 
-  // Populate view mode
   const emojis = { car: '🚗', bike: '🏍️', scooter: '🛵' };
   document.getElementById('v_emoji_display').textContent = emojis[v.type] || '🚗';
   document.getElementById('v_name_display').textContent = v.name;
@@ -488,11 +368,8 @@ async function executeDeleteVehicle() {
   }
 }
 
-// ── ADD VEHICLE (existing modal logic) ──
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-document.getElementById('vehicleAddModal') && document.getElementById('vehicleAddModal').addEventListener('click', function(e) {
+// ── ADD VEHICLE LOGIC ──
+document.getElementById('vehicleAddModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal('vehicleAddModal');
 });
 
