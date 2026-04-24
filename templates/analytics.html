@@ -57,26 +57,26 @@
 
       <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
         <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Total Revenue</p>
-        <p class="text-2xl font-bold" style="color:var(--text-primary);">₹1,84,600</p>
+        <p class="text-2xl font-bold" style="color:var(--text-primary);">₹{{ "{:,}".format(total_revenue) }}</p>
         <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">▲ +18% vs last quarter</p>
       </div>
 
       <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
         <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Total Bookings</p>
-        <p class="text-2xl font-bold" style="color:var(--text-primary);">94</p>
+        <p class="text-2xl font-bold" style="color:var(--text-primary);">{{ total_bookings }}</p>
         <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">▲ +24 vs last quarter</p>
       </div>
 
       <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
         <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Avg Booking Value</p>
-        <p class="text-2xl font-bold" style="color:var(--text-primary);">₹1,964</p>
+        <p class="text-2xl font-bold" style="color:var(--text-primary);">₹{{ "{:,}".format(avg_booking) if avg_booking else 0 }}</p>
         <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">▲ +₹210 vs last quarter</p>
       </div>
 
       <div class="rounded-xl p-5" style="background:var(--bg-surface);border:1px solid var(--border);">
-        <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Return Customer Rate</p>
-        <p class="text-2xl font-bold" style="color:var(--text-primary);">64%</p>
-        <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">▲ +8% vs last quarter</p>
+        <p class="text-xs font-medium uppercase tracking-wide mb-3" style="color:var(--text-secondary);">Total Customers</p>
+        <p class="text-2xl font-bold" style="color:var(--text-primary);">{{ total_customers }}</p>
+        <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">registered</p>
       </div>
 
     </div>
@@ -245,30 +245,26 @@
 
 
 <script>
-// ── CHART.JS SETUP ──
-// We wait for DOMContentLoaded because the canvas elements must
-// exist in the DOM before Chart.js can find and draw into them.
-// If you put this code before the HTML, canvas won't exist yet.
-
 window.addEventListener('DOMContentLoaded', function () {
-
-  // Detect current theme to pick matching chart colours
   const isDark = document.documentElement.classList.contains('dark');
-  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-  const labelColor = isDark ? '#8b949e' : '#6b6b6b';
-  const tooltipBg = isDark ? '#161b22' : '#ffffff';
+  const gridColor   = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const labelColor  = isDark ? '#8b949e' : '#6b6b6b';
+  const tooltipBg   = isDark ? '#161b22' : '#ffffff';
   const tooltipText = isDark ? '#e6edf3' : '#1a1a1a';
 
-  // ── LINE CHART: Monthly Revenue ──
-  // new Chart(canvasElement, configObject) is how Chart.js works.
-  // type: 'line' gives a line chart. datasets is an array of data series.
+  // Real data from Flask passed as JSON
+  // The | tojson filter converts Python list to a JS-safe JSON string
+  const chartLabels = {{ chart_labels | tojson }};
+  const chartData   = {{ chart_data | tojson }};
+
+  // Line chart — Monthly Revenue (real data)
   new Chart(document.getElementById('revenueChart'), {
     type: 'line',
     data: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+      labels: chartLabels.length ? chartLabels : ['No data yet'],
       datasets: [{
         label: 'Revenue (₹)',
-        data: [38200, 42500, 55700, 48200],
+        data: chartData.length ? chartData : [0],
         borderColor: '#2563eb',
         backgroundColor: 'rgba(37,99,235,0.08)',
         borderWidth: 2,
@@ -276,7 +272,7 @@ window.addEventListener('DOMContentLoaded', function () {
         pointRadius: 4,
         pointHoverRadius: 6,
         fill: true,
-        tension: 0.4   // makes the line curved instead of sharp
+        tension: 0.4
       }]
     },
     options: {
@@ -288,38 +284,29 @@ window.addEventListener('DOMContentLoaded', function () {
           backgroundColor: tooltipBg,
           titleColor: tooltipText,
           bodyColor: tooltipText,
-          borderColor: gridColor,
-          borderWidth: 1,
-          callbacks: {
-            // Format tooltip to show ₹ symbol
-            label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN')
-          }
+          callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') }
         }
       },
       scales: {
-        x: {
-          grid: { color: gridColor },
-          ticks: { color: labelColor, font: { size: 11 } }
-        },
+        x: { grid: { color: gridColor }, ticks: { color: labelColor, font: { size: 11 } } },
         y: {
           grid: { color: gridColor },
           ticks: {
-            color: labelColor,
-            font: { size: 11 },
-            callback: val => '₹' + (val/1000) + 'k'
+            color: labelColor, font: { size: 11 },
+            callback: val => '₹' + (val >= 1000 ? (val/1000).toFixed(0) + 'k' : val)
           }
         }
       }
     }
   });
 
-  // ── DOUGHNUT CHART: Bookings by Type ──
+  // Doughnut chart — real booking type counts from Flask
   new Chart(document.getElementById('typeChart'), {
     type: 'doughnut',
     data: {
       labels: ['Cars', 'Bikes', 'Scooters'],
       datasets: [{
-        data: [43, 32, 19],
+        data: [{{ type_car }}, {{ type_bike }}, {{ type_scooter }}],
         backgroundColor: ['#2563eb', '#14b8a6', '#f97316'],
         borderWidth: 0,
         hoverOffset: 6
@@ -328,18 +315,13 @@ window.addEventListener('DOMContentLoaded', function () {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: '70%',   // controls the hole size in the middle
+      cutout: '70%',
       plugins: {
         legend: { display: false },
-        tooltip: {
-          backgroundColor: tooltipBg,
-          titleColor: tooltipText,
-          bodyColor: tooltipText
-        }
+        tooltip: { backgroundColor: tooltipBg, titleColor: tooltipText, bodyColor: tooltipText }
       }
     }
   });
-
 });
 </script>
 

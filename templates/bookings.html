@@ -97,14 +97,17 @@
     <!-- Booking list -->
     <!-- Each card has data-status so JavaScript can show/hide it by filter.
          Structure of each card: avatar | customer+vehicle info | dates | amount+status | action -->
-         <div class="flex flex-col gap-2.5" id="bookingList">
+        <div class="flex flex-col gap-2.5" id="bookingList">
 {% for booking in bookings %}
-<div class="flex items-center gap-4 p-4 rounded-xl"
+<div class="booking-card flex items-center gap-4 p-4 rounded-xl"
+     data-status="{{ booking.status }}"
      style="background:var(--bg-surface);border:1px solid var(--border);">
+
   <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
        style="background:#6366f1;">
     {{ booking.customers.name[:2].upper() if booking.customers else 'NA' }}
   </div>
+
   <div class="flex-1 min-w-0">
     <p class="text-sm font-semibold" style="color:var(--text-primary);">
       {{ booking.customers.name if booking.customers else 'Unknown' }}
@@ -115,14 +118,18 @@
       {{ booking.booking_ref }}
     </p>
   </div>
+
   <div class="text-center hidden sm:block">
     <p class="text-xs" style="color:var(--text-secondary);">Duration</p>
     <p class="text-sm font-medium mt-0.5" style="color:var(--text-primary);">
       {{ booking.start_date }} – {{ booking.end_date }}
     </p>
   </div>
+
   <div class="text-right shrink-0">
-    <p class="text-sm font-semibold" style="color:#2563eb;">₹{{ "{:,}".format(booking.total_amount) }}</p>
+    <p class="text-sm font-semibold" style="color:#2563eb;">
+      ₹{{ "{:,}".format(booking.total_amount) }}
+    </p>
     {% if booking.status == 'active' %}
       <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
             style="background:#dcfce7;color:#16a34a;">Active</span>
@@ -137,6 +144,63 @@
             style="background:#f1f5f9;color:#64748b;">Completed</span>
     {% endif %}
   </div>
+
+  <!-- 3-dot action menu -->
+  <div class="relative ml-1" id="menu-wrapper-{{ booking.id }}">
+    <button onclick="toggleMenu('{{ booking.id }}')"
+            class="p-1.5 rounded-md" style="color:var(--text-secondary);">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"/>
+      </svg>
+    </button>
+    <!-- Dropdown menu -->
+    <div id="menu-{{ booking.id }}"
+         class="hidden absolute right-0 top-8 z-20 rounded-xl shadow-lg py-1 w-44"
+         style="background:var(--bg-surface);border:1px solid var(--border);">
+      {% if booking.status != 'active' %}
+      <button onclick="updateBookingStatus('{{ booking.id }}', 'active'); toggleMenu('{{ booking.id }}')"
+              class="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 transition-colors"
+              style="color:#16a34a;">
+        ✓ Mark as Active
+      </button>
+      {% endif %}
+      {% if booking.status != 'completed' %}
+      <button onclick="updateBookingStatus('{{ booking.id }}', 'completed'); toggleMenu('{{ booking.id }}')"
+              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              style="color:var(--text-secondary);"
+              onmouseover="this.style.background='var(--bg-row)'"
+              onmouseout="this.style.background='transparent'">
+        ✓ Mark as Completed
+      </button>
+      {% endif %}
+      {% if booking.status != 'overdue' %}
+      <button onclick="updateBookingStatus('{{ booking.id }}', 'overdue'); toggleMenu('{{ booking.id }}')"
+              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              style="color:#a16207;"
+              onmouseover="this.style.background='var(--bg-row)'"
+              onmouseout="this.style.background='transparent'">
+        ⚠ Mark as Overdue
+      </button>
+      {% endif %}
+      <button onclick="openPaymentModal('{{ booking.id }}', '{{ booking.customers.id if booking.customers else '' }}', {{ booking.total_amount }}); toggleMenu('{{ booking.id }}')"
+              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              style="color:#2563eb;"
+              onmouseover="this.style.background='var(--bg-row)'"
+              onmouseout="this.style.background='transparent'">
+        ₹ Record Payment
+      </button>
+      <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+      <button onclick="deleteBooking('{{ booking.id }}'); toggleMenu('{{ booking.id }}')"
+              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              style="color:#dc2626;"
+              onmouseover="this.style.background='#fee2e2'"
+              onmouseout="this.style.background='transparent'">
+        🗑 Delete Booking
+      </button>
+    </div>
+  </div>
+
 </div>
 {% else %}
 <p class="text-sm text-center py-12" style="color:var(--text-secondary);">No bookings found.</p>
@@ -179,25 +243,63 @@ function filterBookings(status) {
 }
 </script>
 <!-- BOOKING MODAL -->
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Record Payment</h2>
+      <button onclick="closeModal('paymentModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+    </div>
+    <div class="flex flex-col gap-3 mb-3">
+      <div>
+        <label class="modal-label">Amount (₹)</label>
+        <input id="pay_amount" class="modal-input" type="number" placeholder="Enter amount"/>
+      </div>
+      <div>
+        <label class="modal-label">Payment Method</label>
+        <select id="pay_method" class="modal-input">
+          <option value="UPI">UPI</option>
+          <option value="Cash">Cash</option>
+          <option value="Card">Card</option>
+          <option value="Razorpay">Razorpay</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+        </select>
+      </div>
+    </div>
+    <p id="pay_error" class="text-xs text-red-500 mb-3 hidden"></p>
+    <div class="flex gap-2 justify-end mt-4">
+      <button onclick="closeModal('paymentModal')"
+              class="text-sm px-4 py-2 rounded-lg font-medium"
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
+        Cancel
+      </button>
+      <button onclick="submitPayment()"
+              class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+              style="background:#2563eb;">
+        Record Payment
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL (New Booking) -->
 <div id="bookingModal" class="modal-backdrop hidden">
   <div class="modal-box">
-
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-base font-semibold" style="color:var(--text-primary);">New Booking</h2>
       <button onclick="closeModal('bookingModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
-
     <div class="flex flex-col gap-3 mb-3">
       <div>
         <label class="modal-label">Customer</label>
         <select id="b_customer" class="modal-input">
-          <option value="">Loading customers...</option>
+          <option value="">Loading...</option>
         </select>
       </div>
       <div>
         <label class="modal-label">Vehicle</label>
         <select id="b_vehicle" class="modal-input">
-          <option value="">Loading vehicles...</option>
+          <option value="">Loading...</option>
         </select>
       </div>
       <div class="grid grid-cols-2 gap-3">
@@ -215,9 +317,7 @@ function filterBookings(status) {
         <input id="b_amount" class="modal-input" type="number" placeholder="e.g. 2100"/>
       </div>
     </div>
-
     <p id="b_error" class="text-xs text-red-500 mb-3 hidden"></p>
-
     <div class="flex gap-2 justify-end mt-4">
       <button onclick="closeModal('bookingModal')"
               class="text-sm px-4 py-2 rounded-lg font-medium"
@@ -230,38 +330,131 @@ function filterBookings(status) {
         Create Booking
       </button>
     </div>
-
   </div>
 </div>
 
 <script>
-function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+// ── Generic helpers ────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+document.getElementById('paymentModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('paymentModal');
+});
 document.getElementById('bookingModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal('bookingModal');
 });
 
-// Load customers and vehicles into dropdowns when modal opens
+// ── 3-dot dropdown toggle ──────────────────────────────────────
+// Closes all other open menus first then toggles the clicked one
+function toggleMenu(bookingId) {
+  const allMenus = document.querySelectorAll('[id^="menu-"]:not([id^="menu-wrapper-"])');
+  allMenus.forEach(m => {
+    if (m.id !== 'menu-' + bookingId) m.classList.add('hidden');
+  });
+  document.getElementById('menu-' + bookingId).classList.toggle('hidden');
+}
+
+// Close menus when clicking anywhere else on the page
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('[id^="menu-wrapper-"]')) {
+    document.querySelectorAll('[id^="menu-"]:not([id^="menu-wrapper-"])').forEach(m => {
+      m.classList.add('hidden');
+    });
+  }
+});
+
+// ── Update booking status ──────────────────────────────────────
+async function updateBookingStatus(bookingId, status) {
+  try {
+    const res = await fetch(`/api/bookings/${bookingId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (data.success) window.location.reload();
+    else alert('Failed to update status.');
+  } catch(e) {
+    alert('Network error. Please try again.');
+  }
+}
+
+// ── Delete booking ─────────────────────────────────────────────
+async function deleteBooking(bookingId) {
+  if (!confirm('Delete this booking? This cannot be undone.')) return;
+  try {
+    const res = await fetch(`/api/bookings/${bookingId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) window.location.reload();
+    else alert('Failed to delete booking.');
+  } catch(e) {
+    alert('Network error. Please try again.');
+  }
+}
+
+// ── Payment modal ──────────────────────────────────────────────
+let currentBookingId = null;
+let currentCustomerId = null;
+
+function openPaymentModal(bookingId, customerId, amount) {
+  currentBookingId = bookingId;
+  currentCustomerId = customerId;
+  document.getElementById('pay_amount').value = amount;
+  openModal('paymentModal');
+}
+
+async function submitPayment() {
+  const amount = parseInt(document.getElementById('pay_amount').value);
+  const method = document.getElementById('pay_method').value;
+  const err = document.getElementById('pay_error');
+
+  if (!amount) {
+    err.textContent = 'Amount is required.';
+    err.classList.remove('hidden');
+    return;
+  }
+  err.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/payments/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        booking_id: currentBookingId,
+        customer_id: currentCustomerId,
+        amount,
+        method
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal('paymentModal');
+      window.location.reload();
+    } else {
+      err.textContent = 'Payment failed. Please try again.';
+      err.classList.remove('hidden');
+    }
+  } catch(e) {
+    err.textContent = 'Network error. Please try again.';
+    err.classList.remove('hidden');
+  }
+}
+
+// ── New Booking modal ──────────────────────────────────────────
 async function openBookingModal() {
   openModal('bookingModal');
-
-  // Fetch customers from a new API route we add below
   const [custRes, vehRes] = await Promise.all([
     fetch('/api/customers/list').then(r => r.json()),
     fetch('/api/vehicles/list').then(r => r.json())
   ]);
-
-  const custSelect = document.getElementById('b_customer');
-  const vehSelect = document.getElementById('b_vehicle');
-
-  custSelect.innerHTML = custRes.customers.map(c =>
-    `<option value="${c.id}">${c.name}</option>`
-  ).join('');
-
-  vehSelect.innerHTML = vehRes.vehicles.map(v =>
-    `<option value="${v.id}">${v.name} (${v.type}) — ₹${v.daily_rate}/day</option>`
-  ).join('');
+  document.getElementById('b_customer').innerHTML =
+    custRes.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('b_vehicle').innerHTML =
+    vehRes.vehicles.map(v => `<option value="${v.id}">${v.name} (${v.type}) — ₹${v.daily_rate}/day</option>`).join('');
 }
 
 async function submitBooking() {
@@ -277,27 +470,27 @@ async function submitBooking() {
     err.classList.remove('hidden');
     return;
   }
-
   if (end_date <= start_date) {
     err.textContent = 'End date must be after start date.';
     err.classList.remove('hidden');
     return;
   }
-
   err.classList.add('hidden');
 
-  const res = await fetch('/api/bookings/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ customer_id, vehicle_id, start_date, end_date, total_amount })
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    window.location.reload();
-  } else {
-    err.textContent = 'Something went wrong. Please try again.';
+  try {
+    const res = await fetch('/api/bookings/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customer_id, vehicle_id, start_date, end_date, total_amount })
+    });
+    const data = await res.json();
+    if (data.success) window.location.reload();
+    else {
+      err.textContent = 'Something went wrong.';
+      err.classList.remove('hidden');
+    }
+  } catch(e) {
+    err.textContent = 'Network error. Please try again.';
     err.classList.remove('hidden');
   }
 }

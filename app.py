@@ -92,6 +92,9 @@ def sidebar_component():
 @login_required
 def dashboard():
     try:
+        from datetime import datetime
+        current_month = datetime.now().strftime('%Y-%m')
+
         vehicles_res = db.table('vehicles').select('*', count='exact').execute()
         active_bookings = db.table('bookings').select('*', count='exact').eq('status', 'active').execute()
         pending_bookings = db.table('bookings').select('*', count='exact').eq('status', 'pending').execute()
@@ -102,16 +105,22 @@ def dashboard():
 
         recent_bookings = db.table('bookings')\
             .select('*, customers(name), vehicles(name, type)')\
-            .order('created_at', desc=True)\
-            .limit(5)\
-            .execute()
+            .order('created_at', desc=True).limit(5).execute()
 
-        payments_res = db.table('payments').select('amount').eq('status', 'paid').execute()
-        total_revenue = sum(p['amount'] for p in payments_res.data) if payments_res.data else 0
+        # All paid payments
+        payments_res = db.table('payments').select('amount, status, created_at').execute()
+        total_revenue = sum(p['amount'] for p in payments_res.data if p['status'] == 'paid') if payments_res.data else 0
+
+        # Monthly revenue — payments created this month
+        monthly_revenue = sum(
+            p['amount'] for p in payments_res.data
+            if p['status'] == 'paid' and p.get('created_at', '')[:7] == current_month
+        ) if payments_res.data else 0
 
         return render_template('dashboard.html',
             total_vehicles=vehicles_res.count or 0,
             total_revenue=total_revenue,
+            monthly_revenue=monthly_revenue,
             available_vehicles=available.count or 0,
             rented_vehicles=rented.count or 0,
             maintenance_vehicles=maintenance.count or 0,
@@ -124,7 +133,7 @@ def dashboard():
     except Exception as e:
         print('Dashboard error:', e)
         return render_template('dashboard.html',
-            total_vehicles=0, total_revenue=0,
+            total_vehicles=0, total_revenue=0, monthly_revenue=0,
             available_vehicles=0, rented_vehicles=0, maintenance_vehicles=0,
             active_bookings=0, pending_bookings=0, overdue_bookings=0,
             recent_bookings=[], user=session.get('user')
@@ -257,23 +266,59 @@ def payments():
 @login_required
 def analytics():
     try:
+        from datetime import datetime
         vehicles_res = db.table('vehicles').select('*').execute()
         bookings_res = db.table('bookings').select('*').execute()
         customers_res = db.table('customers').select('*').execute()
-        payments_res = db.table('payments').select('amount, status').execute()
+        payments_res = db.table('payments').select('amount, status, created_at').execute()
+
         total_revenue = sum(p['amount'] for p in payments_res.data if p['status'] == 'paid') if payments_res.data else 0
+
+        # Monthly revenue breakdown
+        monthly = {}
+        for p in (payments_res.data or []):
+            if p['status'] == 'paid' and p.get('created_at'):
+                month = p['created_at'][:7]  # e.g. "2026-04"
+                monthly[month] = monthly.get(month, 0) + p['amount']
+
+        # Sort months and prepare for Chart.js
+        sorted_months = sorted(monthly.keys())
+        chart_labels = [datetime.strptime(m, '%Y-%m').strftime('%b %Y') for m in sorted_months]
+        chart_data = [monthly[m] for m in sorted_months]
+
+        # Booking type breakdown
+        all_bookings = bookings_res.data or []
+        bookings_with_vehicles = db.table('bookings')\
+            .select('*, vehicles(type)').execute()
+        type_counts = {'car': 0, 'bike': 0, 'scooter': 0}
+        for b in (bookings_with_vehicles.data or []):
+            if b.get('vehicles') and b['vehicles'].get('type'):
+                t = b['vehicles']['type']
+                type_counts[t] = type_counts.get(t, 0) + 1
+
+        avg_booking = int(total_revenue / len(all_bookings)) if all_bookings else 0
+
         return render_template('analytics.html',
             total_revenue=total_revenue,
-            total_bookings=len(bookings_res.data or []),
+            total_bookings=len(all_bookings),
             total_vehicles=len(vehicles_res.data or []),
             total_customers=len(customers_res.data or []),
+            avg_booking=avg_booking,
+            chart_labels=chart_labels,
+            chart_data=chart_data,
+            type_car=type_counts['car'],
+            type_bike=type_counts['bike'],
+            type_scooter=type_counts['scooter'],
             user=session.get('user')
         )
     except Exception as e:
         print('Analytics error:', e)
         return render_template('analytics.html',
-            total_revenue=0, total_bookings=0,
-            total_vehicles=0, total_customers=0, user=session.get('user')
+            total_revenue=0, total_bookings=0, total_vehicles=0,
+            total_customers=0, avg_booking=0,
+            chart_labels=[], chart_data=[],
+            type_car=0, type_bike=0, type_scooter=0,
+            user=session.get('user')
         )
 
 
@@ -491,5 +536,98 @@ def delete_booking(booking_id):
     db.table('bookings').delete().eq('id', booking_id).execute()
     return jsonify({'success': True})
 
+# ══════════════════════════════════════
+# BOOKING — GET SINGLE + UPDATE STATUS + DELETE
+# ══════════════════════════════════════
+@app.route('/api/bookings/<booking_id>', methods=['GET'])
+@login_required
+def get_booking(booking_id):
+    try:
+        res = db.table('bookings')\
+            .select('*, customers(name, phone), vehicles(name, type)')\
+            .eq('id', booking_id)\
+            .execute()
+        if not res.data:
+            return jsonify({'error': 'Booking not found'}), 404
+        return jsonify({'booking': res.data[0]})
+    except Exception as e:
+        print('Get booking error:', e)
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/bookings/<booking_id>/status', methods=['POST'])
+@login_required
+def update_booking_status(booking_id):
+    try:
+        data = request.json
+        new_status = data['status']
+        db.table('bookings').update({'status': new_status})\
+            .eq('id', booking_id).execute()
+        # If completed → free up the vehicle
+        if new_status == 'completed':
+            booking = db.table('bookings')\
+                .select('vehicle_id').eq('id', booking_id).execute()
+            if booking.data and booking.data[0].get('vehicle_id'):
+                db.table('vehicles')\
+                    .update({'status': 'available'})\
+                    .eq('id', booking.data[0]['vehicle_id']).execute()
+        # If active → mark vehicle as rented
+        if new_status == 'active':
+            booking = db.table('bookings')\
+                .select('vehicle_id').eq('id', booking_id).execute()
+            if booking.data and booking.data[0].get('vehicle_id'):
+                db.table('vehicles')\
+                    .update({'status': 'rented'})\
+                    .eq('id', booking.data[0]['vehicle_id']).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print('Update booking status error:', e)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/bookings/<booking_id>/delete', methods=['POST'])
+@login_required
+def delete_booking(booking_id):
+    try:
+        # Free vehicle first
+        booking = db.table('bookings')\
+            .select('vehicle_id, status').eq('id', booking_id).execute()
+        if booking.data and booking.data[0].get('vehicle_id'):
+            if booking.data[0]['status'] in ['active', 'pending']:
+                db.table('vehicles')\
+                    .update({'status': 'available'})\
+                    .eq('id', booking.data[0]['vehicle_id']).execute()
+        # Delete payments linked to this booking
+        db.table('payments').delete().eq('booking_id', booking_id).execute()
+        # Delete booking
+        db.table('bookings').delete().eq('id', booking_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print('Delete booking error:', e)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ══════════════════════════════════════
+# PAYMENTS — RECORD NEW PAYMENT
+# ══════════════════════════════════════
+@app.route('/api/payments/add', methods=['POST'])
+@login_required
+def add_payment():
+    try:
+        data = request.json
+        import random, string
+        ref = '#TXN-' + ''.join(random.choices(string.digits, k=4))
+        result = db.table('payments').insert({
+            'transaction_ref': ref,
+            'booking_id': data['booking_id'],
+            'customer_id': data['customer_id'],
+            'amount': data['amount'],
+            'method': data['method'],
+            'status': 'paid'
+        }).execute()
+        # Update booking payment status
+        db.table('bookings').update({'payment_status': 'paid', 'payment_method': data['method']})\
+            .eq('id', data['booking_id']).execute()
+        return jsonify({'success': True, 'payment': result.data})
+    except Exception as e:
+        print('Add payment error:', e)
+        return jsonify({'success': False, 'error': str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
