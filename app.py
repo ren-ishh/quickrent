@@ -403,16 +403,7 @@ def add_booking():
     db.table('vehicles').update({'status': 'rented'}).eq('id', data['vehicle_id']).execute()
     return jsonify({'success': True, 'booking': result.data})
 
-@app.route('/api/bookings/status', methods=['POST'])
-@login_required
-def update_booking_status():
-    data = request.json
-    db.table('bookings').update({'status': data['status']}).eq('id', data['booking_id']).execute()
-    if data['status'] == 'completed':
-        booking = db.table('bookings').select('vehicle_id').eq('id', data['booking_id']).execute()
-        if booking.data:
-            db.table('vehicles').update({'status': 'available'}).eq('id', booking.data[0]['vehicle_id']).execute()
-    return jsonify({'success': True})
+
 
 @app.route('/api/customers/list')
 @login_required
@@ -629,5 +620,6 @@ def add_payment():
     except Exception as e:
         print('Add payment error:', e)
         return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
