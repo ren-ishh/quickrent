@@ -521,11 +521,6 @@ def update_booking(booking_id):
                 .eq('id', booking.data[0]['vehicle_id']).execute()
     return jsonify({'success': True})
 
-@app.route('/api/bookings/<booking_id>/delete', methods=['POST'])
-@login_required
-def delete_booking(booking_id):
-    db.table('bookings').delete().eq('id', booking_id).execute()
-    return jsonify({'success': True})
 
 # ══════════════════════════════════════
 # BOOKING — GET SINGLE + UPDATE STATUS + DELETE
