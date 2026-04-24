@@ -593,6 +593,9 @@ def delete_booking(booking_id):
 # ══════════════════════════════════════
 # PAYMENTS — RECORD NEW PAYMENT
 # ══════════════════════════════════════
+# ══════════════════════════════════════
+# PAYMENTS — RECORD NEW PAYMENT
+# ══════════════════════════════════════
 @app.route('/api/payments/add', methods=['POST'])
 @login_required
 def add_payment():
@@ -600,17 +603,25 @@ def add_payment():
         data = request.json
         import random, string
         ref = '#TXN-' + ''.join(random.choices(string.digits, k=4))
+        
+        # FIX: Scrub empty strings to None so Supabase doesn't crash
+        cust_id = data.get('customer_id')
+        if cust_id == '':
+            cust_id = None
+
         result = db.table('payments').insert({
             'transaction_ref': ref,
             'booking_id': data['booking_id'],
-            'customer_id': data['customer_id'],
+            'customer_id': cust_id,
             'amount': data['amount'],
             'method': data['method'],
             'status': 'paid'
         }).execute()
+        
         # Update booking payment status
         db.table('bookings').update({'payment_status': 'paid', 'payment_method': data['method']})\
             .eq('id', data['booking_id']).execute()
+            
         return jsonify({'success': True, 'payment': result.data})
     except Exception as e:
         print('Add payment error:', e)
