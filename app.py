@@ -744,6 +744,9 @@ def customer_logout():
 # ══════════════════════════════════════
 # CUSTOMER DASHBOARD — their bookings
 # ══════════════════════════════════════
+# ══════════════════════════════════════
+# CUSTOMER DASHBOARD — their bookings
+# ══════════════════════════════════════
 @app.route('/customer/dashboard')
 @customer_login_required
 def customer_dashboard():
@@ -756,17 +759,21 @@ def customer_dashboard():
             .eq('customer_id', customer_id)\
             .order('created_at', desc=True)\
             .execute()
+            
+        print("--- DEBUG --- Raw Booking Data:", bookings.data)
 
-        # Separate active vs past
+        # Separate active vs past (using .lower() to fix capitalization issues)
         active_bookings = [b for b in (bookings.data or [])
-                          if b['status'] in ['active', 'pending']]
+                          if str(b.get('status', '')).lower() in ['active', 'pending']]
         past_bookings   = [b for b in (bookings.data or [])
-                          if b['status'] in ['completed', 'overdue']]
+                          if str(b.get('status', '')).lower() in ['completed', 'overdue']]
 
         # Stats
-        total_spent = sum(b['total_amount'] for b in (bookings.data or [])
-                         if b['status'] == 'completed')
+        total_spent = sum(b.get('total_amount', 0) for b in (bookings.data or [])
+                         if str(b.get('status', '')).lower() == 'completed')
         total_bookings = len(bookings.data or [])
+        
+        print("--- DEBUG --- Active Bookings Count:", len(active_bookings))
 
         return render_template('customer/dashboard.html',
             customer=session['customer'],
@@ -782,7 +789,7 @@ def customer_dashboard():
             active_bookings=[], past_bookings=[],
             total_spent=0, total_bookings=0
         )
-
+       
 
 # ══════════════════════════════════════
 # CUSTOMER RECEIPT PAGE
@@ -951,6 +958,302 @@ def create_customer_with_password():
         if 'already registered' in error_msg or 'already exists' in error_msg:
             return jsonify({'success': False, 'error': 'An account with this email already exists.'})
         return jsonify({'success': False, 'error': 'Database error occurred.'})
+
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from config import SENDGRID_API_KEY, SENDGRID_FROM_EMAIL
+
+# ── Email helper ──────────────────────────────────────────────
+def send_email(to_email, subject, html_content):
+    try:
+        sg  = SendGridAPIClient(SENDGRID_API_KEY)
+        msg = Mail(
+            from_email=SENDGRID_FROM_EMAIL,
+            to_emails=to_email,
+            subject=subject,
+            html_content=html_content
+        )
+        sg.send(msg)
+    except Exception as e:
+        print(f"Email error: {e}")
+
+# ── Customer required decorator ───────────────────────────────
+def customer_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if session.get('role') != 'customer':
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
+
+# ══════════════════════════════════════
+# CUSTOMER PAGES
+# ══════════════════════════════════════
+
+
+
+@app.route('/customer/profile', methods=['GET', 'POST'])
+@customer_required
+def customer_profile():
+    cid = session['customer_id']
+    if request.method == 'POST':
+        data = request.form
+        db.table('customers').update({
+            'name':              data.get('name'),
+            'phone':             data.get('phone'),
+            'city':              data.get('city'),
+            'license_number':    data.get('license_number'),
+            'license_expiry':    data.get('license_expiry') or None,
+            'preferred_payment': data.get('preferred_payment'),
+            'profile_complete':  True
+        }).eq('id', cid).execute()
+        return redirect(url_for('customer_profile') + '?saved=1')
+    customer = db.table('customers').select('*').eq('id', cid).execute()
+    saved    = request.args.get('saved')
+    return render_template('customer/profile.html',
+        customer=customer.data[0] if customer.data else {},
+        saved=saved
+    )
+
+@app.route('/customer/bookings')
+@customer_required
+def customer_bookings():
+    cid      = session['customer_id']
+    status   = request.args.get('status', 'all')
+    query    = db.table('bookings')\
+        .select('*, vehicles(name,type,daily_rate,fuel,year)')\
+        .eq('customer_id', cid)\
+        .order('created_at', desc=True)
+    if status != 'all':
+        query = query.eq('status', status)
+    bookings = query.execute()
+    return render_template('customer/bookings.html',
+        bookings=bookings.data or [],
+        active_filter=status
+    )
+
+@app.route('/customer/booking/<booking_id>')
+@customer_required
+def customer_booking_detail(booking_id):
+    cid     = session['customer_id']
+    booking = db.table('bookings')\
+        .select('*, vehicles(name,type,daily_rate,fuel,year,brand)')\
+        .eq('id', booking_id).eq('customer_id', cid).execute()
+    if not booking.data:
+        return redirect(url_for('customer_bookings'))
+    b        = booking.data[0]
+    payments = db.table('payments').select('*').eq('booking_id', booking_id).execute()
+    # Calculate breakdown
+    from datetime import datetime
+    try:
+        days     = (datetime.strptime(b['end_date'], '%Y-%m-%d') -
+                    datetime.strptime(b['start_date'], '%Y-%m-%d')).days
+    except:
+        days = 1
+    daily    = b['vehicles']['daily_rate'] if b.get('vehicles') else 0
+    base     = daily * days
+    tax      = round(base * 0.18, 2)
+    total    = base + tax
+    return render_template('customer/booking_detail.html',
+        booking=b,
+        payments=payments.data or [],
+        days=days,
+        base_rate=base,
+        tax=tax,
+        total=total
+    )
+
+@app.route('/customer/booking/<booking_id>/cancel', methods=['POST'])
+@customer_required
+def cancel_booking(booking_id):
+    cid     = session['customer_id']
+    booking = db.table('bookings').select('*')\
+        .eq('id', booking_id).eq('customer_id', cid).execute()
+    if not booking.data:
+        return jsonify({'success': False, 'error': 'Not found'})
+    b = booking.data[0]
+    if b['status'] not in ('pending', 'active'):
+        return jsonify({'success': False, 'error': 'Cannot cancel this booking'})
+    db.table('bookings').update({'status': 'cancelled'}).eq('id', booking_id).execute()
+    db.table('vehicles').update({'status': 'available'}).eq('id', b['vehicle_id']).execute()
+    # Send cancellation email
+    customer = db.table('customers').select('email,name').eq('id', cid).execute()
+    if customer.data:
+        send_email(
+            customer.data[0]['email'],
+            'Booking Cancelled — QuickRent',
+            f"""<p>Hi {customer.data[0]['name']},</p>
+                <p>Your booking <strong>{b['booking_ref']}</strong> has been cancelled.</p>
+                <p>If you paid, refund will be processed in 5–7 business days.</p>
+                <p>— QuickRent Team</p>"""
+        )
+    return jsonify({'success': True})
+
+@app.route('/customer/booking/<booking_id>/extend', methods=['POST'])
+@customer_required
+def extend_booking(booking_id):
+    cid      = session['customer_id']
+    data     = request.json
+    new_end  = data.get('new_end_date')
+    booking  = db.table('bookings').select('*, vehicles(daily_rate)')\
+        .eq('id', booking_id).eq('customer_id', cid).execute()
+    if not booking.data:
+        return jsonify({'success': False, 'error': 'Not found'})
+    b = booking.data[0]
+    from datetime import datetime
+    try:
+        old_days  = (datetime.strptime(b['end_date'], '%Y-%m-%d') -
+                     datetime.strptime(b['start_date'], '%Y-%m-%d')).days
+        new_days  = (datetime.strptime(new_end, '%Y-%m-%d') -
+                     datetime.strptime(b['start_date'], '%Y-%m-%d')).days
+        if new_days <= old_days:
+            return jsonify({'success': False, 'error': 'New date must be after current end date'})
+        daily        = b['vehicles']['daily_rate']
+        extra_amount = (new_days - old_days) * daily * 1.18
+        new_total    = round(b['total_amount'] + extra_amount, 2)
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+    db.table('bookings').update({
+        'end_date': new_end,
+        'total_amount': new_total
+    }).eq('id', booking_id).execute()
+    return jsonify({'success': True, 'new_total': new_total})
+
+@app.route('/customer/wishlist')
+@customer_required
+def customer_wishlist():
+    cid      = session['customer_id']
+    wishlist = db.table('wishlist')\
+        .select('*, vehicles(id,name,type,daily_rate,fuel,year,status)')\
+        .eq('customer_id', cid).execute()
+    all_vehicles = db.table('vehicles')\
+        .select('*').eq('status', 'available').execute()
+    wishlisted_ids = [w['vehicle_id'] for w in (wishlist.data or [])]
+    return render_template('customer/wishlist.html',
+        wishlist=wishlist.data or [],
+        all_vehicles=all_vehicles.data or [],
+        wishlisted_ids=wishlisted_ids
+    )
+
+@app.route('/api/customer/wishlist/toggle', methods=['POST'])
+@customer_required
+def toggle_wishlist():
+    cid        = session['customer_id']
+    vehicle_id = request.json.get('vehicle_id')
+    existing   = db.table('wishlist')\
+        .select('id').eq('customer_id', cid).eq('vehicle_id', vehicle_id).execute()
+    if existing.data:
+        db.table('wishlist').delete().eq('id', existing.data[0]['id']).execute()
+        return jsonify({'success': True, 'action': 'removed'})
+    db.table('wishlist').insert({'customer_id': cid, 'vehicle_id': vehicle_id}).execute()
+    return jsonify({'success': True, 'action': 'added'})
+
+@app.route('/customer/reviews')
+@customer_required
+def customer_reviews():
+    cid  = session['customer_id']
+    # Completed bookings eligible for review
+    completed = db.table('bookings')\
+        .select('*, vehicles(id,name,type)')\
+        .eq('customer_id', cid).eq('status', 'completed').execute()
+    # Existing reviews by this customer
+    existing  = db.table('reviews').select('*').eq('customer_id', cid).execute()
+    reviewed_booking_ids = [r['booking_id'] for r in (existing.data or [])]
+    return render_template('customer/reviews.html',
+        completed=completed.data or [],
+        existing_reviews=existing.data or [],
+        reviewed_booking_ids=reviewed_booking_ids
+    )
+
+@app.route('/api/customer/review/submit', methods=['POST'])
+@customer_required
+def submit_review():
+    cid  = session['customer_id']
+    data = request.json
+    # Prevent duplicate reviews per booking
+    existing = db.table('reviews').select('id')\
+        .eq('booking_id', data['booking_id']).eq('customer_id', cid).execute()
+    if existing.data:
+        return jsonify({'success': False, 'error': 'Already reviewed'})
+    db.table('reviews').insert({
+        'customer_id': cid,
+        'vehicle_id':  data['vehicle_id'],
+        'booking_id':  data['booking_id'],
+        'rating':      int(data['rating']),
+        'comment':     data.get('comment', '')
+    }).execute()
+    return jsonify({'success': True})
+
+@app.route('/customer/invoices')
+@customer_required
+def customer_invoices():
+    cid      = session['customer_id']
+    bookings = db.table('bookings')\
+        .select('*, vehicles(name,type)')\
+        .eq('customer_id', cid)\
+        .in_('status', ['active', 'completed'])\
+        .order('created_at', desc=True).execute()
+    return render_template('customer/invoices.html',
+        bookings=bookings.data or []
+    )
+
+@app.route('/customer/invoice/<booking_id>/pdf')
+@customer_required
+def download_invoice(booking_id):
+    from weasyprint import HTML
+    cid     = session['customer_id']
+    booking = db.table('bookings')\
+        .select('*, vehicles(name,type,daily_rate), customers(name,email,phone)')\
+        .eq('id', booking_id).eq('customer_id', cid).execute()
+    if not booking.data:
+        return redirect(url_for('customer_invoices'))
+    b        = booking.data[0]
+    from datetime import datetime
+    try:
+        days = (datetime.strptime(b['end_date'], '%Y-%m-%d') -
+                datetime.strptime(b['start_date'], '%Y-%m-%d')).days
+    except:
+        days = 1
+    daily = b['vehicles']['daily_rate'] if b.get('vehicles') else 0
+    base  = daily * days
+    tax   = round(base * 0.18, 2)
+    html_str = render_template('customer/invoice_pdf.html',
+        booking=b, days=days, base=base, tax=tax,
+        total=base+tax, generated=datetime.now().strftime('%d %b %Y')
+    )
+    pdf = HTML(string=html_str).write_pdf()
+    return app.response_class(
+        pdf, mimetype='application/pdf',
+        headers={'Content-Disposition':
+                 f'attachment; filename=invoice-{b["booking_ref"]}.pdf'}
+    )
+
+# ── Booking confirmation email (call this after booking created) ──
+def send_booking_confirmation(customer_email, customer_name, booking_ref,
+                               vehicle_name, start_date, end_date, amount):
+    send_email(
+        customer_email,
+        f'Booking Confirmed — {booking_ref}',
+        f"""
+        <div style="font-family:sans-serif;max-width:480px;margin:auto;">
+          <h2 style="color:#2563eb;">QuickRent</h2>
+          <p>Hi {customer_name},</p>
+          <p>Your booking is confirmed!</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr><td style="padding:8px;color:#666;">Booking Ref</td>
+                <td style="padding:8px;font-weight:bold;">{booking_ref}</td></tr>
+            <tr><td style="padding:8px;color:#666;">Vehicle</td>
+                <td style="padding:8px;">{vehicle_name}</td></tr>
+            <tr><td style="padding:8px;color:#666;">Pick Up</td>
+                <td style="padding:8px;">{start_date}</td></tr>
+            <tr><td style="padding:8px;color:#666;">Return</td>
+                <td style="padding:8px;">{end_date}</td></tr>
+            <tr><td style="padding:8px;color:#666;">Total</td>
+                <td style="padding:8px;color:#2563eb;font-weight:bold;">₹{amount:,}</td></tr>
+          </table>
+          <p style="color:#666;font-size:12px;">— QuickRent Team</p>
+        </div>"""
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -3,258 +3,125 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QuickRent — My Bookings</title>
+  <title>QuickRent — My Dashboard</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
-  <!-- Razorpay checkout script -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body class="min-h-screen" style="background:var(--bg-page);">
 
-  <!-- TOP NAV -->
-  <nav class="sticky top-0 z-10 px-4 sm:px-6 h-14 flex items-center justify-between"
-       style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
-    <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-           style="background:#2563eb;">Q</div>
-      <span class="font-semibold text-sm" style="color:var(--text-primary);">QuickRent</span>
-    </div>
-    <div class="flex items-center gap-3">
-      <span class="text-sm hidden sm:block" style="color:var(--text-secondary);">
-        Hi, {{ customer.name.split()[0] }} 👋
-      </span>
-      <!-- Theme toggle -->
-      <button onclick="toggleTheme()" id="themeToggle"
-              class="flex items-center justify-center w-8 h-8 rounded-lg"
-              style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);">
-        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
-        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
-      </button>
-      <a href="/customer/logout"
-         class="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-         style="background:var(--bg-input);color:var(--text-secondary);border:1px solid var(--border);">
-        Logout
-      </a>
-    </div>
-  </nav>
+<nav class="sticky top-0 z-30 flex items-center gap-3 px-4 h-14"
+     style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+  <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0"
+       style="background:#2563eb;">Q</div>
+  <span class="font-semibold text-sm" style="color:var(--text-primary);">QuickRent</span>
+  <div class="ml-auto flex items-center gap-2">
+    <a href="/customer/profile"  class="text-xs px-3 py-1.5 rounded-md" style="color:var(--text-secondary);">Profile</a>
+    <a href="/customer/wishlist" class="text-xs px-3 py-1.5 rounded-md" style="color:var(--text-secondary);">Wishlist</a>
+    <a href="/customer/reviews"  class="text-xs px-3 py-1.5 rounded-md" style="color:var(--text-secondary);">Reviews</a>
+    <a href="/customer/invoices" class="text-xs px-3 py-1.5 rounded-md" style="color:var(--text-secondary);">Invoices</a>
+    <a href="/customer/logout"   class="text-xs px-3 py-1.5 rounded-md" style="color:#dc2626;">Logout</a>
+  </div>
+</nav>
 
-  <!-- PAGE CONTENT -->
-  <main class="max-w-2xl mx-auto px-4 sm:px-6 py-6">
+<main class="max-w-2xl mx-auto px-4 py-6">
 
-    <!-- Welcome header -->
-    <div class="mb-6">
-      <h1 class="text-xl font-bold" style="color:var(--text-primary);">My Bookings</h1>
-      <p class="text-sm mt-0.5" style="color:var(--text-secondary);">
-        {{ customer.email }}
-      </p>
-    </div>
-
-    <!-- Stats strip -->
-    <div class="grid grid-cols-2 gap-3 mb-6">
-      <div class="rounded-xl p-4" style="background:var(--bg-surface);border:1px solid var(--border);">
-        <p class="text-xs font-medium uppercase tracking-wide mb-1" style="color:var(--text-secondary);">Total Bookings</p>
-        <p class="text-2xl font-bold" style="color:var(--text-primary);">{{ total_bookings }}</p>
-      </div>
-      <div class="rounded-xl p-4" style="background:var(--bg-surface);border:1px solid var(--border);">
-        <p class="text-xs font-medium uppercase tracking-wide mb-1" style="color:var(--text-secondary);">Total Spent</p>
-        <p class="text-2xl font-bold" style="color:#2563eb;">₹{{ "{:,}".format(total_spent) }}</p>
-      </div>
-    </div>
-
-    <!-- Active bookings -->
-    {% if active_bookings %}
-    <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-secondary);">
-      Active · <span style="color:#16a34a;">{{ active_bookings|length }} booking{{ 's' if active_bookings|length > 1 else '' }}</span>
+  <div class="mb-6">
+    <h1 class="text-xl font-semibold" style="color:var(--text-primary);">
+      Hello, {{ customer.name.split()[0] }} 👋
+    </h1>
+    <p class="text-sm mt-0.5" style="color:var(--text-secondary);">
+      Here's a summary of your rentals
     </p>
+  </div>
 
-    {% for booking in active_bookings %}
-    <div class="rounded-2xl overflow-hidden mb-3 shadow-sm"
-         style="background:var(--bg-surface);border:1px solid var(--border);">
-      <!-- Status stripe -->
-      <div class="h-1.5" style="background:{% if booking.status == 'active' %}#16a34a{% else %}#f59e0b{% endif %};"></div>
-      <div class="p-5">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <span class="text-3xl">
-              {% if booking.vehicles %}
-                {% if booking.vehicles.type == 'car' %}🚗{% elif booking.vehicles.type == 'bike' %}🏍️{% else %}🛵{% endif %}
-              {% else %}🚗{% endif %}
-            </span>
-            <div>
-              <p class="font-semibold text-sm" style="color:var(--text-primary);">
-                {{ booking.vehicles.name if booking.vehicles else 'Vehicle' }}
-              </p>
-              <p class="text-xs mt-0.5" style="color:var(--text-secondary);">
-                {{ booking.booking_ref }}
-              </p>
-            </div>
+  <div class="grid grid-cols-3 gap-3 mb-8">
+    <div class="rounded-xl p-4 text-center" style="background:var(--bg-surface);border:1px solid var(--border);">
+      <p class="text-2xl font-bold" style="color:#2563eb;">{{ active_bookings | length }}</p>
+      <p class="text-xs mt-1" style="color:var(--text-secondary);">Active</p>
+    </div>
+    <div class="rounded-xl p-4 text-center" style="background:var(--bg-surface);border:1px solid var(--border);">
+      <p class="text-2xl font-bold" style="color:var(--text-primary);">{{ past_bookings | length }}</p>
+      <p class="text-xs mt-1" style="color:var(--text-secondary);">Completed</p>
+    </div>
+    <div class="rounded-xl p-4 text-center" style="background:var(--bg-surface);border:1px solid var(--border);">
+      <p class="text-lg font-bold" style="color:#16a34a;">₹{{ "{:,}".format(total_spent|int) }}</p>
+      <p class="text-xs mt-1" style="color:var(--text-secondary);">Total Spent</p>
+    </div>
+  </div>
+
+  <h2 class="text-lg font-semibold mb-4" style="color:var(--text-primary);">Your Rental History</h2>
+
+  <div class="flex flex-col gap-3">
+    {% for b in active_bookings + past_bookings %}
+    <div class="block rounded-xl p-4 transition-all"
+         style="background:var(--bg-surface);border:1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+
+      <div class="h-1 rounded-full mb-3 -mx-4 -mt-4 rounded-t-xl"
+           style="background:{% if b.status|lower == 'active' %}#16a34a{% elif b.status|lower == 'pending' %}#d97706{% elif b.status|lower == 'cancelled' %}#dc2626{% else %}#94a3b8{% endif %};"></div>
+
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="text-3xl shrink-0">
+            {% if b.vehicles.type == 'car' %}🚗{% elif b.vehicles.type == 'bike' %}🏍️{% else %}🛵{% endif %}
+          </span>
+          <div class="min-w-0">
+            <p class="font-bold text-base truncate" style="color:var(--text-primary);">
+              {{ b.vehicles.name if b.vehicles else '—' }}
+            </p>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">
+              Ref: <span class="font-mono text-[10px]">{{ b.booking_ref }}</span>
+            </p>
+            <p class="text-xs mt-0.5" style="color:var(--text-secondary);">
+              {{ b.start_date }} → {{ b.end_date }}
+            </p>
           </div>
-          {% if booking.status == 'active' %}
-            <span class="text-[10px] font-semibold px-2 py-1 rounded-full"
-                  style="background:#dcfce7;color:#16a34a;">Active</span>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="text-base font-bold" style="color:#2563eb;">₹{{ "{:,}".format(b.total_amount) }}</p>
+          <span class="text-[10px] font-bold px-2 py-1 rounded-md mt-2 inline-block tracking-wide uppercase"
+                style="{% if b.status|lower == 'active' %}background:#dcfce7;color:#16a34a;
+                       {% elif b.status|lower == 'pending' %}background:#fef9c3;color:#a16207;
+                       {% elif b.status|lower == 'cancelled' %}background:#fee2e2;color:#dc2626;
+                       {% else %}background:#f1f5f9;color:#64748b;{% endif %}">
+            {{ b.status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-4 flex items-center justify-between" style="border-top:1px dashed var(--border);">
+        <p class="text-xs font-medium" style="color:var(--text-secondary);">
+          {% if b.payment_status|lower == 'paid' %}
+            <span style="color:#16a34a; font-weight:bold;">Paid ✓</span>
           {% else %}
-            <span class="text-[10px] font-semibold px-2 py-1 rounded-full"
-                  style="background:#fef9c3;color:#a16207;">Pending</span>
+            <span style="color:#d97706; font-weight:bold;">Payment Pending</span>
           {% endif %}
-        </div>
+        </p>
 
-        <!-- Dates -->
-        <div class="grid grid-cols-2 gap-2 mb-4">
-          <div class="rounded-xl p-3" style="background:var(--bg-row);">
-            <p class="text-[10px] font-semibold uppercase mb-0.5" style="color:var(--text-secondary);">Pickup</p>
-            <p class="text-sm font-semibold" style="color:var(--text-primary);">{{ booking.start_date }}</p>
-          </div>
-          <div class="rounded-xl p-3" style="background:var(--bg-row);">
-            <p class="text-[10px] font-semibold uppercase mb-0.5" style="color:var(--text-secondary);">Return</p>
-            <p class="text-sm font-semibold" style="color:var(--text-primary);">{{ booking.end_date }}</p>
-          </div>
-        </div>
-
-        <!-- Amount + actions -->
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs" style="color:var(--text-secondary);">Total Amount</p>
-            <p class="text-lg font-bold" style="color:#2563eb;">₹{{ "{:,}".format(booking.total_amount) }}</p>
-          </div>
-          <div class="flex gap-2">
-            <a href="/customer/booking/{{ booking.id }}"
-               class="text-xs font-medium px-3 py-2 rounded-xl transition-colors"
-               style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
+        <div class="flex gap-2">
+          {% if b.payment_status|lower != 'paid' %}
+            <a href="/customer/booking/{{ b.id }}" class="px-4 py-1.5 rounded-lg text-xs font-bold text-white transition-colors" style="background:#2563eb;">
+              Pay Now
+            </a>
+          {% else %}
+            <a href="/customer/booking/{{ b.id }}" class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors" style="background:var(--bg-page); border:1px solid var(--border); color:var(--text-primary);">
               View Receipt
             </a>
-            {% if booking.payment_status != 'paid' %}
-            <button onclick="payNow('{{ booking.id }}', {{ booking.total_amount }}, '{{ customer.name }}', '{{ customer.email }}')"
-                    class="text-xs font-semibold px-3 py-2 rounded-xl text-white"
-                    style="background:#2563eb;">
-              Pay Now
-            </button>
-            {% else %}
-            <span class="text-xs font-semibold px-3 py-2 rounded-xl"
-                  style="background:#dcfce7;color:#16a34a;">Paid ✓</span>
-            {% endif %}
-          </div>
+          {% endif %}
         </div>
       </div>
+
+    </div>
+    {% else %}
+    <div class="rounded-xl p-10 text-center" style="background:var(--bg-surface);border:1px solid var(--border);">
+      <p class="text-4xl mb-3">🚗</p>
+      <p class="text-base font-semibold" style="color:var(--text-primary);">No bookings yet</p>
+      <p class="text-sm mt-1" style="color:var(--text-secondary);">Your rental history will appear here once you make a booking.</p>
     </div>
     {% endfor %}
-    {% endif %}
+  </div>
 
-    <!-- Past bookings -->
-    {% if past_bookings %}
-    <p class="text-xs font-semibold uppercase tracking-wide mb-3 mt-6" style="color:var(--text-secondary);">History</p>
-
-    {% for booking in past_bookings %}
-    <div class="flex items-center gap-4 p-4 rounded-xl mb-2.5"
-         style="background:var(--bg-surface);border:1px solid var(--border);">
-      <span class="text-2xl shrink-0">
-        {% if booking.vehicles %}
-          {% if booking.vehicles.type == 'car' %}🚗{% elif booking.vehicles.type == 'bike' %}🏍️{% else %}🛵{% endif %}
-        {% else %}🚗{% endif %}
-      </span>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium" style="color:var(--text-primary);">
-          {{ booking.vehicles.name if booking.vehicles else 'Vehicle' }}
-        </p>
-        <p class="text-xs mt-0.5" style="color:var(--text-secondary);">
-          {{ booking.start_date }} – {{ booking.end_date }} · {{ booking.booking_ref }}
-        </p>
-      </div>
-      <div class="text-right shrink-0">
-        <p class="text-sm font-bold" style="color:#2563eb;">₹{{ "{:,}".format(booking.total_amount) }}</p>
-        {% if booking.status == 'completed' %}
-          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                style="background:#f1f5f9;color:#64748b;">Completed</span>
-        {% else %}
-          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                style="background:#fee2e2;color:#dc2626;">Overdue</span>
-        {% endif %}
-      </div>
-      <a href="/customer/booking/{{ booking.id }}"
-         class="text-xs font-medium px-2.5 py-1.5 rounded-lg shrink-0"
-         style="background:#eff6ff;color:#2563eb;">Receipt</a>
-    </div>
-    {% endfor %}
-    {% endif %}
-
-    <!-- Empty state -->
-    {% if not active_bookings and not past_bookings %}
-    <div class="text-center py-16">
-      <p class="text-4xl mb-4">🚗</p>
-      <p class="text-base font-semibold mb-1" style="color:var(--text-primary);">No bookings yet</p>
-      <p class="text-sm" style="color:var(--text-secondary);">Contact us to make your first rental booking.</p>
-    </div>
-    {% endif %}
-
-    <p class="text-center text-xs mt-8" style="color:var(--text-secondary);opacity:0.5;">
-      © 2026 QuickRent · All rights reserved
-    </p>
-
-  </main>
-
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<script>
-// ── Razorpay Payment ──────────────────────────────────────────
-async function payNow(bookingId, amount, customerName, customerEmail) {
-  try {
-    // Create Razorpay order via Flask
-    const orderRes = await fetch('/api/customer/payment/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ booking_id: bookingId, amount: amount })
-    });
-    const orderData = await orderRes.json();
-
-    if (!orderData.success) {
-      alert('Could not initiate payment. Please try again.');
-      return;
-    }
-
-    // Open Razorpay checkout modal
-    const options = {
-      key: orderData.key_id,
-      amount: amount * 100,          // paise
-      currency: 'INR',
-      name: 'QuickRent',
-      description: 'Vehicle Rental Payment',
-      order_id: orderData.order_id,
-      prefill: {
-        name: customerName,
-        email: customerEmail
-      },
-      theme: { color: '#2563eb' },
-      handler: async function(response) {
-        // Payment succeeded — verify with Flask
-        const verifyRes = await fetch('/api/customer/payment/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            razorpay_order_id:   response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature:  response.razorpay_signature,
-            booking_id: bookingId,
-            amount: amount
-          })
-        });
-        const verifyData = await verifyRes.json();
-        if (verifyData.success) {
-          window.location.reload();
-        } else {
-          alert('Payment verification failed. Please contact support.');
-        }
-      }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-
-  } catch(e) {
-    console.error('Payment error:', e);
-    alert('Payment failed. Please try again.');
-  }
-}
-</script>
-
+</main>
 </body>
 </html>

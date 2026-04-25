@@ -8,10 +8,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+  
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body class="min-h-screen" style="background:var(--bg-page);">
 
-  <!-- TOP NAV -->
   <nav class="sticky top-0 z-10 px-4 sm:px-6 h-14 flex items-center justify-between"
        style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
     <a href="/customer/dashboard" class="flex items-center gap-2" style="color:var(--text-secondary);">
@@ -32,11 +33,9 @@
 
   <main class="max-w-lg mx-auto px-4 sm:px-6 py-6">
 
-    <!-- Receipt card -->
     <div class="rounded-2xl overflow-hidden shadow-sm"
          style="background:var(--bg-surface);border:1px solid var(--border);">
 
-      <!-- Header -->
       <div class="p-6 text-center" style="background:#2563eb;">
         <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center mx-auto mb-3">
           <span class="text-blue-600 font-bold text-lg">Q</span>
@@ -45,7 +44,6 @@
         <p class="text-blue-200 text-sm mt-0.5">Booking Receipt</p>
       </div>
 
-      <!-- Payment status banner -->
       {% if payment and payment.status == 'paid' %}
       <div class="px-6 py-3 text-center text-sm font-semibold"
            style="background:#dcfce7;color:#16a34a;">
@@ -58,10 +56,8 @@
       </div>
       {% endif %}
 
-      <!-- Booking details -->
       <div class="p-6">
 
-        <!-- Booking ref + date -->
         <div class="flex items-center justify-between mb-5 pb-5"
              style="border-bottom:1px solid var(--border);">
           <div>
@@ -88,7 +84,6 @@
           </div>
         </div>
 
-        <!-- Vehicle info -->
         <div class="rounded-xl p-4 mb-4" style="background:var(--bg-row);">
           <p class="text-xs font-semibold uppercase tracking-wide mb-2"
              style="color:var(--text-secondary);">Vehicle</p>
@@ -113,7 +108,6 @@
           </div>
         </div>
 
-        <!-- Date + amount rows -->
         <div class="flex flex-col gap-2.5 mb-5">
 
           <div class="flex justify-between items-center py-2"
@@ -168,7 +162,22 @@
 
         </div>
 
-        <!-- Contact note -->
+        {% if booking.payment_status|lower != 'paid' %}
+        <div class="mb-5">
+          <button onclick="startRazorpayPayment('{{ booking.id }}', {{ booking.total_amount }})" 
+                  id="pay-btn"
+                  class="w-full py-3 rounded-xl text-white font-bold text-base transition-colors flex justify-center items-center gap-2 shadow-sm" 
+                  style="background:#2563eb;"
+                  onmouseover="this.style.background='#1d4ed8'"
+                  onmouseout="this.style.background='#2563eb'">
+            Pay ₹{{ "{:,}".format(booking.total_amount) }} Securely
+          </button>
+          <p class="text-center text-[10px] mt-2 uppercase tracking-wide font-semibold" style="color:var(--text-secondary);">
+            Secured by Razorpay
+          </p>
+        </div>
+        {% endif %}
+
         <div class="rounded-xl p-4 text-center" style="background:var(--bg-row);">
           <p class="text-xs" style="color:var(--text-secondary);">
             For support contact us at
@@ -186,6 +195,90 @@
     </p>
 
   </main>
+
+  <script>
+  async function startRazorpayPayment(bookingId, amount) {
+      const btn = document.getElementById('pay-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Processing...';
+      btn.disabled = true;
+
+      try {
+          // 1. Ask Flask backend to create a Razorpay Order
+          const res = await fetch('/api/customer/payment/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ booking_id: bookingId, amount: amount })
+          });
+          
+          const data = await res.json();
+          
+          if (!data.success) {
+              alert('Could not start payment: ' + data.error);
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+              return;
+          }
+
+          // 2. Open Razorpay Popup
+          const options = {
+              "key": data.key_id, 
+              "amount": amount * 100, // Razorpay expects paise
+              "currency": "INR",
+              "name": "QuickRent",
+              "description": "Booking Reference: {{ booking.booking_ref }}",
+              "order_id": data.order_id,
+              "prefill": {
+                  "name": "{{ customer.name }}",
+                  "email": "{{ customer.email }}"
+              },
+              "theme": {
+                  "color": "#2563eb"
+              },
+              "handler": async function (response) {
+                  // 3. Send successful payment details back to Flask to verify
+                  btn.innerHTML = 'Verifying...';
+                  const verifyRes = await fetch('/api/customer/payment/verify', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                          razorpay_order_id: response.razorpay_order_id,
+                          razorpay_payment_id: response.razorpay_payment_id,
+                          razorpay_signature: response.razorpay_signature,
+                          booking_id: bookingId,
+                          amount: amount
+                      })
+                  });
+                  
+                  const verifyData = await verifyRes.json();
+                  
+                  if (verifyData.success) {
+                      // Payment successful! Reload to show the receipt
+                      window.location.reload();
+                  } else {
+                      alert('Payment verification failed.');
+                      btn.innerHTML = originalText;
+                      btn.disabled = false;
+                  }
+              }
+          };
+          
+          const rzp = new Razorpay(options);
+          rzp.on('payment.failed', function (response){
+              alert("Payment failed: " + response.error.description);
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+          });
+          rzp.open();
+          
+      } catch(e) {
+          console.error(e);
+          alert('A network error occurred.');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+      }
+  }
+  </script>
 
 </body>
 </html>
