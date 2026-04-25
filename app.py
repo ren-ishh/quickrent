@@ -627,5 +627,311 @@ def add_payment():
         print('Add payment error:', e)
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# ══════════════════════════════════════
+# CUSTOMER AUTH DECORATOR
+# ══════════════════════════════════════
+def customer_login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'customer' not in session:
+            return redirect(url_for('customer_login'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+# ══════════════════════════════════════
+# CUSTOMER LOGIN
+# ══════════════════════════════════════
+@app.route('/customer/login', methods=['GET', 'POST'])
+def customer_login():
+    # If already logged in as customer go to portal
+    if 'customer' in session:
+        return redirect(url_for('customer_dashboard'))
+    # If admin is logged in send to admin dashboard
+    if 'user' in session:
+        return redirect(url_for('dashboard'))
+
+    error = None
+
+    if request.method == 'POST':
+        email    = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+
+        try:
+            # Authenticate with Supabase Auth
+            response = db.auth.sign_in_with_password({
+                'email': email,
+                'password': password
+            })
+
+            user_id = response.user.id
+
+            # Check their profile role
+            profile = db.table('profiles')\
+                .select('role, customer_id')\
+                .eq('id', user_id)\
+                .execute()
+
+            if not profile.data:
+                error = 'Account not found. Please register first.'
+            elif profile.data[0]['role'] == 'admin':
+                # Admin trying to use customer login — redirect to admin login
+                error = 'Please use the admin login page.'
+            else:
+                # Valid customer — get their customer record
+                customer_id = profile.data[0]['customer_id']
+                customer = db.table('customers')\
+                    .select('*')\
+                    .eq('id', customer_id)\
+                    .execute()
+
+                if not customer.data:
+                    error = 'Customer profile not found. Please contact support.'
+                else:
+                    # Store customer in session
+                    session['customer'] = {
+                        'id': customer_id,
+                        'user_id': user_id,
+                        'name': customer.data[0]['name'],
+                        'email': customer.data[0]['email']
+                    }
+                    return redirect(url_for('customer_dashboard'))
+
+        except Exception as e:
+            error = 'Invalid email or password. Please try again.'
+
+    return render_template('customer/login.html', error=error)
+
+
+# ══════════════════════════════════════
+# CUSTOMER REGISTER
+# ══════════════════════════════════════
+@app.route('/customer/register', methods=['GET', 'POST'])
+def customer_register():
+    if 'customer' in session:
+        return redirect(url_for('customer_dashboard'))
+
+    error  = None
+    success = None
+
+    if request.method == 'POST':
+        name     = request.form.get('name', '').strip()
+        email    = request.form.get('email', '').strip()
+        phone    = request.form.get('phone', '').strip()
+        city     = request.form.get('city', '').strip()
+        password = request.form.get('password', '').strip()
+        confirm  = request.form.get('confirm', '').strip()
+
+        if not all([name, email, password, confirm]):
+            error = 'Name, email and password are required.'
+        elif password != confirm:
+            error = 'Passwords do not match.'
+        elif len(password) < 8:
+            error = 'Password must be at least 8 characters.'
+        else:
+            try:
+                # Create Supabase Auth user
+                auth_response = db.auth.sign_up({
+                    'email': email,
+                    'password': password
+                })
+
+                user_id = auth_response.user.id
+
+                # Create customer record in customers table
+                customer_res = db.table('customers').insert({
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'city': city,
+                    'total_rentals': 0,
+                    'total_spent': 0
+                }).execute()
+
+                customer_id = customer_res.data[0]['id']
+
+                # Create profile record linking auth user to customer
+                db.table('profiles').insert({
+                    'id': user_id,
+                    'role': 'customer',
+                    'customer_id': customer_id
+                }).execute()
+
+                success = 'Account created successfully. You can now log in.'
+
+            except Exception as e:
+                error_msg = str(e)
+                if 'already registered' in error_msg or 'already exists' in error_msg:
+                    error = 'An account with this email already exists.'
+                else:
+                    error = 'Registration failed. Please try again.'
+
+    return render_template('customer/register.html', error=error, success=success)
+
+
+# ══════════════════════════════════════
+# CUSTOMER LOGOUT
+# ══════════════════════════════════════
+@app.route('/customer/logout')
+def customer_logout():
+    session.pop('customer', None)
+    return redirect(url_for('customer_login'))
+
+
+# ══════════════════════════════════════
+# CUSTOMER DASHBOARD — their bookings
+# ══════════════════════════════════════
+@app.route('/customer/dashboard')
+@customer_login_required
+def customer_dashboard():
+    try:
+        customer_id = session['customer']['id']
+
+        # Fetch all bookings for this customer
+        bookings = db.table('bookings')\
+            .select('*, vehicles(name, type, daily_rate)')\
+            .eq('customer_id', customer_id)\
+            .order('created_at', desc=True)\
+            .execute()
+
+        # Separate active vs past
+        active_bookings = [b for b in (bookings.data or [])
+                          if b['status'] in ['active', 'pending']]
+        past_bookings   = [b for b in (bookings.data or [])
+                          if b['status'] in ['completed', 'overdue']]
+
+        # Stats
+        total_spent = sum(b['total_amount'] for b in (bookings.data or [])
+                         if b['status'] == 'completed')
+        total_bookings = len(bookings.data or [])
+
+        return render_template('customer/dashboard.html',
+            customer=session['customer'],
+            active_bookings=active_bookings,
+            past_bookings=past_bookings,
+            total_spent=total_spent,
+            total_bookings=total_bookings
+        )
+    except Exception as e:
+        print('Customer dashboard error:', e)
+        return render_template('customer/dashboard.html',
+            customer=session['customer'],
+            active_bookings=[], past_bookings=[],
+            total_spent=0, total_bookings=0
+        )
+
+
+# ══════════════════════════════════════
+# CUSTOMER RECEIPT PAGE
+# ══════════════════════════════════════
+@app.route('/customer/booking/<booking_id>')
+@customer_login_required
+def customer_receipt(booking_id):
+    try:
+        customer_id = session['customer']['id']
+
+        # Fetch booking — verify it belongs to this customer
+        booking = db.table('bookings')\
+            .select('*, vehicles(name, type, brand, year, fuel, daily_rate), customers(name, email, phone, city)')\
+            .eq('id', booking_id)\
+            .eq('customer_id', customer_id)\
+            .execute()
+
+        if not booking.data:
+            return redirect(url_for('customer_dashboard'))
+
+        # Fetch payment for this booking
+        payment = db.table('payments')\
+            .select('*')\
+            .eq('booking_id', booking_id)\
+            .execute()
+
+        return render_template('customer/receipt.html',
+            customer=session['customer'],
+            booking=booking.data[0],
+            payment=payment.data[0] if payment.data else None
+        )
+    except Exception as e:
+        print('Receipt error:', e)
+        return redirect(url_for('customer_dashboard'))
+
+
+# ══════════════════════════════════════
+# CUSTOMER — RAZORPAY PAYMENT
+# ══════════════════════════════════════
+@app.route('/api/customer/payment/create', methods=['POST'])
+@customer_login_required
+def create_razorpay_order():
+    try:
+        import razorpay
+        data = request.json
+        booking_id = data['booking_id']
+        amount = data['amount']  # in paise (multiply rupees × 100)
+
+        # Fetch Razorpay keys from environment
+        import os
+        rz_key_id     = os.environ.get('RAZORPAY_KEY_ID')
+        rz_key_secret = os.environ.get('RAZORPAY_KEY_SECRET')
+
+        client = razorpay.Client(auth=(rz_key_id, rz_key_secret))
+
+        order = client.order.create({
+            'amount': amount * 100,  # convert to paise
+            'currency': 'INR',
+            'receipt': booking_id[:20],
+            'payment_capture': 1
+        })
+
+        return jsonify({'success': True, 'order_id': order['id'], 'key_id': rz_key_id})
+    except Exception as e:
+        print('Razorpay order error:', e)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/customer/payment/verify', methods=['POST'])
+@customer_login_required
+def verify_razorpay_payment():
+    try:
+        import razorpay, hmac, hashlib, os
+        data = request.json
+
+        rz_key_secret = os.environ.get('RAZORPAY_KEY_SECRET')
+
+        # Verify payment signature
+        body = data['razorpay_order_id'] + '|' + data['razorpay_payment_id']
+        expected = hmac.new(
+            rz_key_secret.encode(),
+            body.encode(),
+            hashlib.sha256
+        ).hexdigest()
+
+        if expected != data['razorpay_signature']:
+            return jsonify({'success': False, 'error': 'Invalid signature'}), 400
+
+        # Record payment in database
+        import random, string
+        ref = '#TXN-' + ''.join(random.choices(string.digits, k=6))
+        customer_id = session['customer']['id']
+
+        db.table('payments').insert({
+            'transaction_ref': ref,
+            'booking_id': data['booking_id'],
+            'customer_id': customer_id,
+            'amount': data['amount'],
+            'method': 'Razorpay',
+            'status': 'paid'
+        }).execute()
+
+        # Update booking payment status
+        db.table('bookings').update({
+            'payment_status': 'paid',
+            'payment_method': 'Razorpay'
+        }).eq('id', data['booking_id']).execute()
+
+        return jsonify({'success': True})
+    except Exception as e:
+        print('Razorpay verify error:', e)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

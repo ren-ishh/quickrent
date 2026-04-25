@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Create Account</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4 py-8" style="background:var(--bg-page);">
+
+  <div class="w-full max-w-sm">
+
+    <div class="flex flex-col items-center mb-8">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-lg"
+           style="background:#2563eb;">Q</div>
+      <h1 class="text-2xl font-bold" style="color:var(--text-primary);">Create Account</h1>
+      <p class="text-sm mt-1" style="color:var(--text-secondary);">Join QuickRent to book vehicles</p>
+    </div>
+
+    <div class="rounded-2xl p-8 shadow-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
+
+      {% if success %}
+      <div class="mb-5 px-4 py-3 rounded-xl text-sm font-medium"
+           style="background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;">
+        {{ success }}
+        <a href="/customer/login" class="font-bold underline ml-1">Sign in now →</a>
+      </div>
+      {% endif %}
+
+      {% if error %}
+      <div class="mb-5 px-4 py-3 rounded-xl text-sm font-medium"
+           style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/customer/register">
+
+        <div class="mb-3">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">Full Name</label>
+          <input name="name" type="text" required placeholder="Rahul Kumar"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">Email Address</label>
+          <input name="email" type="email" required placeholder="rahul@gmail.com"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">Phone Number</label>
+          <input name="phone" type="tel" placeholder="+91 98100 00000"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">City</label>
+          <input name="city" type="text" placeholder="Delhi"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">Password</label>
+          <input name="password" type="password" required placeholder="Minimum 8 characters"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">Confirm Password</label>
+          <input name="confirm" type="password" required placeholder="Repeat password"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <button type="submit"
+                class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-colors"
+                style="background:#2563eb;"
+                onmouseover="this.style.background='#1d4ed8'"
+                onmouseout="this.style.background='#2563eb'">
+          Create Account
+        </button>
+
+      </form>
+
+      <p class="text-center text-sm mt-5" style="color:var(--text-secondary);">
+        Already have an account?
+        <a href="/customer/login" class="font-semibold" style="color:#2563eb;">Sign in</a>
+      </p>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

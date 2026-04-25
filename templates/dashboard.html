@@ -80,7 +80,7 @@
     <!-- Page heading -->
     <div class="flex items-start justify-between mb-6 gap-3">
       <div>
-        <h2 class="text-xl font-semibold" style="color: var(--text-primary);">Good morning, Admin 👋</h2>
+        <h2 class="text-xl font-semibold" style="color: var(--text-primary);"><span id="dynamicGreeting">Good morning</span>, Admin </h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">
           {{ total_vehicles }} vehicles · {{ active_bookings }} active bookings · ₹{{ "{:,}".format(total_revenue) }} revenue
         </p>
@@ -261,6 +261,25 @@
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'dashboard';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+
+<script>
+// ── Dynamic Greeting Logic ──
+function setDynamicGreeting() {
+  const currentHour = new Date().getHours();
+  let greetingText = 'Good evening'; // Default for 6 PM to midnight
+
+  if (currentHour < 12) {
+    greetingText = 'Good morning';   // Midnight to 11:59 AM
+  } else if (currentHour < 18) {
+    greetingText = 'Good afternoon'; // 12 PM to 5:59 PM
+  }
+
+  document.getElementById('dynamicGreeting').textContent = greetingText;
+}
+
+// Run the function as soon as the page loads
+setDynamicGreeting();
+</script>
  
 </body>
 </html>

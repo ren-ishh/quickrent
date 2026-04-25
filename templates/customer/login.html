@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Customer Login</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4" style="background:var(--bg-page);">
+
+  <div class="w-full max-w-sm">
+
+    <!-- Logo -->
+    <div class="flex flex-col items-center mb-8">
+      <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-lg"
+           style="background:#2563eb;">Q</div>
+      <h1 class="text-2xl font-bold" style="color:var(--text-primary);">QuickRent</h1>
+      <p class="text-sm mt-1" style="color:var(--text-secondary);">Sign in to view your bookings</p>
+    </div>
+
+    <!-- Card -->
+    <div class="rounded-2xl p-8 shadow-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
+
+      {% if error %}
+      <div class="mb-5 px-4 py-3 rounded-xl text-sm font-medium"
+           style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/customer/login">
+
+        <div class="mb-4">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">Email</label>
+          <input name="email" type="email" required
+                 placeholder="your@email.com"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'"
+                 onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide"
+                 style="color:var(--text-secondary);">Password</label>
+          <input name="password" type="password" required
+                 placeholder="Enter your password"
+                 class="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all"
+                 style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='#2563eb'"
+                 onblur="this.style.borderColor='var(--border)'"/>
+        </div>
+
+        <button type="submit"
+                class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-colors"
+                style="background:#2563eb;"
+                onmouseover="this.style.background='#1d4ed8'"
+                onmouseout="this.style.background='#2563eb'">
+          Sign In
+        </button>
+
+      </form>
+
+      <p class="text-center text-sm mt-5" style="color:var(--text-secondary);">
+        Don't have an account?
+        <a href="/customer/register" class="font-semibold" style="color:#2563eb;">Register here</a>
+      </p>
+
+    </div>
+
+    <!-- Admin link -->
+    <p class="text-center text-xs mt-5" style="color:var(--text-secondary);opacity:0.6;">
+      Admin?
+      <a href="/login" style="color:var(--text-secondary);">Sign in here</a>
+    </p>
+
+  </div>
+
+</body>
+</html>

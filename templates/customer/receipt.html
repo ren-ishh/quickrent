@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Booking Receipt</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="min-h-screen" style="background:var(--bg-page);">
+
+  <!-- TOP NAV -->
+  <nav class="sticky top-0 z-10 px-4 sm:px-6 h-14 flex items-center justify-between"
+       style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+    <a href="/customer/dashboard" class="flex items-center gap-2" style="color:var(--text-secondary);">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+      <span class="text-sm font-medium">My Bookings</span>
+    </a>
+    <button onclick="window.print()"
+            class="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg"
+            style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/>
+      </svg>
+      Print
+    </button>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-4 sm:px-6 py-6">
+
+    <!-- Receipt card -->
+    <div class="rounded-2xl overflow-hidden shadow-sm"
+         style="background:var(--bg-surface);border:1px solid var(--border);">
+
+      <!-- Header -->
+      <div class="p-6 text-center" style="background:#2563eb;">
+        <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center mx-auto mb-3">
+          <span class="text-blue-600 font-bold text-lg">Q</span>
+        </div>
+        <p class="text-white font-bold text-lg">QuickRent</p>
+        <p class="text-blue-200 text-sm mt-0.5">Booking Receipt</p>
+      </div>
+
+      <!-- Payment status banner -->
+      {% if payment and payment.status == 'paid' %}
+      <div class="px-6 py-3 text-center text-sm font-semibold"
+           style="background:#dcfce7;color:#16a34a;">
+        ✓ Payment Confirmed — ₹{{ "{:,}".format(payment.amount) }} via {{ payment.method }}
+      </div>
+      {% elif booking.payment_status == 'pending' %}
+      <div class="px-6 py-3 text-center text-sm font-semibold"
+           style="background:#fef9c3;color:#a16207;">
+        ⚠ Payment Pending
+      </div>
+      {% endif %}
+
+      <!-- Booking details -->
+      <div class="p-6">
+
+        <!-- Booking ref + date -->
+        <div class="flex items-center justify-between mb-5 pb-5"
+             style="border-bottom:1px solid var(--border);">
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wide mb-0.5"
+               style="color:var(--text-secondary);">Booking Reference</p>
+            <p class="text-lg font-bold" style="color:var(--text-primary);">{{ booking.booking_ref }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs font-medium uppercase tracking-wide mb-0.5"
+               style="color:var(--text-secondary);">Status</p>
+            {% if booking.status == 'active' %}
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style="background:#dcfce7;color:#16a34a;">Active</span>
+            {% elif booking.status == 'completed' %}
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style="background:#f1f5f9;color:#64748b;">Completed</span>
+            {% elif booking.status == 'pending' %}
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style="background:#fef9c3;color:#a16207;">Pending</span>
+            {% else %}
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full"
+                    style="background:#fee2e2;color:#dc2626;">Overdue</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Vehicle info -->
+        <div class="rounded-xl p-4 mb-4" style="background:var(--bg-row);">
+          <p class="text-xs font-semibold uppercase tracking-wide mb-2"
+             style="color:var(--text-secondary);">Vehicle</p>
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">
+              {% if booking.vehicles %}
+                {% if booking.vehicles.type == 'car' %}🚗
+                {% elif booking.vehicles.type == 'bike' %}🏍️
+                {% else %}🛵{% endif %}
+              {% else %}🚗{% endif %}
+            </span>
+            <div>
+              <p class="font-semibold" style="color:var(--text-primary);">
+                {{ booking.vehicles.name if booking.vehicles else '—' }}
+              </p>
+              <p class="text-xs mt-0.5" style="color:var(--text-secondary);">
+                {{ booking.vehicles.brand if booking.vehicles else '' }}
+                {{ booking.vehicles.year if booking.vehicles else '' }} ·
+                {{ booking.vehicles.fuel if booking.vehicles else '' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date + amount rows -->
+        <div class="flex flex-col gap-2.5 mb-5">
+
+          <div class="flex justify-between items-center py-2"
+               style="border-bottom:1px solid var(--border);">
+            <span class="text-sm" style="color:var(--text-secondary);">Customer</span>
+            <span class="text-sm font-medium" style="color:var(--text-primary);">
+              {{ booking.customers.name if booking.customers else customer.name }}
+            </span>
+          </div>
+
+          <div class="flex justify-between items-center py-2"
+               style="border-bottom:1px solid var(--border);">
+            <span class="text-sm" style="color:var(--text-secondary);">Pickup Date</span>
+            <span class="text-sm font-medium" style="color:var(--text-primary);">{{ booking.start_date }}</span>
+          </div>
+
+          <div class="flex justify-between items-center py-2"
+               style="border-bottom:1px solid var(--border);">
+            <span class="text-sm" style="color:var(--text-secondary);">Return Date</span>
+            <span class="text-sm font-medium" style="color:var(--text-primary);">{{ booking.end_date }}</span>
+          </div>
+
+          {% if booking.vehicles %}
+          <div class="flex justify-between items-center py-2"
+               style="border-bottom:1px solid var(--border);">
+            <span class="text-sm" style="color:var(--text-secondary);">Daily Rate</span>
+            <span class="text-sm font-medium" style="color:var(--text-primary);">
+              ₹{{ "{:,}".format(booking.vehicles.daily_rate) }}/day
+            </span>
+          </div>
+          {% endif %}
+
+          {% if payment %}
+          <div class="flex justify-between items-center py-2"
+               style="border-bottom:1px solid var(--border);">
+            <span class="text-sm" style="color:var(--text-secondary);">Payment Method</span>
+            <span class="text-sm font-medium" style="color:var(--text-primary);">{{ payment.method }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2"
+               style="border-bottom:1px solid var(--border);">
+            <span class="text-sm" style="color:var(--text-secondary);">Transaction ID</span>
+            <span class="text-sm font-medium" style="color:var(--text-primary);">{{ payment.transaction_ref }}</span>
+          </div>
+          {% endif %}
+
+          <div class="flex justify-between items-center pt-2">
+            <span class="text-base font-bold" style="color:var(--text-primary);">Total Amount</span>
+            <span class="text-xl font-bold" style="color:#2563eb;">
+              ₹{{ "{:,}".format(booking.total_amount) }}
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Contact note -->
+        <div class="rounded-xl p-4 text-center" style="background:var(--bg-row);">
+          <p class="text-xs" style="color:var(--text-secondary);">
+            For support contact us at
+            <a href="mailto:support@quickrent.in" class="font-medium" style="color:#2563eb;">
+              support@quickrent.in
+            </a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <p class="text-center text-xs mt-6" style="color:var(--text-secondary);opacity:0.5;">
+      © 2026 QuickRent · All rights reserved
+    </p>
+
+  </main>
+
+</body>
+</html>
