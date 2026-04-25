@@ -174,4 +174,115 @@ html.dark .active-tab {
     display: block;
   }
 }
+
+/* ════════════════════════════════════════════
+   MOBILE POLISH — Android scroll + sidebar
+════════════════════════════════════════════ */
+
+/* ── Android scroll fix ──────────────────────
+   h-screen on Android Chrome uses the full
+   viewport including browser UI bars which
+   causes bottom content to be hidden.
+   Using 100dvh (dynamic viewport height)
+   fixes this on modern Android Chrome.
+   Falls back to 100vh on older browsers.
+──────────────────────────────────────────── */
+body {
+  height: 100vh;
+  height: 100dvh;  /* dynamic viewport height — fixes Android Chrome */
+}
+
+/* ── Main scroll area ────────────────────────
+   Force the main content area to fill
+   remaining height and scroll correctly
+   on all mobile browsers.
+──────────────────────────────────────────── */
+main {
+  -webkit-overflow-scrolling: touch; /* smooth momentum scroll on iOS */
+  overscroll-behavior-y: contain;    /* prevents page bounce on Android */
+}
+
+/* ── Mobile sidebar drawer ───────────────────
+   On mobile the sidebar should open as a
+   full-width drawer (280px) not the 68px
+   collapsed icon-only state.
+   On desktop keep the hover-expand behaviour.
+──────────────────────────────────────────── */
+@media (max-width: 767px) {
+  #sidebar {
+    width: 280px !important;  /* full drawer width on mobile */
+    hover: none;              /* disable hover expand on touch */
+  }
+
+  /* Sidebar nav labels always visible on mobile */
+  #sidebar .opacity-0 {
+    opacity: 1 !important;
+  }
+
+  /* Sidebar branding text always visible on mobile */
+  #sidebar .group-hover\:opacity-100 {
+    opacity: 1 !important;
+    transition: none !important;
+  }
+
+  /* Profile name + role always visible on mobile */
+  #sidebar .group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
+}
+
+/* ── Overlay backdrop ────────────────────────
+   Make sure the overlay covers everything
+   including the dynamic bottom bar area
+──────────────────────────────────────────── */
+#mobileOverlay {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ── Modal on mobile ─────────────────────────
+   Modals should not overflow on small screens
+──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-end;  /* slide up from bottom on mobile */
+    padding: 0;
+  }
+
+  .modal-box {
+    max-width: 100% !important;
+    width: 100%;
+    border-radius: 20px 20px 0 0;  /* rounded top only */
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* ── Touch tap targets ───────────────────────
+   All interactive elements at least 44px tall
+   for comfortable tapping on mobile
+──────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .nav-item,
+  .nav-active {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  button,
+  a[href] {
+    touch-action: manipulation; /* removes 300ms tap delay on Android */
+  }
+}
+
+/* ── Bottom padding on all pages ─────────────
+   Prevents last content being hidden behind
+   Android bottom navigation bar
+──────────────────────────────────────────── */
+@media (max-width: 767px) {
+  main {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+}
  

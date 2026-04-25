@@ -13,8 +13,7 @@
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
  
-<body class="flex h-screen overflow-hidden transition-colors duration-300"
-      style="background-color: var(--bg-page);">
+<body class="flex overflow-hidden" style="background:var(--bg-page);height:100vh;height:100dvh;">
  
 <div id="sidebar-mount"></div>
  
@@ -23,7 +22,7 @@
   {% set page_title = "Dashboard" %}
   {% include 'components/header.html' %}
  
-  <main class="flex-1 overflow-y-auto p-4 md:p-6" style="background: var(--bg-page);">
+  <main class="flex-1 overflow-y-auto p-4 md:p-6" style="background:var(--bg-page);min-height:0;">
  
     <!-- Page heading -->
     <div class="flex items-start justify-between mb-6 gap-3">

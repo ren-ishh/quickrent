@@ -1254,6 +1254,15 @@ def send_booking_confirmation(customer_email, customer_name, booking_ref,
           <p style="color:#666;font-size:12px;">— QuickRent Team</p>
         </div>"""
     )
+# ══════════════════════════════════════
+# GLOBAL VARIABLES FOR ALL HTML TEMPLATES
+# ══════════════════════════════════════
+@app.context_processor
+def inject_globals():
+    return {
+        'user': session.get('user'),
+        'customer': session.get('customer')
+    }
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
