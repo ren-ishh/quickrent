@@ -10,44 +10,67 @@
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
-
+ 
 <div id="sidebar-mount"></div>
-
+ 
 <div class="flex flex-col flex-1 overflow-hidden">
-
-  <!-- TOP BAR -->
-  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+ 
+  <!-- ═══════════════════════════════════════════
+       HEADER — FIXED FOR MOBILE
+  ════════════════════════════════════════════ -->
+  <header class="flex items-center gap-2 px-4 md:px-6 h-14 shrink-0"
           style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
-    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+ 
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1 shrink-0" style="color:var(--text-secondary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+      </svg>
     </button>
-    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Settings</h1>
-    <div class="ml-auto flex items-center gap-3">
+ 
+    <h1 class="text-[15px] font-semibold shrink-0" style="color:var(--text-primary);">Settings</h1>
+ 
+    <div class="ml-auto flex items-center gap-2 shrink-0">
+ 
+      <!-- Bell -->
+      <a href="/notifications"
+         class="relative inline-flex items-center justify-center w-8 h-8 rounded-md"
+         style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+        </svg>
+        <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+      </a>
+ 
+      <!-- Dark mode toggle -->
       <button onclick="toggleTheme()" id="themeToggle"
               class="flex items-center justify-center w-8 h-8 rounded-md"
               style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
-        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
-        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+        <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+        </svg>
+        <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+        </svg>
       </button>
-      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+ 
+      <!-- Avatar -->
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+           style="background:#2563eb;">AU</div>
     </div>
   </header>
-
-  <!-- PAGE CONTENT -->
-  <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
-
+ 
+  <main class="flex-1 overflow-y-auto p-4 md:p-6" style="background:var(--bg-page);">
+ 
     <div class="mb-5">
       <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Settings</h2>
       <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage your account and preferences</p>
     </div>
-
-    <!-- Settings layout: left tab nav + right content -->
-    <!-- This two-column pattern is used by almost every settings page in the world.
-         Left side has tab buttons. Right side shows the matching content panel.
-         JavaScript hides/shows panels based on which tab is clicked. -->
+ 
     <div class="flex gap-6 flex-col md:flex-row">
-
-      <!-- Left tab nav -->
+ 
+      <!-- Left tab nav
+           FIX: settings-tab now defined in theme.css using CSS vars
+           so text colour correctly switches in dark mode -->
       <div class="md:w-48 shrink-0">
         <nav class="flex md:flex-col gap-1">
           <button onclick="switchTab('profile')" id="tab-profile"
@@ -64,20 +87,20 @@
           </button>
         </nav>
       </div>
-
+ 
       <!-- Right content panels -->
       <div class="flex-1 max-w-2xl">
-
+ 
         <!-- ── PROFILE PANEL ── -->
-        <!-- HTML forms use <label> + <input> pairs. The for= on label must match
-             the id= on the input. This links them so clicking the label focuses the input. -->
         <div id="panel-profile">
-          <div class="rounded-xl p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
+          <div class="rounded-xl p-5 md:p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
+ 
+            <!-- FIX: h3 uses style="color:var(--text-primary)" explicitly
+                 so it never falls back to Tailwind's default black -->
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Profile Information</h3>
-
-            <!-- Avatar section -->
+ 
             <div class="flex items-center gap-4 mb-6 pb-6" style="border-bottom:1px solid var(--border);">
-              <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold"
+              <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0"
                    style="background:#2563eb;">AU</div>
               <div>
                 <p class="text-sm font-medium" style="color:var(--text-primary);">Admin User</p>
@@ -88,134 +111,108 @@
                 </button>
               </div>
             </div>
-
-            <!-- Form fields -->
-            <!-- grid-cols-2 puts two fields side by side on wider screens -->
+ 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label class="block text-xs font-medium mb-1.5" for="firstName" style="color:var(--text-secondary);">First Name</label>
-                <input id="firstName" type="text" value="Admin"
-                       class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                       style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                <input id="firstName" type="text" value="Admin" class="modal-input"
                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1.5" for="lastName" style="color:var(--text-secondary);">Last Name</label>
-                <input id="lastName" type="text" value="User"
-                       class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                       style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                <input id="lastName" type="text" value="User" class="modal-input"
                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
               </div>
             </div>
-
+ 
             <div class="mb-4">
               <label class="block text-xs font-medium mb-1.5" for="email" style="color:var(--text-secondary);">Email Address</label>
-              <input id="email" type="email" value="admin@quickrent.in"
-                     class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                     style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+              <input id="email" type="email" value="admin@quickrent.in" class="modal-input"
                      onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
             </div>
-
+ 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div>
                 <label class="block text-xs font-medium mb-1.5" for="phone" style="color:var(--text-secondary);">Phone Number</label>
-                <input id="phone" type="tel" value="+91 98100 00000"
-                       class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                       style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                <input id="phone" type="tel" value="+91 98100 00000" class="modal-input"
                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1.5" for="city" style="color:var(--text-secondary);">City</label>
-                <input id="city" type="text" value="Delhi"
-                       class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                       style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+                <input id="city" type="text" value="Delhi" class="modal-input"
                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
               </div>
             </div>
-
+ 
             <div class="flex items-center justify-between">
-              <!-- Success message — hidden until save is clicked -->
               <p id="profileSaved" class="text-xs text-green-500 font-medium hidden">✓ Changes saved</p>
               <div class="ml-auto">
-                <button onclick="saveProfile()"
-                        class="text-sm font-medium text-white px-4 py-2 rounded-md"
+                <button onclick="saveProfile()" class="text-sm font-medium text-white px-4 py-2 rounded-md"
                         style="background:#2563eb;"
                         onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
                   Save Changes
                 </button>
               </div>
             </div>
-
           </div>
         </div>
-
+ 
         <!-- ── PASSWORD PANEL ── -->
         <div id="panel-password" class="hidden">
-          <div class="rounded-xl p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
+          <div class="rounded-xl p-5 md:p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
+ 
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Change Password</h3>
-
+ 
             <div class="mb-4">
               <label class="block text-xs font-medium mb-1.5" for="currentPass" style="color:var(--text-secondary);">Current Password</label>
-              <input id="currentPass" type="password" placeholder="Enter current password"
-                     class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                     style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+              <input id="currentPass" type="password" placeholder="Enter current password" class="modal-input"
                      onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
             </div>
-
             <div class="mb-4">
               <label class="block text-xs font-medium mb-1.5" for="newPass" style="color:var(--text-secondary);">New Password</label>
-              <input id="newPass" type="password" placeholder="Minimum 8 characters"
-                     class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                     style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+              <input id="newPass" type="password" placeholder="Minimum 8 characters" class="modal-input"
                      onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
             </div>
-
             <div class="mb-6">
               <label class="block text-xs font-medium mb-1.5" for="confirmPass" style="color:var(--text-secondary);">Confirm New Password</label>
-              <input id="confirmPass" type="password" placeholder="Repeat new password"
-                     class="w-full text-sm px-3 py-2 rounded-md outline-none"
-                     style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
+              <input id="confirmPass" type="password" placeholder="Repeat new password" class="modal-input"
                      onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
             </div>
-
-            <!-- Password rules hint -->
-            <div class="rounded-lg p-3.5 mb-6 text-xs" style="background:var(--bg-row);border:1px solid var(--border);color:var(--text-secondary);">
+ 
+            <div class="rounded-lg p-3.5 mb-6 text-xs"
+                 style="background:var(--bg-row);border:1px solid var(--border);color:var(--text-secondary);">
               Password must be at least 8 characters, include one uppercase letter and one number.
             </div>
-
+ 
             <div class="flex items-center justify-between">
               <p id="passSaved" class="text-xs text-green-500 font-medium hidden">✓ Password updated</p>
               <p id="passError" class="text-xs text-red-500 font-medium hidden">✗ Passwords do not match</p>
               <div class="ml-auto">
-                <button onclick="savePassword()"
-                        class="text-sm font-medium text-white px-4 py-2 rounded-md"
+                <button onclick="savePassword()" class="text-sm font-medium text-white px-4 py-2 rounded-md"
                         style="background:#2563eb;"
                         onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
                   Update Password
                 </button>
               </div>
             </div>
-
           </div>
         </div>
-
+ 
         <!-- ── PREFERENCES PANEL ── -->
         <div id="panel-preferences" class="hidden">
-          <div class="rounded-xl p-6 mb-4" style="background:var(--bg-surface);border:1px solid var(--border);">
+ 
+          <div class="rounded-xl p-5 md:p-6 mb-4" style="background:var(--bg-surface);border:1px solid var(--border);">
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Theme</h3>
-
-            <!-- Theme selector — 2 clickable option cards -->
-            <!-- Clicking a card calls setThemePref() which also applies the theme globally -->
             <div class="grid grid-cols-2 gap-3">
               <button onclick="setThemePref('light')" id="themeLight"
-                      class="theme-option p-4 rounded-xl text-left border-2 transition-all"
+                      class="p-4 rounded-xl text-left border-2 transition-all"
                       style="border-color:#2563eb;background:var(--bg-row);">
                 <div class="w-full h-10 rounded-md mb-2" style="background:#f7f6f3;border:1px solid #e8e6e1;"></div>
                 <p class="text-xs font-semibold" style="color:var(--text-primary);">Light</p>
-                <p class="text-[11px]" style="color:var(--text-secondary);">Notion-style warm white</p>
+                <p class="text-[11px]" style="color:var(--text-secondary);">Warm white</p>
               </button>
               <button onclick="setThemePref('dark')" id="themeDark"
-                      class="theme-option p-4 rounded-xl text-left border-2 transition-all"
+                      class="p-4 rounded-xl text-left border-2 transition-all"
                       style="border-color:var(--border);background:var(--bg-row);">
                 <div class="w-full h-10 rounded-md mb-2" style="background:#0d1117;border:1px solid #30363d;"></div>
                 <p class="text-xs font-semibold" style="color:var(--text-primary);">Dark</p>
@@ -223,16 +220,11 @@
               </button>
             </div>
           </div>
-
-          <div class="rounded-xl p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
+ 
+          <div class="rounded-xl p-5 md:p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Notification Preferences</h3>
-
-            <!-- Toggle rows -->
-            <!-- Each toggle is a hidden checkbox + a visual div.
-                 When checkbox is checked, we show the blue background using JS.
-                 This is a pure CSS/HTML toggle — no library needed. -->
+ 
             <div class="flex flex-col gap-4">
-
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium" style="color:var(--text-primary);">New Bookings</p>
@@ -241,10 +233,9 @@
                 <button onclick="togglePref(this)" data-on="true"
                         class="pref-toggle w-10 h-5 rounded-full relative transition-colors"
                         style="background:#2563eb;">
-                  <span class="pref-dot absolute top-0.5 right-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+                  <span class="pref-dot absolute top-0.5 right-0.5 w-4 h-4 bg-white rounded-full shadow"></span>
                 </button>
               </div>
-
               <div class="flex items-center justify-between" style="padding-top:1rem;border-top:1px solid var(--border);">
                 <div>
                   <p class="text-sm font-medium" style="color:var(--text-primary);">Payment Received</p>
@@ -253,10 +244,9 @@
                 <button onclick="togglePref(this)" data-on="true"
                         class="pref-toggle w-10 h-5 rounded-full relative transition-colors"
                         style="background:#2563eb;">
-                  <span class="pref-dot absolute top-0.5 right-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+                  <span class="pref-dot absolute top-0.5 right-0.5 w-4 h-4 bg-white rounded-full shadow"></span>
                 </button>
               </div>
-
               <div class="flex items-center justify-between" style="padding-top:1rem;border-top:1px solid var(--border);">
                 <div>
                   <p class="text-sm font-medium" style="color:var(--text-primary);">Overdue Alerts</p>
@@ -265,10 +255,9 @@
                 <button onclick="togglePref(this)" data-on="true"
                         class="pref-toggle w-10 h-5 rounded-full relative transition-colors"
                         style="background:#2563eb;">
-                  <span class="pref-dot absolute top-0.5 right-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+                  <span class="pref-dot absolute top-0.5 right-0.5 w-4 h-4 bg-white rounded-full shadow"></span>
                 </button>
               </div>
-
               <div class="flex items-center justify-between" style="padding-top:1rem;border-top:1px solid var(--border);">
                 <div>
                   <p class="text-sm font-medium" style="color:var(--text-primary);">Weekly Summary</p>
@@ -277,33 +266,28 @@
                 <button onclick="togglePref(this)" data-on="false"
                         class="pref-toggle w-10 h-5 rounded-full relative transition-colors"
                         style="background:var(--border);">
-                  <span class="pref-dot absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+                  <span class="pref-dot absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow"></span>
                 </button>
               </div>
-
             </div>
-
           </div>
+ 
         </div>
-
+ 
       </div>
     </div>
-
+ 
   </main>
 </div>
-
+ 
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
-
+ 
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'settings';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
-
-
-
+ 
 <script>
-// ── SETTINGS TAB SWITCHER ──
-// Shows one panel at a time by toggling the 'hidden' class.
 function switchTab(tab) {
   ['profile','password','preferences'].forEach(t => {
     document.getElementById('panel-' + t).classList.add('hidden');
@@ -312,72 +296,55 @@ function switchTab(tab) {
   document.getElementById('panel-' + tab).classList.remove('hidden');
   document.getElementById('tab-' + tab).classList.add('active-tab');
 }
-
-// ── SAVE PROFILE ──
-// Shows a success message for 2 seconds then hides it.
-// setTimeout is a built-in JS function: setTimeout(function, delayInMs)
+ 
 function saveProfile() {
   const msg = document.getElementById('profileSaved');
   msg.classList.remove('hidden');
   setTimeout(() => msg.classList.add('hidden'), 2500);
 }
-
-// ── SAVE PASSWORD ──
-// Basic validation: checks if new and confirm fields match.
+ 
 function savePassword() {
-  const np = document.getElementById('newPass').value;
-  const cp = document.getElementById('confirmPass').value;
+  const np  = document.getElementById('newPass').value;
+  const cp  = document.getElementById('confirmPass').value;
   const err = document.getElementById('passError');
-  const ok = document.getElementById('passSaved');
+  const ok  = document.getElementById('passSaved');
   err.classList.add('hidden');
   ok.classList.add('hidden');
-  if (np !== cp || np.length < 8) {
-    err.classList.remove('hidden');
-    return;
-  }
+  if (np !== cp || np.length < 8) { err.classList.remove('hidden'); return; }
   ok.classList.remove('hidden');
   setTimeout(() => ok.classList.add('hidden'), 2500);
 }
-
-// ── TOGGLE PREFERENCE SWITCHES ──
+ 
 function togglePref(btn) {
   const isOn = btn.getAttribute('data-on') === 'true';
-  const dot = btn.querySelector('.pref-dot');
+  const dot  = btn.querySelector('.pref-dot');
   if (isOn) {
     btn.setAttribute('data-on', 'false');
     btn.style.background = 'var(--border)';
-    dot.style.transform = 'translateX(0)';
-    dot.style.left = '2px';
-    dot.style.right = 'auto';
+    dot.style.right = 'auto'; dot.style.left = '2px';
   } else {
     btn.setAttribute('data-on', 'true');
     btn.style.background = '#2563eb';
-    dot.style.transform = 'translateX(0)';
-    dot.style.right = '2px';
-    dot.style.left = 'auto';
+    dot.style.left = 'auto'; dot.style.right = '2px';
   }
 }
-
-// ── THEME PREFERENCE SELECTOR ──
+ 
 function setThemePref(theme) {
   document.getElementById('themeLight').style.borderColor = theme === 'light' ? '#2563eb' : 'var(--border)';
-  document.getElementById('themeDark').style.borderColor = theme === 'dark' ? '#2563eb' : 'var(--border)';
-  // Actually apply the theme
+  document.getElementById('themeDark').style.borderColor  = theme === 'dark'  ? '#2563eb' : 'var(--border)';
   document.documentElement.classList.remove('light','dark');
   document.documentElement.classList.add(theme);
   localStorage.setItem('qr-theme', theme);
-  // Update moon/sun icon
   const isDark = theme === 'dark';
   document.getElementById('iconSun').classList.toggle('hidden', !isDark);
   document.getElementById('iconMoon').classList.toggle('hidden', isDark);
 }
-
-// Set correct theme card border on load
+ 
 window.addEventListener('DOMContentLoaded', function() {
   const t = localStorage.getItem('qr-theme') || 'light';
   setThemePref(t);
 });
 </script>
-
+ 
 </body>
 </html>

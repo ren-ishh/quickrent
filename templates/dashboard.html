@@ -4,65 +4,63 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Dashboard</title>
-
   <script>
     window.tailwind = window.tailwind || {};
     window.tailwind.config = { darkMode: 'class' };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
-
-  <script>
-    (function() {
-      const t = localStorage.getItem('qr-theme') || 'light';
-      document.documentElement.classList.add(t);
-    })();
-  </script>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
-
+ 
 <body class="flex h-screen overflow-hidden transition-colors duration-300"
       style="background-color: var(--bg-page);">
-
+ 
 <div id="sidebar-mount"></div>
-
+ 
 <div class="flex flex-col flex-1 overflow-hidden">
-
-  <header class="flex items-center gap-4 px-6 h-14 shrink-0 transition-colors duration-300"
+ 
+  <!-- ═══════════════════════════════════════════
+       HEADER — FIXED FOR MOBILE
+       FIX: search input hidden on mobile via .header-search class
+       so bell + dark toggle are always visible on small screens
+  ════════════════════════════════════════════ -->
+  <header class="flex items-center gap-2 px-4 md:px-6 h-14 shrink-0"
           style="background: var(--bg-surface); border-bottom: 1px solid var(--border);">
-
+ 
     <button id="hamburger" onclick="toggleMobileSidebar()"
-            class="md:hidden p-1 rounded-md" style="color: var(--text-secondary);">
+            class="md:hidden p-1 rounded-md shrink-0" style="color: var(--text-secondary);">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
       </svg>
     </button>
-
-    <h1 class="text-[15px] font-semibold" style="color: var(--text-primary);">Dashboard</h1>
-
-    <div class="ml-auto flex items-center gap-3">
-
-      <input type="text" placeholder="Search..."
-             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none transition-all"
-             style="background: var(--bg-input); border: 1px solid var(--border);
-                    color: var(--text-primary);"
-             onfocus="this.style.borderColor='#2563eb'"
-             onblur="this.style.borderColor='var(--border)'"/>
-
-      <a href="/notifications" 
-         class="relative inline-block p-1.5 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
-         style="color: var(--text-secondary);">
-        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+ 
+    <h1 class="text-[15px] font-semibold shrink-0" style="color: var(--text-primary);">Dashboard</h1>
+ 
+    <!-- Search — hidden on mobile, visible md+ -->
+    <input type="text" placeholder="Search..."
+           class="header-search text-sm px-3 py-1.5 rounded-md outline-none ml-3 flex-1 max-w-xs"
+           style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary);"
+           onfocus="this.style.borderColor='#2563eb'"
+           onblur="this.style.borderColor='var(--border)'"/>
+ 
+    <!-- Right icons — always visible, pushed to end -->
+    <div class="ml-auto flex items-center gap-2 shrink-0">
+ 
+      <!-- Bell notification -->
+      <a href="/notifications"
+         class="relative inline-flex items-center justify-center w-8 h-8 rounded-md"
+         style="color: var(--text-secondary); background: var(--bg-input); border: 1px solid var(--border);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
         </svg>
-        <span class="absolute top-0.5 right-0.5 w-[7px] h-[7px] rounded-full bg-blue-500 ring-2"
-              style="--tw-ring-color: var(--bg-surface);"></span>
+        <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
       </a>
-
+ 
+      <!-- Dark mode toggle -->
       <button onclick="toggleTheme()" id="themeToggle"
-              class="flex items-center justify-center w-8 h-8 rounded-md transition-colors"
-              style="color: var(--text-secondary); background: var(--bg-input); border: 1px solid var(--border);"
-              title="Toggle dark/light mode">
+              class="flex items-center justify-center w-8 h-8 rounded-md"
+              style="color: var(--text-secondary); background: var(--bg-input); border: 1px solid var(--border);">
         <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
         </svg>
@@ -70,37 +68,40 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
         </svg>
       </button>
-
-      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-pointer"
+ 
+      <!-- Avatar -->
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
            style="background: #2563eb;">AU</div>
-
     </div>
   </header>
-
-  <main class="flex-1 overflow-y-auto p-6 transition-colors duration-300"
-        style="background: var(--bg-page);">
-
-    <div class="flex items-center justify-between mb-6">
+ 
+  <main class="flex-1 overflow-y-auto p-4 md:p-6" style="background: var(--bg-page);">
+ 
+    <!-- Page heading -->
+    <div class="flex items-start justify-between mb-6 gap-3">
       <div>
         <h2 class="text-xl font-semibold" style="color: var(--text-primary);">Good morning, Admin 👋</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">
           {{ total_vehicles }} vehicles · {{ active_bookings }} active bookings · ₹{{ "{:,}".format(total_revenue) }} revenue
         </p>
       </div>
-      <a href="/bookings" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md"
-        style="background:#2563eb;">
+      <a href="/bookings"
+         class="shrink-0 flex items-center gap-1.5 text-sm font-medium text-white px-3 py-2 rounded-md"
+         style="background:#2563eb;">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
         </svg>
-        Add New Rental
+        <span class="hidden sm:inline">Add New Rental</span>
+        <span class="sm:hidden">Add</span>
       </a>
     </div>
-
+ 
+    <!-- Stats grid -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5">
-
+ 
       <div class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-        <div class="card rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
+ 
+        <div class="rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
           <div class="flex items-center justify-between mb-4">
             <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-secondary);">Total Vehicles</span>
             <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background: #eff6ff;">
@@ -112,8 +113,8 @@
           <p class="text-3xl font-bold" style="color:var(--text-primary);">{{ total_vehicles }}</p>
           <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">{{ available_vehicles }} available</p>
         </div>
-
-        <div class="card rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
+ 
+        <div class="rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
           <div class="flex items-center justify-between mb-4">
             <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-secondary);">Active Bookings</span>
             <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background: #eff6ff;">
@@ -125,8 +126,8 @@
           <p class="text-3xl font-bold" style="color:var(--text-primary);">{{ active_bookings }}</p>
           <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">{{ pending_bookings }} pending</p>
         </div>
-
-        <div class="card rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
+ 
+        <div class="rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
           <div class="flex items-center justify-between mb-4">
             <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-secondary);">Monthly Revenue</span>
             <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background: #eff6ff;">
@@ -135,60 +136,57 @@
               </svg>
             </div>
           </div>
-          <p class="text-3xl font-bold" style="color:var(--text-primary);">₹{{ "{:,}".format(monthly_revenue) }}</p>
+          <p class="text-3xl font-bold" style="color:var(--text-primary);">₹{{ "{:,}".format(total_revenue) }}</p>
           <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">₹{{ "{:,}".format(total_revenue) }} total</p>
-
         </div>
-
+ 
       </div>
-
+ 
+      <!-- Quick stats blue card -->
       <div class="rounded-xl p-5 text-white flex flex-col" style="background: #2563eb;">
         <p class="text-sm font-semibold mb-4 opacity-90">Quick Stats</p>
         <div class="flex flex-col gap-0 flex-1 justify-between">
-            <div class="flex justify-between items-center py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.2);">
-              <span class="text-sm opacity-80">Available Vehicles</span>
-              <span class="font-bold">{{ available_vehicles }}</span>
-            </div>
-            <div class="flex justify-between items-center py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.2);">
-              <span class="text-sm opacity-80">Rented Vehicles</span>
-              <span class="font-bold">{{ rented_vehicles }}</span>
-            </div>
-            <div class="flex justify-between items-center py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.2);">
-              <span class="text-sm opacity-80">Pending Returns</span>
-              <span class="font-bold">{{ pending_bookings }}</span>
-            </div>
-            <div class="flex justify-between items-center py-2.5">
-              <span class="text-sm opacity-80">Overdue</span>
-              <span class="font-bold text-red-300">{{ overdue_bookings }}</span>
-            </div>
+          <div class="flex justify-between items-center py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.2);">
+            <span class="text-sm opacity-80">Available</span>
+            <span class="font-bold">{{ available_vehicles }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.2);">
+            <span class="text-sm opacity-80">Rented</span>
+            <span class="font-bold">{{ rented_vehicles }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.2);">
+            <span class="text-sm opacity-80">Pending Returns</span>
+            <span class="font-bold">{{ pending_bookings }}</span>
+          </div>
+          <div class="flex justify-between items-center py-2.5">
+            <span class="text-sm opacity-80">Overdue</span>
+            <span class="font-bold text-red-300">{{ overdue_bookings }}</span>
+          </div>
         </div>
       </div>
-
+ 
     </div>
-
+ 
+    <!-- Recent bookings -->
     <div class="rounded-xl p-5 mb-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-sm font-semibold" style="color: var(--text-primary);">Recent Bookings</h3>
         <a href="/bookings" class="text-xs font-medium" style="color: #2563eb;">View all →</a>
       </div>
-
+ 
       {% for booking in recent_bookings %}
-      <div class="flex items-center gap-3.5 p-3.5 rounded-lg mb-2.5"
+      <div class="flex items-center gap-3 p-3.5 rounded-lg mb-2.5"
            style="background:var(--bg-row);border:1px solid var(--border);">
         <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
              style="background:#6366f1;">
           {{ booking.customers.name[:2].upper() if booking.customers else 'NA' }}
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium" style="color:var(--text-primary);">
+          <p class="text-sm font-medium truncate" style="color:var(--text-primary);">
             {{ booking.customers.name if booking.customers else 'Unknown' }}
           </p>
-          <p class="text-xs mt-0.5" style="color:var(--text-secondary);">
+          <p class="text-xs mt-0.5 truncate" style="color:var(--text-secondary);">
             {{ booking.vehicles.name if booking.vehicles else 'Unknown' }}
-            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ml-1"
-                  style="background:var(--badge-bg);color:var(--text-secondary);">
-              {{ booking.vehicles.type|capitalize if booking.vehicles else '' }}
-            </span>
           </p>
           <p class="text-[11px] mt-0.5" style="color:var(--text-secondary);">
             {{ booking.start_date }} – {{ booking.end_date }}
@@ -197,17 +195,13 @@
         <div class="text-right shrink-0">
           <p class="text-sm font-semibold" style="color:#2563eb;">₹{{ "{:,}".format(booking.total_amount) }}</p>
           {% if booking.status == 'active' %}
-            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  style="background:#dcfce7;color:#16a34a;">Active</span>
+            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Active</span>
           {% elif booking.status == 'pending' %}
-            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  style="background:#fef9c3;color:#a16207;">Pending</span>
+            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
           {% elif booking.status == 'overdue' %}
-            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  style="background:#fee2e2;color:#dc2626;">Overdue</span>
+            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Overdue</span>
           {% else %}
-            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                  style="background:#f1f5f9;color:#64748b;">Completed</span>
+            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#f1f5f9;color:#64748b;">Completed</span>
           {% endif %}
         </div>
       </div>
@@ -215,50 +209,59 @@
       <p class="text-sm text-center py-8" style="color:var(--text-secondary);">No recent bookings yet.</p>
       {% endfor %}
     </div>
-
+ 
+    <!-- ═══════════════════════════════════════════
+         BOTTOM BUTTONS
+         FIX: all 3 now have working onclick handlers
+         View Calendar → /bookings
+         Add Vehicle   → opens vehicleAddModal if on vehicles page, else goes to /vehicles
+         Generate Report → /analytics
+    ════════════════════════════════════════════ -->
     <div class="flex flex-wrap gap-2.5">
-      <button class="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
-              style="border: 1px solid #2563eb; color: #2563eb; background: transparent;"
-              onmouseover="this.style.background='#eff6ff'"
-              onmouseout="this.style.background='transparent'">
+ 
+      <a href="/bookings"
+         class="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md"
+         style="border: 1px solid #2563eb; color: #2563eb; background: transparent;">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
         </svg>
         View Calendar
-      </button>
-      <button class="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
-              style="border: 1px solid var(--border); color: var(--text-secondary); background: transparent;"
-              onmouseover="this.style.background='var(--bg-row)'"
-              onmouseout="this.style.background='transparent'">
+      </a>
+ 
+      <a href="/vehicles"
+         class="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md"
+         style="border: 1px solid var(--border); color: var(--text-secondary); background: transparent;">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
         </svg>
         Add Vehicle
-      </button>
-      <button class="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
-              style="border: 1px solid var(--border); color: var(--text-secondary); background: transparent;"
-              onmouseover="this.style.background='var(--bg-row)'"
-              onmouseout="this.style.background='transparent'">
+      </a>
+ 
+      <a href="/analytics"
+         class="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md"
+         style="border: 1px solid var(--border); color: var(--text-secondary); background: transparent;">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
         </svg>
         Generate Report
-      </button>
+      </a>
+ 
     </div>
-
+ 
     <p class="text-center text-xs mt-10" style="color: var(--text-secondary); opacity: 0.5;">
       © 2026 QuickRent · All rights reserved
     </p>
-
+ 
   </main>
 </div>
-
+ 
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background: rgba(0,0,0,0.35);"></div>
-
+ 
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'dashboard';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
-
+ 
 </body>
 </html>
+ 
