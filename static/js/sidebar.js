@@ -1,16 +1,3 @@
-// ── SIDEBAR LOADER ─────────────────────────────────────────────
-async function loadSidebar() {
-  try {
-    const res  = await fetch('/components/sidebar');
-    const html = await res.text();
-    document.getElementById('sidebar-mount').innerHTML = html;
-    setActiveNavItem();
-    initMobileSidebar();
-  } catch (e) {
-    console.error('Sidebar failed to load:', e);
-  }
-}
-
 // ── ACTIVE NAV HIGHLIGHTER ─────────────────────────────────────
 function setActiveNavItem() {
   const page = window.QR_PAGE || '';
@@ -26,19 +13,7 @@ function setActiveNavItem() {
 // Sets up the sidebar correctly based on screen size.
 // On desktop: sidebar stays visible, hover to expand.
 // On mobile: sidebar starts hidden off-screen, slides in as drawer.
-function initMobileSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  if (!sidebar) return;
 
-  if (window.innerWidth < 768) {
-    // Position as fixed overlay drawer
-    sidebar.classList.add('fixed', 'top-0', 'left-0', 'h-full');
-    // Start hidden off-screen
-    sidebar.classList.add('-translate-x-full');
-    // Override width to full drawer on mobile
-    sidebar.style.width = '280px';
-  }
-}
 
 // ── MOBILE SIDEBAR TOGGLE ──────────────────────────────────────
 function toggleMobileSidebar() {
@@ -120,5 +95,5 @@ window.addEventListener('resize', function() {
 
 // ── INIT ON LOAD ───────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function () {
-  loadSidebar();
+  setActiveNavItem(); // Only highlight the active link, no more fetching!
 });
