@@ -99,12 +99,12 @@
     </div>
  
     <!-- FIX: Filter tabs — was missing its wrapper div -->
-    <div class="flex gap-1.5 mb-4">
-      <a href="/bookings" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
-      <a href="/bookings?status=active" class="filter-btn {% if active_filter == 'active' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Active</a>
-      <a href="/bookings?status=pending" class="filter-btn {% if active_filter == 'pending' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Pending</a>
-      <a href="/bookings?status=overdue" class="filter-btn {% if active_filter == 'overdue' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Overdue</a>
-      <a href="/bookings?status=completed" class="filter-btn {% if active_filter == 'completed' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Completed</a>
+    <div class="flex flex-nowrap gap-2 mb-4 overflow-x-auto pb-2 max-w-full" style="scrollbar-width: none;">
+      <a href="/bookings" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} shrink-0 px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
+      <a href="/bookings?status=active" class="filter-btn {% if active_filter == 'active' %}active-filter{% endif %} shrink-0 px-3.5 py-1.5 rounded-md text-sm font-medium">Active</a>
+      <a href="/bookings?status=pending" class="filter-btn {% if active_filter == 'pending' %}active-filter{% endif %} shrink-0 px-3.5 py-1.5 rounded-md text-sm font-medium">Pending</a>
+      <a href="/bookings?status=overdue" class="filter-btn {% if active_filter == 'overdue' %}active-filter{% endif %} shrink-0 px-3.5 py-1.5 rounded-md text-sm font-medium">Overdue</a>
+      <a href="/bookings?status=completed" class="filter-btn {% if active_filter == 'completed' %}active-filter{% endif %} shrink-0 px-3.5 py-1.5 rounded-md text-sm font-medium">Completed</a>
     </div>
  
     <!-- Booking list

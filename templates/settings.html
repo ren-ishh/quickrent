@@ -65,22 +65,22 @@
 
     <div class="flex gap-6 flex-col md:flex-row flex-1 overflow-hidden">
 
-      <div class="md:w-48 shrink-0">
-        <nav class="flex md:flex-col gap-1">
+      <div class="md:w-48 shrink-0 max-w-full">
+        <nav class="flex flex-nowrap md:flex-col gap-2 overflow-x-auto pb-2" style="scrollbar-width: none;">
           <button onclick="switchTab('profile')" id="tab-profile"
-                  class="settings-tab active-tab text-left px-3.5 py-2.5 rounded-lg text-sm font-medium w-full">
+                  class="settings-tab active-tab text-left px-4 py-2 rounded-lg text-sm font-medium shrink-0 whitespace-nowrap md:w-full">
             Profile
           </button>
           <button onclick="switchTab('password')" id="tab-password"
-                  class="settings-tab text-left px-3.5 py-2.5 rounded-lg text-sm font-medium w-full">
+                  class="settings-tab text-left px-4 py-2 rounded-lg text-sm font-medium shrink-0 whitespace-nowrap md:w-full">
             Password
           </button>
           <button onclick="switchTab('preferences')" id="tab-preferences"
-                  class="settings-tab text-left px-3.5 py-2.5 rounded-lg text-sm font-medium w-full">
+                  class="settings-tab text-left px-4 py-2 rounded-lg text-sm font-medium shrink-0 whitespace-nowrap md:w-full">
             Preferences
           </button>
           <button onclick="switchTab('admins')" id="tab-admins"
-                  class="settings-tab text-left px-3.5 py-2.5 rounded-lg text-sm font-medium w-full">
+                  class="settings-tab text-left px-4 py-2 rounded-lg text-sm font-medium shrink-0 whitespace-nowrap md:w-full">
             Admins
           </button>
         </nav>
