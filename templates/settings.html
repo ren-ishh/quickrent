@@ -10,27 +10,24 @@
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
- 
+
 <div id="sidebar-mount"></div>
- 
+
 <div class="flex flex-col flex-1 overflow-hidden">
- 
-  <!-- ═══════════════════════════════════════════
-       HEADER — FIXED FOR MOBILE
-  ════════════════════════════════════════════ -->
+
+  <!-- HEADER -->
   <header class="flex items-center gap-2 px-4 md:px-6 h-14 shrink-0"
           style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
- 
+
     <button onclick="toggleMobileSidebar()" class="md:hidden p-1 shrink-0" style="color:var(--text-secondary);">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
       </svg>
     </button>
- 
+
     <h1 class="text-[15px] font-semibold shrink-0" style="color:var(--text-primary);">Settings</h1>
- 
+
     <div class="ml-auto flex items-center gap-2 shrink-0">
- 
       <!-- Bell -->
       <a href="/notifications"
          class="relative inline-flex items-center justify-center w-8 h-8 rounded-md"
@@ -40,7 +37,7 @@
         </svg>
         <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
       </a>
- 
+
       <!-- Dark mode toggle -->
       <button onclick="toggleTheme()" id="themeToggle"
               class="flex items-center justify-center w-8 h-8 rounded-md"
@@ -52,25 +49,23 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
         </svg>
       </button>
- 
+
       <!-- Avatar -->
       <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
            style="background:#2563eb;">AU</div>
     </div>
   </header>
- 
+
   <main class="flex-1 overflow-y-auto p-4 md:p-6" style="background:var(--bg-page);">
- 
+
     <div class="mb-5">
       <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Settings</h2>
       <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage your account and preferences</p>
     </div>
- 
+
     <div class="flex gap-6 flex-col md:flex-row">
- 
-      <!-- Left tab nav
-           FIX: settings-tab now defined in theme.css using CSS vars
-           so text colour correctly switches in dark mode -->
+
+      <!-- Left tab nav -->
       <div class="md:w-48 shrink-0">
         <nav class="flex md:flex-col gap-1">
           <button onclick="switchTab('profile')" id="tab-profile"
@@ -85,20 +80,21 @@
                   class="settings-tab text-left px-3.5 py-2.5 rounded-lg text-sm font-medium w-full">
             Preferences
           </button>
+          <button onclick="switchTab('admins')" id="tab-admins"
+                  class="settings-tab text-left px-3.5 py-2.5 rounded-lg text-sm font-medium w-full">
+            Admins
+          </button>
         </nav>
       </div>
- 
+
       <!-- Right content panels -->
       <div class="flex-1 max-w-2xl">
- 
+
         <!-- ── PROFILE PANEL ── -->
         <div id="panel-profile">
           <div class="rounded-xl p-5 md:p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
- 
-            <!-- FIX: h3 uses style="color:var(--text-primary)" explicitly
-                 so it never falls back to Tailwind's default black -->
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Profile Information</h3>
- 
+
             <div class="flex items-center gap-4 mb-6 pb-6" style="border-bottom:1px solid var(--border);">
               <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0"
                    style="background:#2563eb;">AU</div>
@@ -111,7 +107,7 @@
                 </button>
               </div>
             </div>
- 
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label class="block text-xs font-medium mb-1.5" for="firstName" style="color:var(--text-secondary);">First Name</label>
@@ -124,13 +120,13 @@
                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
               </div>
             </div>
- 
+
             <div class="mb-4">
               <label class="block text-xs font-medium mb-1.5" for="email" style="color:var(--text-secondary);">Email Address</label>
               <input id="email" type="email" value="admin@quickrent.in" class="modal-input"
                      onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
             </div>
- 
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div>
                 <label class="block text-xs font-medium mb-1.5" for="phone" style="color:var(--text-secondary);">Phone Number</label>
@@ -143,7 +139,7 @@
                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
               </div>
             </div>
- 
+
             <div class="flex items-center justify-between">
               <p id="profileSaved" class="text-xs text-green-500 font-medium hidden">✓ Changes saved</p>
               <div class="ml-auto">
@@ -156,13 +152,12 @@
             </div>
           </div>
         </div>
- 
+
         <!-- ── PASSWORD PANEL ── -->
         <div id="panel-password" class="hidden">
           <div class="rounded-xl p-5 md:p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
- 
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Change Password</h3>
- 
+
             <div class="mb-4">
               <label class="block text-xs font-medium mb-1.5" for="currentPass" style="color:var(--text-secondary);">Current Password</label>
               <input id="currentPass" type="password" placeholder="Enter current password" class="modal-input"
@@ -178,12 +173,12 @@
               <input id="confirmPass" type="password" placeholder="Repeat new password" class="modal-input"
                      onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
             </div>
- 
+
             <div class="rounded-lg p-3.5 mb-6 text-xs"
                  style="background:var(--bg-row);border:1px solid var(--border);color:var(--text-secondary);">
               Password must be at least 8 characters, include one uppercase letter and one number.
             </div>
- 
+
             <div class="flex items-center justify-between">
               <p id="passSaved" class="text-xs text-green-500 font-medium hidden">✓ Password updated</p>
               <p id="passError" class="text-xs text-red-500 font-medium hidden">✗ Passwords do not match</p>
@@ -197,10 +192,10 @@
             </div>
           </div>
         </div>
- 
+
         <!-- ── PREFERENCES PANEL ── -->
         <div id="panel-preferences" class="hidden">
- 
+
           <div class="rounded-xl p-5 md:p-6 mb-4" style="background:var(--bg-surface);border:1px solid var(--border);">
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Theme</h3>
             <div class="grid grid-cols-2 gap-3">
@@ -220,10 +215,9 @@
               </button>
             </div>
           </div>
- 
+
           <div class="rounded-xl p-5 md:p-6" style="background:var(--bg-surface);border:1px solid var(--border);">
             <h3 class="text-sm font-semibold mb-5" style="color:var(--text-primary);">Notification Preferences</h3>
- 
             <div class="flex flex-col gap-4">
               <div class="flex items-center justify-between">
                 <div>
@@ -271,38 +265,121 @@
               </div>
             </div>
           </div>
- 
         </div>
- 
+
+        <!-- ── ADMINS PANEL ── -->
+        <div id="panel-admins" class="hidden">
+
+          <!-- Invite new admin -->
+          <div class="rounded-xl p-5 md:p-6 mb-4" style="background:var(--bg-surface);border:1px solid var(--border);">
+            <h3 class="text-sm font-semibold mb-1" style="color:var(--text-primary);">Add New Admin</h3>
+            <p class="text-xs mb-4" style="color:var(--text-secondary);">Admins have full access to manage bookings, vehicles, customers and payments.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Full Name</label>
+                <input id="adm_name" type="text" placeholder="e.g. Priya Sharma" class="modal-input"
+                       onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Email Address</label>
+                <input id="adm_email" type="email" placeholder="priya@quickrent.in" class="modal-input"
+                       onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Phone (optional)</label>
+                <input id="adm_phone" type="tel" placeholder="+91 98100 00000" class="modal-input"
+                       onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Role</label>
+                <select id="adm_role" class="modal-input">
+                  <option value="admin">Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="viewer">Viewer (read-only)</option>
+                </select>
+              </div>
+            </div>
+
+            <p id="adm_error" class="text-xs text-red-500 mb-3 hidden"></p>
+            <p id="adm_success" class="text-xs text-green-500 mb-3 hidden">✓ Admin added successfully</p>
+
+            <div class="flex justify-end">
+              <button onclick="addAdmin()" class="text-sm font-medium text-white px-4 py-2 rounded-md"
+                      style="background:#2563eb;"
+                      onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                Add Admin
+              </button>
+            </div>
+          </div>
+
+          <!-- Current admins list -->
+          <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
+            <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid var(--border);">
+              <h3 class="text-sm font-semibold" style="color:var(--text-primary);">Current Admins</h3>
+              <span class="text-xs px-2 py-0.5 rounded-full font-semibold" style="background:#eff6ff;color:#2563eb;" id="adminCount">3 admins</span>
+            </div>
+
+            <div id="adminList" class="divide-y" style="border-color:var(--border);">
+              <!-- Admins rendered by JS below; seeded with 3 defaults -->
+            </div>
+          </div>
+
+        </div><!-- end panel-admins -->
+
       </div>
     </div>
- 
+
   </main>
 </div>
- 
+
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
- 
+
+<!-- REMOVE ADMIN CONFIRM MODAL -->
+<div id="removeAdminModal" class="modal-backdrop hidden">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Remove Admin</h2>
+      <button onclick="closeModal('removeAdminModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
+    </div>
+    <div class="rounded-xl p-4 mb-4 text-center" style="background:#fee2e2;border:1px solid #fecaca;">
+      <p class="text-sm font-semibold mb-1" style="color:#dc2626;">Remove <span id="removeAdminName"></span>?</p>
+      <p class="text-xs" style="color:#dc2626;">They will lose all access to the QuickRent dashboard immediately.</p>
+    </div>
+    <div class="flex gap-2 justify-end">
+      <button onclick="closeModal('removeAdminModal')"
+              class="text-sm px-4 py-2 rounded-lg font-medium"
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
+      <button onclick="confirmRemoveAdmin()"
+              class="text-sm px-4 py-2 rounded-lg font-medium text-white"
+              style="background:#dc2626;">Yes, Remove</button>
+    </div>
+  </div>
+</div>
+
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'settings';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
- 
+
 <script>
+// ── Tab switching ──────────────────────────────────────────────
 function switchTab(tab) {
-  ['profile','password','preferences'].forEach(t => {
+  ['profile','password','preferences','admins'].forEach(t => {
     document.getElementById('panel-' + t).classList.add('hidden');
     document.getElementById('tab-' + t).classList.remove('active-tab');
   });
   document.getElementById('panel-' + tab).classList.remove('hidden');
   document.getElementById('tab-' + tab).classList.add('active-tab');
 }
- 
+
+// ── Profile & Password ─────────────────────────────────────────
 function saveProfile() {
   const msg = document.getElementById('profileSaved');
   msg.classList.remove('hidden');
   setTimeout(() => msg.classList.add('hidden'), 2500);
 }
- 
+
 function savePassword() {
   const np  = document.getElementById('newPass').value;
   const cp  = document.getElementById('confirmPass').value;
@@ -314,7 +391,8 @@ function savePassword() {
   ok.classList.remove('hidden');
   setTimeout(() => ok.classList.add('hidden'), 2500);
 }
- 
+
+// ── Preferences ────────────────────────────────────────────────
 function togglePref(btn) {
   const isOn = btn.getAttribute('data-on') === 'true';
   const dot  = btn.querySelector('.pref-dot');
@@ -328,7 +406,7 @@ function togglePref(btn) {
     dot.style.left = 'auto'; dot.style.right = '2px';
   }
 }
- 
+
 function setThemePref(theme) {
   document.getElementById('themeLight').style.borderColor = theme === 'light' ? '#2563eb' : 'var(--border)';
   document.getElementById('themeDark').style.borderColor  = theme === 'dark'  ? '#2563eb' : 'var(--border)';
@@ -339,12 +417,154 @@ function setThemePref(theme) {
   document.getElementById('iconSun').classList.toggle('hidden', !isDark);
   document.getElementById('iconMoon').classList.toggle('hidden', isDark);
 }
- 
+
 window.addEventListener('DOMContentLoaded', function() {
   const t = localStorage.getItem('qr-theme') || 'light';
   setThemePref(t);
+  renderAdminList();
 });
+
+// ── Generic modal ──────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.getElementById('removeAdminModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('removeAdminModal');
+});
+
+// ── Admin Management ───────────────────────────────────────────
+// In a real app this state lives in a database; here we use JS state
+// so the UI is fully functional without a backend change.
+// Swap addAdmin/removeAdmin bodies for API calls when backend is ready.
+
+const ROLE_COLORS = {
+  owner:   { bg:'#fef9c3', color:'#a16207' },
+  admin:   { bg:'#eff6ff', color:'#2563eb' },
+  manager: { bg:'#f0fdf4', color:'#16a34a' },
+  viewer:  { bg:'#f8fafc', color:'#64748b' }
+};
+
+// Seed admins (replace with server-rendered data in production)
+let admins = [
+  { id: 1, name: 'Admin User', email: 'admin@quickrent.in', phone: '+91 98100 00000', role: 'owner', you: true },
+  { id: 2, name: 'Priya Sharma', email: 'priya@quickrent.in', phone: '+91 98200 11111', role: 'manager', you: false },
+  { id: 3, name: 'Rohan Mehta', email: 'rohan@quickrent.in', phone: '+91 98300 22222', role: 'admin', you: false }
+];
+
+let nextId = 4;
+let pendingRemoveId = null;
+
+function renderAdminList() {
+  const list = document.getElementById('adminList');
+  document.getElementById('adminCount').textContent = admins.length + ' admin' + (admins.length !== 1 ? 's' : '');
+
+  if (!admins.length) {
+    list.innerHTML = '<p class="text-sm text-center py-8" style="color:var(--text-secondary);">No admins yet.</p>';
+    return;
+  }
+
+  list.innerHTML = admins.map(a => {
+    const rc       = ROLE_COLORS[a.role] || ROLE_COLORS.admin;
+    const initials = a.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const avatarBg = a.role === 'owner' ? '#f59e0b' : a.role === 'manager' ? '#10b981' : '#6366f1';
+
+    return `
+    <div class="flex items-center gap-4 px-5 py-4" style="border-bottom:1px solid var(--border);">
+      <!-- Avatar -->
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+           style="background:${avatarBg};">${initials}</div>
+
+      <!-- Info -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <p class="text-sm font-semibold" style="color:var(--text-primary);">${a.name}${a.you ? ' <span class="text-[10px] font-normal" style="color:var(--text-secondary);">(you)</span>' : ''}</p>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                style="background:${rc.bg};color:${rc.color};">${a.role.charAt(0).toUpperCase() + a.role.slice(1)}</span>
+        </div>
+        <p class="text-xs mt-0.5 truncate" style="color:var(--text-secondary);">${a.email}${a.phone ? ' · ' + a.phone : ''}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2 shrink-0">
+        <select onchange="changeAdminRole(${a.id}, this.value)"
+                class="text-xs px-2 py-1 rounded-md outline-none"
+                style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);"
+                ${a.you ? 'disabled title="Cannot change your own role"' : ''}>
+          <option value="admin"   ${a.role === 'admin'   ? 'selected' : ''}>Admin</option>
+          <option value="manager" ${a.role === 'manager' ? 'selected' : ''}>Manager</option>
+          <option value="viewer"  ${a.role === 'viewer'  ? 'selected' : ''}>Viewer</option>
+          ${a.role === 'owner' ? '<option value="owner" selected>Owner</option>' : ''}
+        </select>
+        ${!a.you ? `
+        <button onclick="promptRemoveAdmin(${a.id}, '${a.name.replace(/'/g,"\\'")}') "
+                class="text-xs px-2.5 py-1 rounded-md font-medium"
+                style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">Remove</button>
+        ` : `
+        <span class="text-xs px-2.5 py-1 rounded-md font-medium"
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">You</span>
+        `}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function changeAdminRole(id, newRole) {
+  const admin = admins.find(a => a.id === id);
+  if (!admin) return;
+  admin.role = newRole;
+  renderAdminList();
+  // In production: POST /api/admins/{id}/role  { role: newRole }
+}
+
+function promptRemoveAdmin(id, name) {
+  pendingRemoveId = id;
+  document.getElementById('removeAdminName').textContent = name;
+  openModal('removeAdminModal');
+}
+
+function confirmRemoveAdmin() {
+  admins = admins.filter(a => a.id !== pendingRemoveId);
+  pendingRemoveId = null;
+  closeModal('removeAdminModal');
+  renderAdminList();
+  // In production: POST /api/admins/{id}/delete
+}
+
+async function addAdmin() {
+  const name  = document.getElementById('adm_name').value.trim();
+  const email = document.getElementById('adm_email').value.trim();
+  const phone = document.getElementById('adm_phone').value.trim();
+  const role  = document.getElementById('adm_role').value;
+  const err   = document.getElementById('adm_error');
+  const ok    = document.getElementById('adm_success');
+
+  err.classList.add('hidden');
+  ok.classList.add('hidden');
+
+  if (!name || !email) {
+    err.textContent = 'Name and email are required.';
+    err.classList.remove('hidden');
+    return;
+  }
+  if (admins.some(a => a.email.toLowerCase() === email.toLowerCase())) {
+    err.textContent = 'An admin with this email already exists.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  // In production: POST /api/admins/add { name, email, phone, role }
+  // and refresh from server. Here we update local state directly.
+  admins.push({ id: nextId++, name, email, phone, role, you: false });
+  renderAdminList();
+
+  // Clear form
+  document.getElementById('adm_name').value  = '';
+  document.getElementById('adm_email').value = '';
+  document.getElementById('adm_phone').value = '';
+  document.getElementById('adm_role').value  = 'admin';
+
+  ok.classList.remove('hidden');
+  setTimeout(() => ok.classList.add('hidden'), 2500);
+}
 </script>
- 
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -10,39 +10,56 @@
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
-
+ 
 <div id="sidebar-mount"></div>
-
+ 
 <div class="flex flex-col flex-1 overflow-hidden">
-
-  <!-- TOP BAR -->
-  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+ 
+  <!-- TOP BAR — FIX: flex-1 search + shrink-0 icon group -->
+  <header class="flex items-center gap-2 px-4 md:px-6 h-14 shrink-0"
           style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
-    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1 shrink-0" style="color:var(--text-secondary);">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
     </button>
-    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Bookings</h1>
-    <div class="ml-auto flex items-center gap-3">
-      <input type="text" placeholder="Search bookings..."
-             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
+    <h1 class="text-[15px] font-semibold shrink-0" style="color:var(--text-primary);">Bookings</h1>
+ 
+    <!-- Search grows, never pushes icons off screen -->
+    <div class="flex-1 min-w-0 mx-2">
+      <input type="text" id="bookingSearch" oninput="searchBookings()" placeholder="Search bookings..."
+             class="text-sm px-3 py-1.5 rounded-md w-full outline-none"
              style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
              onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+ 
+    <!-- Right icons group — shrink-0 so they're always visible -->
+    <div class="flex items-center gap-2 shrink-0">
+      <!-- Bell -->
+      <a href="/notifications"
+         class="relative inline-flex items-center justify-center w-8 h-8 rounded-md"
+         style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+        </svg>
+        <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+      </a>
+ 
+      <!-- Dark mode toggle -->
       <button onclick="toggleTheme()" id="themeToggle"
               class="flex items-center justify-center w-8 h-8 rounded-md"
               style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
         <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
         <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
       </button>
-      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+ 
+      <!-- Avatar -->
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#2563eb;">AU</div>
     </div>
   </header>
-
+ 
   <!-- PAGE CONTENT -->
   <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
-
+ 
     <!-- Page header -->
-    <!-- This row has the page title on the left and an action button on the right.
-         This pattern repeats on every page. -->
     <div class="flex items-center justify-between mb-5">
       <div>
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Bookings</h2>
@@ -53,61 +70,57 @@
         New Booking
       </button>
     </div>
-
-    <!-- Summary strip -->
-    <!-- 4 small inline stat pills. These give a quick number snapshot without
-         taking up the space of full cards. Good pattern for sub-pages. -->
-    
-            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
-                style="background:var(--bg-surface);border:1px solid var(--border);">
-              <span style="color:var(--text-secondary);">Total</span>
-              <span class="font-bold" style="color:var(--text-primary);">{{ counts.all }}</span>
-            </div>
-            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
-                style="background:var(--bg-surface);border:1px solid var(--border);">
-              <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-              <span style="color:var(--text-secondary);">Active</span>
-              <span class="font-bold" style="color:var(--text-primary);">{{ counts.active }}</span>
-            </div>
-            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
-                style="background:var(--bg-surface);border:1px solid var(--border);">
-              <span class="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
-              <span style="color:var(--text-secondary);">Pending</span>
-              <span class="font-bold" style="color:var(--text-primary);">{{ counts.pending }}</span>
-            </div>
-            <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
-                style="background:var(--bg-surface);border:1px solid var(--border);">
-              <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
-              <span style="color:var(--text-secondary);">Overdue</span>
-              <span class="font-bold" style="color:var(--text-primary);">{{ counts.overdue }}</span>
-            </div>
-
-    <!-- Filter tabs -->
-    <!-- data-filter attribute is read by JavaScript below to show/hide cards.
-         This is your first example of JavaScript controlling UI state. -->
-    <!-- Replace filter buttons with anchor links -->
-            <div class="flex gap-1.5 mb-4">
-              <a href="/bookings" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
-              <a href="/bookings?status=active" class="filter-btn {% if active_filter == 'active' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Active</a>
-              <a href="/bookings?status=pending" class="filter-btn {% if active_filter == 'pending' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Pending</a>
-              <a href="/bookings?status=overdue" class="filter-btn {% if active_filter == 'overdue' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Overdue</a>
-              <a href="/bookings?status=completed" class="filter-btn {% if active_filter == 'completed' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Completed</a>
-            </div>
-
-    <!-- Booking list -->
-    <!-- Each card has data-status so JavaScript can show/hide it by filter.
-         Structure of each card: avatar | customer+vehicle info | dates | amount+status | action -->
-        <div class="flex flex-col gap-2.5" id="bookingList">
+ 
+    <!-- FIX: Summary strip — was missing its wrapper div, causing pills to render inline without layout -->
+    <div class="flex flex-wrap gap-3 mb-5">
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <span style="color:var(--text-secondary);">Total</span>
+        <span class="font-bold" style="color:var(--text-primary);">{{ counts.all }}</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+        <span style="color:var(--text-secondary);">Active</span>
+        <span class="font-bold" style="color:var(--text-primary);">{{ counts.active }}</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <span class="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
+        <span style="color:var(--text-secondary);">Pending</span>
+        <span class="font-bold" style="color:var(--text-primary);">{{ counts.pending }}</span>
+      </div>
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm"
+           style="background:var(--bg-surface);border:1px solid var(--border);">
+        <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+        <span style="color:var(--text-secondary);">Overdue</span>
+        <span class="font-bold" style="color:var(--text-primary);">{{ counts.overdue }}</span>
+      </div>
+    </div>
+ 
+    <!-- FIX: Filter tabs — was missing its wrapper div -->
+    <div class="flex gap-1.5 mb-4">
+      <a href="/bookings" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
+      <a href="/bookings?status=active" class="filter-btn {% if active_filter == 'active' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Active</a>
+      <a href="/bookings?status=pending" class="filter-btn {% if active_filter == 'pending' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Pending</a>
+      <a href="/bookings?status=overdue" class="filter-btn {% if active_filter == 'overdue' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Overdue</a>
+      <a href="/bookings?status=completed" class="filter-btn {% if active_filter == 'completed' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Completed</a>
+    </div>
+ 
+    <!-- Booking list
+         FIX: overflow-visible on container so 3-dot dropdown menus aren't clipped -->
+    <div class="flex flex-col gap-2.5" id="bookingList">
 {% for booking in bookings %}
 <div class="booking-card flex items-center gap-4 p-4 rounded-xl"
      data-status="{{ booking.status }}"
-     style="background:var(--bg-surface);border:1px solid var(--border);">
-
+     data-name="{{ (booking.customers.name if booking.customers else '') | lower }}"
+     style="background:var(--bg-surface);border:1px solid var(--border);overflow:visible;">
+ 
   <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
        style="background:#6366f1;">
     {{ booking.customers.name[:2].upper() if booking.customers else 'NA' }}
   </div>
-
+ 
   <div class="flex-1 min-w-0">
     <p class="text-sm font-semibold" style="color:var(--text-primary);">
       {{ booking.customers.name if booking.customers else 'Unknown' }}
@@ -118,14 +131,14 @@
       {{ booking.booking_ref }}
     </p>
   </div>
-
+ 
   <div class="text-center hidden sm:block">
     <p class="text-xs" style="color:var(--text-secondary);">Duration</p>
     <p class="text-sm font-medium mt-0.5" style="color:var(--text-primary);">
       {{ booking.start_date }} – {{ booking.end_date }}
     </p>
   </div>
-
+ 
   <div class="text-right shrink-0">
     <p class="text-sm font-semibold" style="color:#2563eb;">
       ₹{{ "{:,}".format(booking.total_amount) }}
@@ -144,9 +157,9 @@
             style="background:#f1f5f9;color:#64748b;">Completed</span>
     {% endif %}
   </div>
-
-  <!-- 3-dot action menu -->
-  <div class="relative ml-1" id="menu-wrapper-{{ booking.id }}">
+ 
+  <!-- FIX: 3-dot menu wrapper — position:relative with overflow:visible ensures dropdown renders above siblings -->
+  <div class="relative ml-1 shrink-0" id="menu-wrapper-{{ booking.id }}" style="overflow:visible;">
     <button onclick="toggleMenu('{{ booking.id }}')"
             class="p-1.5 rounded-md" style="color:var(--text-secondary);">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -154,95 +167,66 @@
               d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"/>
       </svg>
     </button>
-    <!-- Dropdown menu -->
+    <!-- Dropdown — z-50 ensures it sits above everything -->
     <div id="menu-{{ booking.id }}"
-         class="hidden absolute right-0 top-8 z-20 rounded-xl shadow-lg py-1 w-44"
+         class="hidden absolute right-0 top-8 z-50 rounded-xl shadow-lg py-1 w-44"
          style="background:var(--bg-surface);border:1px solid var(--border);">
       {% if booking.status != 'active' %}
       <button onclick="updateBookingStatus('{{ booking.id }}', 'active'); toggleMenu('{{ booking.id }}')"
-              class="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 transition-colors"
-              style="color:#16a34a;">
+              class="w-full text-left px-4 py-2.5 text-sm"
+              style="color:#16a34a;"
+              onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='transparent'">
         ✓ Mark as Active
       </button>
       {% endif %}
       {% if booking.status != 'completed' %}
       <button onclick="updateBookingStatus('{{ booking.id }}', 'completed'); toggleMenu('{{ booking.id }}')"
-              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              class="w-full text-left px-4 py-2.5 text-sm"
               style="color:var(--text-secondary);"
-              onmouseover="this.style.background='var(--bg-row)'"
-              onmouseout="this.style.background='transparent'">
+              onmouseover="this.style.background='var(--bg-row)'" onmouseout="this.style.background='transparent'">
         ✓ Mark as Completed
       </button>
       {% endif %}
       {% if booking.status != 'overdue' %}
       <button onclick="updateBookingStatus('{{ booking.id }}', 'overdue'); toggleMenu('{{ booking.id }}')"
-              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              class="w-full text-left px-4 py-2.5 text-sm"
               style="color:#a16207;"
-              onmouseover="this.style.background='var(--bg-row)'"
-              onmouseout="this.style.background='transparent'">
+              onmouseover="this.style.background='var(--bg-row)'" onmouseout="this.style.background='transparent'">
         ⚠ Mark as Overdue
       </button>
       {% endif %}
       <button onclick="openPaymentModal('{{ booking.id }}', '{{ booking.customers.id if booking.customers else '' }}', {{ booking.total_amount }}); toggleMenu('{{ booking.id }}')"
-              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              class="w-full text-left px-4 py-2.5 text-sm"
               style="color:#2563eb;"
-              onmouseover="this.style.background='var(--bg-row)'"
-              onmouseout="this.style.background='transparent'">
+              onmouseover="this.style.background='var(--bg-row)'" onmouseout="this.style.background='transparent'">
         ₹ Record Payment
       </button>
       <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
       <button onclick="deleteBooking('{{ booking.id }}'); toggleMenu('{{ booking.id }}')"
-              class="w-full text-left px-4 py-2.5 text-sm transition-colors"
+              class="w-full text-left px-4 py-2.5 text-sm"
               style="color:#dc2626;"
-              onmouseover="this.style.background='#fee2e2'"
-              onmouseout="this.style.background='transparent'">
+              onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">
         🗑 Delete Booking
       </button>
     </div>
   </div>
-
+ 
 </div>
 {% else %}
 <p class="text-sm text-center py-12" style="color:var(--text-secondary);">No bookings found.</p>
 {% endfor %}
-</div>
-   <!-- end bookingList -->
-
+    </div><!-- end bookingList -->
+ 
   </main>
 </div>
-
+ 
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
-
+ 
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'bookings';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
-
-
-<script>
-// ── FILTER LOGIC ──
-// This reads data-status on each card and shows/hides
-// based on which tab button was clicked.
-// This is your first real JavaScript DOM manipulation.
-
-function filterBookings(status) {
-  // Update button styles
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('active-filter');
-  });
-  document.querySelector(`[data-filter="${status}"]`).classList.add('active-filter');
-
-  // Show/hide cards
-  document.querySelectorAll('.booking-card').forEach(card => {
-    if (status === 'all' || card.getAttribute('data-status') === status) {
-      card.style.display = 'flex';
-    } else {
-      card.style.display = 'none';
-    }
-  });
-}
-</script>
-<!-- BOOKING MODAL -->
+ 
 <!-- PAYMENT MODAL -->
 <div id="paymentModal" class="modal-backdrop hidden">
   <div class="modal-box">
@@ -270,19 +254,15 @@ function filterBookings(status) {
     <div class="flex gap-2 justify-end mt-4">
       <button onclick="closeModal('paymentModal')"
               class="text-sm px-4 py-2 rounded-lg font-medium"
-              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-        Cancel
-      </button>
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
       <button onclick="submitPayment()"
               class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-              style="background:#2563eb;">
-        Record Payment
-      </button>
+              style="background:#2563eb;">Record Payment</button>
     </div>
   </div>
 </div>
-
-<!-- BOOKING MODAL (New Booking) -->
+ 
+<!-- NEW BOOKING MODAL -->
 <div id="bookingModal" class="modal-backdrop hidden">
   <div class="modal-box">
     <div class="flex items-center justify-between mb-5">
@@ -292,15 +272,11 @@ function filterBookings(status) {
     <div class="flex flex-col gap-3 mb-3">
       <div>
         <label class="modal-label">Customer</label>
-        <select id="b_customer" class="modal-input">
-          <option value="">Loading...</option>
-        </select>
+        <select id="b_customer" class="modal-input"><option value="">Loading...</option></select>
       </div>
       <div>
         <label class="modal-label">Vehicle</label>
-        <select id="b_vehicle" class="modal-input">
-          <option value="">Loading...</option>
-        </select>
+        <select id="b_vehicle" class="modal-input"><option value="">Loading...</option></select>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
@@ -321,32 +297,36 @@ function filterBookings(status) {
     <div class="flex gap-2 justify-end mt-4">
       <button onclick="closeModal('bookingModal')"
               class="text-sm px-4 py-2 rounded-lg font-medium"
-              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-        Cancel
-      </button>
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
       <button onclick="submitBooking()"
               class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-              style="background:#2563eb;">
-        Create Booking
-      </button>
+              style="background:#2563eb;">Create Booking</button>
     </div>
   </div>
 </div>
-
+ 
 <script>
 // ── Generic helpers ────────────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
+ 
 document.getElementById('paymentModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal('paymentModal');
 });
 document.getElementById('bookingModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal('bookingModal');
 });
-
+ 
+// ── Booking search ─────────────────────────────────────────────
+function searchBookings() {
+  const q = document.getElementById('bookingSearch').value.toLowerCase();
+  document.querySelectorAll('.booking-card').forEach(card => {
+    const name = card.getAttribute('data-name') || '';
+    card.style.display = name.includes(q) ? 'flex' : 'none';
+  });
+}
+ 
 // ── 3-dot dropdown toggle ──────────────────────────────────────
-// Closes all other open menus first then toggles the clicked one
 function toggleMenu(bookingId) {
   const allMenus = document.querySelectorAll('[id^="menu-"]:not([id^="menu-wrapper-"])');
   allMenus.forEach(m => {
@@ -354,8 +334,8 @@ function toggleMenu(bookingId) {
   });
   document.getElementById('menu-' + bookingId).classList.toggle('hidden');
 }
-
-// Close menus when clicking anywhere else on the page
+ 
+// Close menus when clicking anywhere else
 document.addEventListener('click', function(e) {
   if (!e.target.closest('[id^="menu-wrapper-"]')) {
     document.querySelectorAll('[id^="menu-"]:not([id^="menu-wrapper-"])').forEach(m => {
@@ -363,7 +343,7 @@ document.addEventListener('click', function(e) {
     });
   }
 });
-
+ 
 // ── Update booking status ──────────────────────────────────────
 async function updateBookingStatus(bookingId, status) {
   try {
@@ -375,75 +355,54 @@ async function updateBookingStatus(bookingId, status) {
     const data = await res.json();
     if (data.success) window.location.reload();
     else alert('Failed to update status.');
-  } catch(e) {
-    alert('Network error. Please try again.');
-  }
+  } catch(e) { alert('Network error.'); }
 }
-
+ 
 // ── Delete booking ─────────────────────────────────────────────
 async function deleteBooking(bookingId) {
   if (!confirm('Delete this booking? This cannot be undone.')) return;
   try {
     const res = await fetch(`/api/bookings/${bookingId}/delete`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' }
     });
     const data = await res.json();
     if (data.success) window.location.reload();
     else alert('Failed to delete booking.');
-  } catch(e) {
-    alert('Network error. Please try again.');
-  }
+  } catch(e) { alert('Network error.'); }
 }
-
+ 
 // ── Payment modal ──────────────────────────────────────────────
 let currentBookingId = null;
 let currentCustomerId = null;
-
+ 
 function openPaymentModal(bookingId, customerId, amount) {
-  currentBookingId = bookingId;
+  currentBookingId  = bookingId;
   currentCustomerId = customerId;
   document.getElementById('pay_amount').value = amount;
   openModal('paymentModal');
 }
-
+ 
 async function submitPayment() {
   const amount = parseInt(document.getElementById('pay_amount').value);
   const method = document.getElementById('pay_method').value;
-  const err = document.getElementById('pay_error');
-
+  const err    = document.getElementById('pay_error');
+ 
   if (!amount) {
-    err.textContent = 'Amount is required.';
-    err.classList.remove('hidden');
-    return;
+    err.textContent = 'Amount is required.'; err.classList.remove('hidden'); return;
   }
   err.classList.add('hidden');
-
+ 
   try {
     const res = await fetch('/api/payments/add', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        booking_id: currentBookingId,
-        customer_id: currentCustomerId,
-        amount,
-        method
-      })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ booking_id: currentBookingId, customer_id: currentCustomerId, amount, method })
     });
     const data = await res.json();
-    if (data.success) {
-      closeModal('paymentModal');
-      window.location.reload();
-    } else {
-      err.textContent = 'Payment failed. Please try again.';
-      err.classList.remove('hidden');
-    }
-  } catch(e) {
-    err.textContent = 'Network error. Please try again.';
-    err.classList.remove('hidden');
-  }
+    if (data.success) { closeModal('paymentModal'); window.location.reload(); }
+    else { err.textContent = 'Payment failed.'; err.classList.remove('hidden'); }
+  } catch(e) { err.textContent = 'Network error.'; err.classList.remove('hidden'); }
 }
-
+ 
 // ── New Booking modal ──────────────────────────────────────────
 async function openBookingModal() {
   openModal('bookingModal');
@@ -456,43 +415,32 @@ async function openBookingModal() {
   document.getElementById('b_vehicle').innerHTML =
     vehRes.vehicles.map(v => `<option value="${v.id}">${v.name} (${v.type}) — ₹${v.daily_rate}/day</option>`).join('');
 }
-
+ 
 async function submitBooking() {
-  const customer_id = document.getElementById('b_customer').value;
-  const vehicle_id = document.getElementById('b_vehicle').value;
-  const start_date = document.getElementById('b_start').value;
-  const end_date = document.getElementById('b_end').value;
+  const customer_id  = document.getElementById('b_customer').value;
+  const vehicle_id   = document.getElementById('b_vehicle').value;
+  const start_date   = document.getElementById('b_start').value;
+  const end_date     = document.getElementById('b_end').value;
   const total_amount = parseInt(document.getElementById('b_amount').value);
-  const err = document.getElementById('b_error');
-
+  const err          = document.getElementById('b_error');
+ 
   if (!customer_id || !vehicle_id || !start_date || !end_date || !total_amount) {
-    err.textContent = 'All fields are required.';
-    err.classList.remove('hidden');
-    return;
+    err.textContent = 'All fields are required.'; err.classList.remove('hidden'); return;
   }
   if (end_date <= start_date) {
-    err.textContent = 'End date must be after start date.';
-    err.classList.remove('hidden');
-    return;
+    err.textContent = 'End date must be after start date.'; err.classList.remove('hidden'); return;
   }
   err.classList.add('hidden');
-
+ 
   try {
     const res = await fetch('/api/bookings/add', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customer_id, vehicle_id, start_date, end_date, total_amount })
     });
     const data = await res.json();
     if (data.success) window.location.reload();
-    else {
-      err.textContent = 'Something went wrong.';
-      err.classList.remove('hidden');
-    }
-  } catch(e) {
-    err.textContent = 'Network error. Please try again.';
-    err.classList.remove('hidden');
-  }
+    else { err.textContent = 'Something went wrong.'; err.classList.remove('hidden'); }
+  } catch(e) { err.textContent = 'Network error.'; err.classList.remove('hidden'); }
 }
 </script>
 </body>

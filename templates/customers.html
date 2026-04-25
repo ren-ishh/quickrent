@@ -10,33 +10,52 @@
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
-
+ 
 <div id="sidebar-mount"></div>
-
+ 
 <div class="flex flex-col flex-1 overflow-hidden">
-  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+  <header class="flex items-center gap-2 px-4 md:px-6 h-14 shrink-0"
           style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
-    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1 shrink-0" style="color:var(--text-secondary);">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
     </button>
-    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Customers</h1>
-    <div class="ml-auto flex items-center gap-3">
+    <h1 class="text-[15px] font-semibold shrink-0" style="color:var(--text-primary);">Customers</h1>
+ 
+    <!-- Search grows but won't push icons off screen -->
+    <div class="flex-1 min-w-0 mx-2">
       <input type="text" id="customerSearch" oninput="searchCustomers()" placeholder="Search customers..."
-             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
+             class="text-sm px-3 py-1.5 rounded-md w-full outline-none"
              style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
              onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+ 
+    <!-- Right icons — shrink-0 so they never get pushed off screen -->
+    <div class="flex items-center gap-2 shrink-0">
+      <!-- Bell -->
+      <a href="/notifications"
+         class="relative inline-flex items-center justify-center w-8 h-8 rounded-md"
+         style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+        </svg>
+        <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+      </a>
+ 
+      <!-- Dark mode toggle -->
       <button onclick="toggleTheme()" id="themeToggle"
               class="flex items-center justify-center w-8 h-8 rounded-md"
               style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
         <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
         <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
       </button>
-      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+ 
+      <!-- Avatar -->
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#2563eb;">AU</div>
     </div>
   </header>
-
+ 
   <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
-
+ 
     <div class="flex items-center justify-between mb-5">
       <div>
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Customers</h2>
@@ -46,7 +65,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Add Customer
       </button>
     </div>
-
+ 
     <!-- Summary strip -->
     <div class="flex flex-wrap gap-3 mb-5">
       <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm" style="background:var(--bg-surface);border:1px solid var(--border);">
@@ -64,78 +83,78 @@
         <span class="font-bold" style="color:var(--text-primary);">9</span>
       </div>
     </div>
-
-    <!-- Customer table -->
-    <div class="rounded-xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border);">
-      <table class="w-full text-sm">
-        <thead>
-          <tr style="border-bottom:1px solid var(--border);background:var(--bg-row);">
-            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Customer</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden sm:table-cell" style="color:var(--text-secondary);">Phone</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Rentals</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Spent</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Joined</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Status</th>
-            <th class="px-5 py-3"></th>
-          </tr>
-        </thead>
-        <tbody id="customerTable">
-          {% for customer in customers %}
-          <tr class="customer-row" data-name="{{ customer.name|lower }}"
-              style="border-bottom:1px solid var(--border);">
-            <td class="px-5 py-3.5">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                     style="background:#6366f1;">
-                  {{ customer.name[:2].upper() }}
+ 
+    <!-- Customer table — overflow-visible so View button is never clipped -->
+    <div class="rounded-xl" style="background:var(--bg-surface);border:1px solid var(--border);overflow:visible;">
+      <div style="overflow-x:auto;border-radius:0.75rem;">
+        <table class="w-full text-sm">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);background:var(--bg-row);">
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Customer</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden sm:table-cell" style="color:var(--text-secondary);">Phone</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Rentals</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:var(--text-secondary);">Total Spent</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Joined</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">Status</th>
+              <th class="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="customerTable">
+            {% for customer in customers %}
+            <tr class="customer-row" data-name="{{ customer.name|lower }}"
+                style="border-bottom:1px solid var(--border);">
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                       style="background:#6366f1;">
+                    {{ customer.name[:2].upper() }}
+                  </div>
+                  <div>
+                    <p class="font-medium" style="color:var(--text-primary);">{{ customer.name }}</p>
+                    <p class="text-xs" style="color:var(--text-secondary);">{{ customer.email }}</p>
+                  </div>
                 </div>
-                <div>
-                  <p class="font-medium" style="color:var(--text-primary);">{{ customer.name }}</p>
-                  <p class="text-xs" style="color:var(--text-secondary);">{{ customer.email }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">{{ customer.phone or '—' }}</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">{{ customer.total_rentals or 0 }}</td>
-            <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹{{ "{:,}".format(customer.total_spent or 0) }}</td>
-            <td class="px-5 py-3.5" style="color:var(--text-secondary);">
-              {{ customer.created_at[:10] if customer.created_at else '—' }}
-            </td>
-            <td class="px-5 py-3.5">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                    style="background:#dcfce7;color:#16a34a;">Active</span>
-            </td>
-            <td class="px-5 py-3.5">
-              <button onclick="openCustomerModal('{{ customer.id }}')"
-                      class="text-xs px-2.5 py-1 rounded-md font-medium"
-                      style="background:#eff6ff;color:#2563eb;">View</button>
-            </td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="7" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
-              No customers yet.
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              </td>
+              <td class="px-5 py-3.5 hidden sm:table-cell" style="color:var(--text-secondary);">{{ customer.phone or '—' }}</td>
+              <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:var(--text-primary);">{{ customer.total_rentals or 0 }}</td>
+              <td class="px-5 py-3.5 hidden md:table-cell font-medium" style="color:#2563eb;">₹{{ "{:,}".format(customer.total_spent or 0) }}</td>
+              <td class="px-5 py-3.5" style="color:var(--text-secondary);">
+                {{ customer.created_at[:10] if customer.created_at else '—' }}
+              </td>
+              <td class="px-5 py-3.5">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                      style="background:#dcfce7;color:#16a34a;">Active</span>
+              </td>
+              <td class="px-5 py-3.5">
+                <!-- FIX: stopPropagation prevents backdrop-click from firing immediately -->
+                <button onclick="event.stopPropagation(); openCustomerModal('{{ customer.id }}')"
+                        class="text-xs px-2.5 py-1 rounded-md font-medium"
+                        style="background:#eff6ff;color:#2563eb;">View</button>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" class="px-5 py-12 text-center text-sm" style="color:var(--text-secondary);">
+                No customers yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-
+ 
   </main>
 </div>
-
+ 
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
-
+ 
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'customers';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
-
-<!-- ═══════════════════════════════════════════
-     ADD CUSTOMER MODAL
-     id="customerAddModal" — opened by Add Customer button
-════════════════════════════════════════════ -->
+ 
+<!-- ADD CUSTOMER MODAL -->
 <div id="customerAddModal" class="modal-backdrop hidden">
   <div class="modal-box">
     <div class="flex items-center justify-between mb-5">
@@ -164,29 +183,22 @@
     <div class="flex gap-2 justify-end mt-4">
       <button onclick="closeModal('customerAddModal')"
               class="text-sm px-4 py-2 rounded-lg font-medium"
-              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">
-        Cancel
-      </button>
+              style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
       <button onclick="submitCustomer()"
               class="text-sm px-4 py-2 rounded-lg font-medium text-white"
-              style="background:#2563eb;">
-        Save Customer
-      </button>
+              style="background:#2563eb;">Save Customer</button>
     </div>
   </div>
 </div>
-
-<!-- ═══════════════════════════════════════════
-     CUSTOMER VIEW / EDIT / DELETE MODAL
-     id="customerViewModal" — opened by View button in table
-════════════════════════════════════════════ -->
+ 
+<!-- CUSTOMER VIEW / EDIT / DELETE MODAL -->
 <div id="customerViewModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:520px;">
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-base font-semibold" style="color:var(--text-primary);">Customer Details</h2>
       <button onclick="closeCustomerModal()" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
-
+ 
     <!-- VIEW MODE -->
     <div id="c_view_mode">
       <div class="flex items-center gap-4 p-4 rounded-xl mb-4" style="background:var(--bg-row);">
@@ -223,7 +235,7 @@
                 style="background:#2563eb;">Edit</button>
       </div>
     </div>
-
+ 
     <!-- EDIT MODE -->
     <div id="c_edit_mode" class="hidden">
       <div class="flex flex-col gap-3 mb-3">
@@ -254,7 +266,7 @@
                 style="background:#2563eb;">Save Changes</button>
       </div>
     </div>
-
+ 
     <!-- DELETE CONFIRM MODE -->
     <div id="c_delete_mode" class="hidden">
       <div class="rounded-xl p-4 mb-4 text-center" style="background:#fee2e2;border:1px solid #fecaca;">
@@ -272,49 +284,41 @@
     </div>
   </div>
 </div>
-
-<!-- ═══════════════════════════════════════════
-     ALL JAVASCRIPT — single block, no duplicates
-════════════════════════════════════════════ -->
+ 
+<!-- ALL JAVASCRIPT -->
 <script>
-// ── Generic modal helpers ──────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-// Close customerAddModal on backdrop click
+ 
 document.getElementById('customerAddModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal('customerAddModal');
 });
-
-// Close customerViewModal on backdrop click
 document.getElementById('customerViewModal').addEventListener('click', function(e) {
   if (e.target === this) closeCustomerModal();
 });
-
-// ── Live search ────────────────────────────────────────────────
+ 
 function searchCustomers() {
   const q = document.getElementById('customerSearch').value.toLowerCase();
   document.querySelectorAll('.customer-row').forEach(row => {
     row.style.display = row.getAttribute('data-name').includes(q) ? '' : 'none';
   });
 }
-
-// ── Customer View/Edit/Delete modal state ──────────────────────
+ 
 let currentCustomerId = null;
-
+ 
 function closeCustomerModal() {
   document.getElementById('customerViewModal').classList.add('hidden');
   currentCustomerId = null;
 }
-
+ 
 function showCustomerMode(mode) {
   document.getElementById('c_view_mode').classList.toggle('hidden',   mode !== 'view');
   document.getElementById('c_edit_mode').classList.toggle('hidden',   mode !== 'edit');
   document.getElementById('c_delete_mode').classList.toggle('hidden', mode !== 'delete');
 }
-
+ 
 function switchToCustomerView() { showCustomerMode('view'); }
-
+ 
 function switchToCustomerEdit() {
   document.getElementById('ce_name').value  = document.getElementById('c_name_display').textContent;
   document.getElementById('ce_email').value = document.getElementById('c_email_display').textContent;
@@ -322,26 +326,23 @@ function switchToCustomerEdit() {
   document.getElementById('ce_city').value  = document.getElementById('c_city_display').textContent;
   showCustomerMode('edit');
 }
-
+ 
 function confirmDeleteCustomer() { showCustomerMode('delete'); }
-
-// Open view modal and fetch customer data from API
+ 
 async function openCustomerModal(customerId) {
   currentCustomerId = customerId;
   document.getElementById('customerViewModal').classList.remove('hidden');
   showCustomerMode('view');
-
-  // Show loading state
   document.getElementById('c_name_display').textContent = 'Loading...';
   document.getElementById('c_bookings_list').innerHTML =
     '<p class="text-xs text-center py-4" style="color:var(--text-secondary);">Loading...</p>';
-
+ 
   try {
     const res  = await fetch(`/api/customers/${customerId}`);
     const data = await res.json();
     const c    = data.customer;
     const bookings = data.bookings;
-
+ 
     const initials = c.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
     document.getElementById('c_avatar').textContent         = initials;
     document.getElementById('c_name_display').textContent   = c.name;
@@ -350,7 +351,7 @@ async function openCustomerModal(customerId) {
     document.getElementById('c_city_display').textContent   = c.city  || '—';
     document.getElementById('c_rentals_display').textContent = c.total_rentals || bookings.length;
     document.getElementById('c_spent_display').textContent  = '₹' + (c.total_spent || 0).toLocaleString('en-IN');
-
+ 
     const list = document.getElementById('c_bookings_list');
     if (!bookings.length) {
       list.innerHTML = '<p class="text-xs text-center py-3" style="color:var(--text-secondary);">No bookings yet.</p>';
@@ -382,89 +383,71 @@ async function openCustomerModal(customerId) {
     document.getElementById('c_name_display').textContent = 'Failed to load.';
   }
 }
-
-// Save edited customer
+ 
 async function saveCustomerEdit() {
   const name  = document.getElementById('ce_name').value.trim();
   const email = document.getElementById('ce_email').value.trim();
   const err   = document.getElementById('ce_error');
-
+ 
   if (!name || !email) {
     err.textContent = 'Name and email are required.';
     err.classList.remove('hidden');
     return;
   }
   err.classList.add('hidden');
-
+ 
   try {
     const res  = await fetch(`/api/customers/${currentCustomerId}/update`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name,
-        email,
+        name, email,
         phone: document.getElementById('ce_phone').value.trim(),
         city:  document.getElementById('ce_city').value.trim()
       })
     });
     const data = await res.json();
-    if (data.success) {
-      window.location.reload();
-    } else {
-      err.textContent = 'Update failed. Please try again.';
-      err.classList.remove('hidden');
-    }
+    if (data.success) window.location.reload();
+    else { err.textContent = 'Update failed.'; err.classList.remove('hidden'); }
   } catch(e) {
-    err.textContent = 'Network error. Please try again.';
-    err.classList.remove('hidden');
+    err.textContent = 'Network error.'; err.classList.remove('hidden');
   }
 }
-
-// Delete customer
+ 
 async function executeDeleteCustomer() {
   try {
     const res  = await fetch(`/api/customers/${currentCustomerId}/delete`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' }
     });
     const data = await res.json();
     if (data.success) window.location.reload();
-  } catch(e) {
-    alert('Delete failed. Please try again.');
-  }
+  } catch(e) { alert('Delete failed.'); }
 }
-
-// ── Add Customer ───────────────────────────────────────────────
+ 
 async function submitCustomer() {
   const name  = document.getElementById('ca_name').value.trim();
   const email = document.getElementById('ca_email').value.trim();
   const phone = document.getElementById('ca_phone').value.trim();
   const city  = document.getElementById('ca_city').value.trim();
   const err   = document.getElementById('ca_error');
-
+ 
   if (!name || !email) {
     err.textContent = 'Name and email are required.';
     err.classList.remove('hidden');
     return;
   }
   err.classList.add('hidden');
-
+ 
   try {
     const res  = await fetch('/api/customers/add', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, phone, city })
     });
     const data = await res.json();
-    if (data.success) {
-      window.location.reload();
-    } else {
-      err.textContent = 'Email may already exist or something went wrong.';
-      err.classList.remove('hidden');
-    }
+    if (data.success) window.location.reload();
+    else { err.textContent = 'Email may already exist.'; err.classList.remove('hidden'); }
   } catch(e) {
-    err.textContent = 'Network error. Please try again.';
-    err.classList.remove('hidden');
+    err.textContent = 'Network error.'; err.classList.remove('hidden');
   }
 }
 </script>

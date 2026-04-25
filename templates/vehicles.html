@@ -10,33 +10,52 @@
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body class="flex h-screen overflow-hidden" style="background:var(--bg-page);">
-
+ 
 <div id="sidebar-mount"></div>
-
+ 
 <div class="flex flex-col flex-1 overflow-hidden">
-  <header class="flex items-center gap-4 px-6 h-14 shrink-0"
+  <header class="flex items-center gap-2 px-4 md:px-6 h-14 shrink-0"
           style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
-    <button onclick="toggleMobileSidebar()" class="md:hidden p-1" style="color:var(--text-secondary);">
+    <button onclick="toggleMobileSidebar()" class="md:hidden p-1 shrink-0" style="color:var(--text-secondary);">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
     </button>
-    <h1 class="text-[15px] font-semibold" style="color:var(--text-primary);">Vehicles</h1>
-    <div class="ml-auto flex items-center gap-3">
+    <h1 class="text-[15px] font-semibold shrink-0" style="color:var(--text-primary);">Vehicles</h1>
+ 
+    <!-- Search — grows but won't overflow on mobile -->
+    <div class="flex-1 min-w-0 mx-2">
       <input type="text" id="vehicleSearch" oninput="searchVehicles()" placeholder="Search vehicles..."
-             class="text-sm px-3 py-1.5 rounded-md w-44 lg:w-60 outline-none"
+             class="text-sm px-3 py-1.5 rounded-md w-full outline-none"
              style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
              onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='var(--border)'"/>
+    </div>
+ 
+    <!-- Right icons — always shrink-0 so they never get pushed off screen -->
+    <div class="flex items-center gap-2 shrink-0">
+      <!-- Bell -->
+      <a href="/notifications"
+         class="relative inline-flex items-center justify-center w-8 h-8 rounded-md"
+         style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+        </svg>
+        <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+      </a>
+ 
+      <!-- Dark mode toggle -->
       <button onclick="toggleTheme()" id="themeToggle"
               class="flex items-center justify-center w-8 h-8 rounded-md"
               style="color:var(--text-secondary);background:var(--bg-input);border:1px solid var(--border);">
         <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
         <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
       </button>
-      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:#2563eb;">AU</div>
+ 
+      <!-- Avatar -->
+      <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:#2563eb;">AU</div>
     </div>
   </header>
-
+ 
   <main class="flex-1 overflow-y-auto p-6" style="background:var(--bg-page);">
-
+ 
     <div class="flex items-center justify-between mb-5">
       <div>
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Fleet Inventory</h2>
@@ -47,14 +66,15 @@
         Add Vehicle
       </button>
     </div>
-
+ 
     <div class="flex gap-1.5 mb-5">
       <a href="/vehicles" class="filter-btn {% if active_filter == 'all' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">All</a>
       <a href="/vehicles?type=car" class="filter-btn {% if active_filter == 'car' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Cars</a>
       <a href="/vehicles?type=bike" class="filter-btn {% if active_filter == 'bike' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Bikes</a>
       <a href="/vehicles?type=unavailable" class="filter-btn {% if active_filter == 'unavailable' %}active-filter{% endif %} px-3.5 py-1.5 rounded-md text-sm font-medium">Unavailable</a>
     </div>
-
+ 
+    <!-- FIX: removed overflow-hidden from grid so View button dropdown isn't clipped -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="vehicleGrid">
     {% for vehicle in vehicles %}
       <div class="vehicle-card rounded-xl overflow-hidden"
@@ -62,12 +82,12 @@
            data-type="{{ vehicle.type }}"
            data-avail="{{ 'available' if vehicle.status == 'available' else 'unavailable' }}"
            style="background:var(--bg-surface);border:1px solid var(--border);">
-
+ 
         <div class="h-32 flex items-center justify-center text-4xl"
              style="background:{% if vehicle.type == 'car' %}#eff6ff{% elif vehicle.type == 'bike' %}#f0fdf4{% else %}#fdf4ff{% endif %};">
           {% if vehicle.type == 'car' %}🚗{% elif vehicle.type == 'bike' %}🏍️{% else %}🛵{% endif %}
         </div>
-
+ 
         <div class="p-4">
           <div class="flex items-center justify-between mb-1">
             <p class="font-semibold text-sm" style="color:var(--text-primary);">{{ vehicle.name }}</p>
@@ -88,7 +108,8 @@
               ₹{{ vehicle.daily_rate }}
               <span class="font-normal text-xs" style="color:var(--text-secondary);">/day</span>
             </p>
-            <button onclick="openVehicleModal('{{ vehicle.id }}')"
+            <!-- FIX: stopPropagation so backdrop-click doesn't immediately close the modal -->
+            <button onclick="event.stopPropagation(); openVehicleModal('{{ vehicle.id }}')"
                     class="text-xs px-2.5 py-1 rounded-md font-medium"
                     style="background:#eff6ff;color:#2563eb;">View</button>
           </div>
@@ -100,16 +121,15 @@
     </div>
   </main>
 </div>
-
+ 
 <div id="mobileOverlay" onclick="toggleMobileSidebar()" class="fixed inset-0 z-30 hidden" style="background:rgba(0,0,0,0.35);"></div>
-
+ 
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 <script>window.QR_PAGE = 'vehicles';</script>
 <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
-
+ 
 <!-- ═══════════════════════════════════════════
      VEHICLE VIEW / EDIT / DELETE MODAL
-     Opens when View button is clicked on a card
 ════════════════════════════════════════════ -->
 <div id="vehicleModal" class="modal-backdrop hidden">
   <div class="modal-box" style="max-width:500px;">
@@ -117,7 +137,7 @@
       <h2 class="text-base font-semibold" style="color:var(--text-primary);">Vehicle Details</h2>
       <button onclick="closeVehicleModal()" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
-
+ 
     <!-- VIEW MODE -->
     <div id="v_view_mode">
       <div class="h-24 rounded-xl flex items-center justify-center text-5xl mb-4" id="v_emoji_display" style="background:var(--bg-row);"></div>
@@ -156,7 +176,7 @@
         <button onclick="switchToEditMode()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Edit</button>
       </div>
     </div>
-
+ 
     <!-- EDIT MODE -->
     <div id="v_edit_mode" class="hidden">
       <div class="grid grid-cols-2 gap-3 mb-3">
@@ -207,7 +227,7 @@
         <button onclick="saveVehicleEdit()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Save Changes</button>
       </div>
     </div>
-
+ 
     <!-- DELETE CONFIRM MODE -->
     <div id="v_delete_mode" class="hidden">
       <div class="rounded-xl p-4 mb-4 text-center" style="background:#fee2e2;border:1px solid #fecaca;">
@@ -221,10 +241,9 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ═══════════════════════════════════════════
      ADD VEHICLE MODAL
-     Opens when Add Vehicle button is clicked
 ════════════════════════════════════════════ -->
 <div id="vehicleAddModal" class="modal-backdrop hidden">
   <div class="modal-box">
@@ -273,20 +292,20 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ═══════════════════════════════════════════
-     ALL JAVASCRIPT — single block, no duplicates
+     ALL JAVASCRIPT
 ════════════════════════════════════════════ -->
 <script>
 // ── Generic modal helpers ──────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
+ 
 // Close vehicleAddModal on backdrop click
 document.getElementById('vehicleAddModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal('vehicleAddModal');
 });
-
+ 
 // ── Vehicle search ─────────────────────────────────────────────
 function searchVehicles() {
   const q = document.getElementById('vehicleSearch').value.toLowerCase();
@@ -295,30 +314,29 @@ function searchVehicles() {
     card.style.display = name.includes(q) ? '' : 'none';
   });
 }
-
+ 
 // ── Vehicle View/Edit/Delete modal state ───────────────────────
 let currentVehicleId = null;
-
+ 
 function closeVehicleModal() {
   document.getElementById('vehicleModal').classList.add('hidden');
   currentVehicleId = null;
 }
-
-// Close vehicleModal on backdrop click
+ 
+// FIX: Close vehicleModal only when clicking the backdrop (not modal box contents)
 document.getElementById('vehicleModal').addEventListener('click', function(e) {
   if (e.target === this) closeVehicleModal();
 });
-
+ 
 // Show only one mode inside vehicleModal
 function showVehicleMode(mode) {
   document.getElementById('v_view_mode').classList.toggle('hidden', mode !== 'view');
   document.getElementById('v_edit_mode').classList.toggle('hidden', mode !== 'edit');
   document.getElementById('v_delete_mode').classList.toggle('hidden', mode !== 'delete');
 }
-
+ 
 function switchToViewMode()    { showVehicleMode('view'); }
 function switchToEditMode()    {
-  // Pre-fill edit fields from what's displayed in view mode
   document.getElementById('ve_name').value  = document.getElementById('v_name_display').textContent;
   document.getElementById('ve_brand').value = document.getElementById('v_brand_display').textContent;
   document.getElementById('ve_year').value  = document.getElementById('v_year_display').textContent;
@@ -329,21 +347,19 @@ function switchToEditMode()    {
   showVehicleMode('edit');
 }
 function confirmDeleteVehicle() { showVehicleMode('delete'); }
-
+ 
 // Open View modal and fetch vehicle data from API
 async function openVehicleModal(vehicleId) {
   currentVehicleId = vehicleId;
   document.getElementById('vehicleModal').classList.remove('hidden');
   showVehicleMode('view');
-
-  // Show loading state
   document.getElementById('v_name_display').textContent = 'Loading...';
-
+ 
   try {
     const res  = await fetch(`/api/vehicles/${vehicleId}`);
     const data = await res.json();
     const v    = data.vehicle;
-
+ 
     const emojis = { car: '🚗', bike: '🏍️', scooter: '🛵' };
     document.getElementById('v_emoji_display').textContent   = emojis[v.type] || '🚗';
     document.getElementById('v_name_display').textContent    = v.name;
@@ -357,20 +373,20 @@ async function openVehicleModal(vehicleId) {
     document.getElementById('v_name_display').textContent = 'Failed to load.';
   }
 }
-
+ 
 // Save edited vehicle
 async function saveVehicleEdit() {
   const name = document.getElementById('ve_name').value.trim();
   const rate = parseInt(document.getElementById('ve_rate').value);
   const err  = document.getElementById('ve_error');
-
+ 
   if (!name || !rate) {
     err.textContent = 'Name and daily rate are required.';
     err.classList.remove('hidden');
     return;
   }
   err.classList.add('hidden');
-
+ 
   try {
     const res  = await fetch(`/api/vehicles/${currentVehicleId}/update`, {
       method:  'POST',
@@ -397,7 +413,7 @@ async function saveVehicleEdit() {
     err.classList.remove('hidden');
   }
 }
-
+ 
 // Delete vehicle
 async function executeDeleteVehicle() {
   try {
@@ -411,20 +427,20 @@ async function executeDeleteVehicle() {
     alert('Delete failed. Please try again.');
   }
 }
-
+ 
 // ── Add Vehicle ────────────────────────────────────────────────
 async function submitVehicle() {
   const name = document.getElementById('va_name').value.trim();
   const rate = parseInt(document.getElementById('va_rate').value);
   const err  = document.getElementById('va_error');
-
+ 
   if (!name || !rate) {
     err.textContent = 'Vehicle name and daily rate are required.';
     err.classList.remove('hidden');
     return;
   }
   err.classList.add('hidden');
-
+ 
   try {
     const res  = await fetch('/api/vehicles/add', {
       method:  'POST',
