@@ -1,37 +1,19 @@
-// ─────────────────────────────────────────────
-// SIDEBAR LOADER
-// This function fetches components/sidebar.html
-// and injects it into <div id="sidebar-mount">
-// on every page. This is called "dynamic includes"
-// ─────────────────────────────────────────────
+// ── SIDEBAR LOADER ─────────────────────────────────────────────
 async function loadSidebar() {
   try {
-    // fetch() loads any file like a browser would
-    const res = await fetch('/components/sidebar');
+    const res  = await fetch('/components/sidebar');
     const html = await res.text();
-
-    // Find the mount point and inject the sidebar HTML
     document.getElementById('sidebar-mount').innerHTML = html;
-
-    // After injecting, mark the correct nav item as active
     setActiveNavItem();
-
   } catch (e) {
     console.error('Sidebar failed to load:', e);
   }
 }
 
-// ─────────────────────────────────────────────
-// ACTIVE NAV HIGHLIGHTER
-// Each page sets window.QR_PAGE = "bookings" etc.
-// This function reads that value and adds the
-// nav-active class to the matching nav link
-// ─────────────────────────────────────────────
+// ── ACTIVE NAV HIGHLIGHTER ─────────────────────────────────────
 function setActiveNavItem() {
   const page = window.QR_PAGE || '';
-  const links = document.querySelectorAll('[data-page]');
-
-  links.forEach(link => {
+  document.querySelectorAll('[data-page]').forEach(link => {
     if (link.getAttribute('data-page') === page) {
       link.classList.add('nav-active');
       link.classList.remove('nav-item');
@@ -39,28 +21,57 @@ function setActiveNavItem() {
   });
 }
 
-// ─────────────────────────────────────────────
-// MOBILE HAMBURGER TOGGLE
-// ─────────────────────────────────────────────
+// ── MOBILE SIDEBAR TOGGLE ──────────────────────────────────────
 function toggleMobileSidebar() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('mobileOverlay');
-  if (!sidebar) return;
-  sidebar.classList.toggle('-translate-x-full');
-  overlay.classList.toggle('hidden');
+  if (!sidebar || !overlay) return;
+
+  const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+  if (isOpen) {
+    // Close
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+  } else {
+    // Open
+    sidebar.classList.remove('-translate-x-full');
+    overlay.classList.remove('hidden');
+  }
 }
 
-// ─────────────────────────────────────────────
-// RUN ON EVERY PAGE LOAD
-// ─────────────────────────────────────────────
+// ── AVATAR DROPDOWN ────────────────────────────────────────────
+function toggleAvatarDropdown(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('avatarDropdown');
+  if (!dropdown) return;
+  dropdown.classList.toggle('hidden');
+}
+
+// Close avatar dropdown when clicking anywhere else
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('avatarDropdown');
+  const btn      = document.getElementById('avatarBtn');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    if (!dropdown.contains(e.target) && e.target !== btn) {
+      dropdown.classList.add('hidden');
+    }
+  }
+});
+
+// ── INIT ON LOAD ───────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function () {
   loadSidebar();
 
-  // On mobile, sidebar starts hidden off-screen
+  // On mobile — sidebar starts hidden
   if (window.innerWidth < 768) {
     setTimeout(() => {
       const sidebar = document.getElementById('sidebar');
-      if (sidebar) sidebar.classList.add('fixed', 'top-0', 'left-0', 'h-full', '-translate-x-full');
+      if (sidebar) {
+        sidebar.classList.add(
+          'fixed', 'top-0', 'left-0', 'h-full', '-translate-x-full'
+        );
+      }
     }, 50);
   }
 });

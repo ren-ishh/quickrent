@@ -147,4 +147,31 @@ html.dark .active-tab {
     display: none;
   }
 }
+
+/* ── AVATAR DROPDOWN ── */
+#avatarDropdown {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  animation: dropIn 0.15s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── MOBILE SIDEBAR TRANSITION ── */
+#sidebar {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.3s ease;
+}
+
+/* ── HEADER SEARCH — hidden on mobile ── */
+.header-search {
+  display: none;
+}
+@media (min-width: 768px) {
+  .header-search {
+    display: block;
+  }
+}
  
