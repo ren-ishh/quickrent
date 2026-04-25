@@ -178,6 +178,10 @@
         <label class="modal-label">City</label>
         <input id="ca_city" class="modal-input" placeholder="Delhi"/>
       </div>
+      <div>
+        <label class="modal-label">Temporary Password</label>
+        <input id="ca_password" type="password" class="modal-input" placeholder="Minimum 8 characters"/>
+      </div>
     </div>
     <p id="ca_error" class="text-xs text-red-500 mb-3 hidden"></p>
     
@@ -431,29 +435,40 @@ async function executeDeleteCustomer() {
 }
  
 async function submitCustomer() {
-  const name  = document.getElementById('ca_name').value.trim();
-  const email = document.getElementById('ca_email').value.trim();
-  const phone = document.getElementById('ca_phone').value.trim();
-  const city  = document.getElementById('ca_city').value.trim();
-  const err   = document.getElementById('ca_error');
+  const name     = document.getElementById('ca_name').value.trim();
+  const email    = document.getElementById('ca_email').value.trim();
+  const phone    = document.getElementById('ca_phone').value.trim();
+  const city     = document.getElementById('ca_city').value.trim();
+  const password = document.getElementById('ca_password').value.trim(); // Grab the password
+  const err      = document.getElementById('ca_error');
  
-  if (!name || !email) {
-    err.textContent = 'Name and email are required.';
+  // Require the password now
+  if (!name || !email || !password) {
+    err.textContent = 'Name, email, and password are required.';
     err.classList.remove('hidden');
     return;
   }
   err.classList.add('hidden');
  
   try {
-    const res  = await fetch('/api/customers/add', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone, city })
+    // Point to our NEW route
+    const res  = await fetch('/api/customers/create-with-password', {
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, city, password }) // Send the password
     });
+    
     const data = await res.json();
-    if (data.success) window.location.reload();
-    else { err.textContent = 'Email may already exist.'; err.classList.remove('hidden'); }
+    
+    if (data.success) {
+        window.location.reload();
+    } else { 
+        err.textContent = data.error || 'Failed to create customer.'; 
+        err.classList.remove('hidden'); 
+    }
   } catch(e) {
-    err.textContent = 'Network error.'; err.classList.remove('hidden');
+    err.textContent = 'Network error.'; 
+    err.classList.remove('hidden');
   }
 }
 </script>

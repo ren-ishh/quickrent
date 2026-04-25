@@ -25,13 +25,15 @@ def login_required(f):
 
 
 # ══════════════════════════════════════
-# LOGIN
+# UNIFIED LOGIN (ADMIN & CUSTOMER)
 # ══════════════════════════════════════
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # If already logged in send straight to dashboard
+    # 1. If already logged in, route them to their correct dashboard
     if 'user' in session:
         return redirect(url_for('dashboard'))
+    if 'customer' in session:
+        return redirect(url_for('customer_dashboard'))
 
     error = None
 
@@ -40,26 +42,48 @@ def login():
         password = request.form.get('password', '').strip()
 
         try:
-            # sign_in_with_password sends credentials to Supabase Auth
-            # On success it returns a session with user details
+            # 2. Authenticate with Supabase Auth (Checks BOTH admins and customers)
             response = db.auth.sign_in_with_password({
                 'email': email,
                 'password': password
             })
+            user_id = response.user.id
 
-            # Store user info in Flask session
-            # session is a dictionary that persists across requests
-            # It is encrypted using your FLASK_SECRET_KEY
-            session['user'] = {
-                'id': response.user.id,
-                'email': response.user.email
-            }
-            session['access_token'] = response.session.access_token
-
-            return redirect(url_for('dashboard'))
-
+            # 3. Check their role in the profiles table
+            profile = db.table('profiles').select('*').eq('id', user_id).execute()
+            
+            if not profile.data:
+                error = 'Profile not found. Please contact support.'
+            else:
+                role = profile.data[0]['role']
+                
+                # ── ADMIN LOGIN ──
+                if role == 'admin' or role == 'owner':
+                    session['user'] = {
+                        'id': user_id,
+                        'email': email
+                    }
+                    session['access_token'] = response.session.access_token
+                    return redirect(url_for('dashboard'))
+                    
+                # ── CUSTOMER LOGIN ──
+                elif role == 'customer':
+                    customer_id = profile.data[0]['customer_id']
+                    customer = db.table('customers').select('*').eq('id', customer_id).execute()
+                    
+                    if customer.data:
+                        session['customer'] = {
+                            'id': customer_id,
+                            'user_id': user_id,
+                            'name': customer.data[0]['name'],
+                            'email': customer.data[0]['email']
+                        }
+                        return redirect(url_for('customer_dashboard'))
+                    else:
+                        error = 'Customer record missing.'
+                        
         except Exception as e:
-            # Supabase raises an exception for wrong credentials
+            # Supabase Auth threw an error (wrong email or password)
             error = 'Invalid email or password. Please try again.'
 
     return render_template('login.html', error=error)
@@ -634,73 +658,12 @@ def customer_login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'customer' not in session:
-            return redirect(url_for('customer_login'))
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
 
 
-# ══════════════════════════════════════
-# CUSTOMER LOGIN
-# ══════════════════════════════════════
-@app.route('/customer/login', methods=['GET', 'POST'])
-def customer_login():
-    # If already logged in as customer go to portal
-    if 'customer' in session:
-        return redirect(url_for('customer_dashboard'))
-    # If admin is logged in send to admin dashboard
-    if 'user' in session:
-        return redirect(url_for('dashboard'))
 
-    error = None
-
-    if request.method == 'POST':
-        email    = request.form.get('email', '').strip()
-        password = request.form.get('password', '').strip()
-
-        try:
-            # Authenticate with Supabase Auth
-            response = db.auth.sign_in_with_password({
-                'email': email,
-                'password': password
-            })
-
-            user_id = response.user.id
-
-            # Check their profile role
-            profile = db.table('profiles')\
-                .select('role, customer_id')\
-                .eq('id', user_id)\
-                .execute()
-
-            if not profile.data:
-                error = 'Account not found. Please register first.'
-            elif profile.data[0]['role'] == 'admin':
-                # Admin trying to use customer login — redirect to admin login
-                error = 'Please use the admin login page.'
-            else:
-                # Valid customer — get their customer record
-                customer_id = profile.data[0]['customer_id']
-                customer = db.table('customers')\
-                    .select('*')\
-                    .eq('id', customer_id)\
-                    .execute()
-
-                if not customer.data:
-                    error = 'Customer profile not found. Please contact support.'
-                else:
-                    # Store customer in session
-                    session['customer'] = {
-                        'id': customer_id,
-                        'user_id': user_id,
-                        'name': customer.data[0]['name'],
-                        'email': customer.data[0]['email']
-                    }
-                    return redirect(url_for('customer_dashboard'))
-
-        except Exception as e:
-            error = 'Invalid email or password. Please try again.'
-
-    return render_template('customer/login.html', error=error)
 
 
 # ══════════════════════════════════════
@@ -775,7 +738,7 @@ def customer_register():
 @app.route('/customer/logout')
 def customer_logout():
     session.pop('customer', None)
-    return redirect(url_for('customer_login'))
+    return redirect(url_for('login'))
 
 
 # ══════════════════════════════════════
@@ -932,6 +895,62 @@ def verify_razorpay_payment():
     except Exception as e:
         print('Razorpay verify error:', e)
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template('500.html'), 500
+
+
+
+# ══════════════════════════════════════
+# ADMIN — CREATE CUSTOMER WITH PASSWORD
+# ══════════════════════════════════════
+@app.route('/api/customers/create-with-password', methods=['POST'])
+@login_required
+def create_customer_with_password():
+    data = request.json
+    
+    if not data.get('password') or len(data['password']) < 8:
+        return jsonify({'success': False, 'error': 'Password must be at least 8 characters'})
+        
+    try:
+        # 1. Create the user securely in Supabase Auth
+        auth_response = db.auth.sign_up({
+            'email': data['email'],
+            'password': data['password']
+        })
+        user_id = auth_response.user.id
+        
+        # 2. Create their profile in the customers table
+        customer_res = db.table('customers').insert({
+            'name': data['name'],
+            'email': data['email'],
+            'phone': data.get('phone', ''),
+            'city': data.get('city', ''),
+            'total_rentals': 0,
+            'total_spent': 0
+        }).execute()
+        customer_id = customer_res.data[0]['id']
+        
+        # 3. Link them in the profiles table as a 'customer'
+        db.table('profiles').insert({
+            'id': user_id,
+            'role': 'customer',
+            'customer_id': customer_id
+        }).execute()
+        
+        return jsonify({'success': True, 'customer': customer_res.data[0]})
+        
+    except Exception as e:
+        print('Admin Create Customer Error:', e)
+        error_msg = str(e)
+        if 'already registered' in error_msg or 'already exists' in error_msg:
+            return jsonify({'success': False, 'error': 'An account with this email already exists.'})
+        return jsonify({'success': False, 'error': 'Database error occurred.'})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

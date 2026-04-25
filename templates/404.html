@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Page Not Found</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center px-4"
+      style="background:var(--bg-page);">
+
+  <!-- Logo mark -->
+  <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-8"
+       style="background:#2563eb;">Q</div>
+
+  <!-- Error card -->
+  <div class="rounded-2xl p-8 text-center w-full max-w-md"
+       style="background:var(--bg-surface);border:1px solid var(--border);">
+
+    <!-- Big 404 -->
+    <p class="text-7xl font-bold mb-2" style="color:#2563eb;">404</p>
+
+    <h1 class="text-xl font-semibold mb-2" style="color:var(--text-primary);">
+      Page not found
+    </h1>
+    <p class="text-sm mb-8" style="color:var(--text-secondary);">
+      The page you're looking for doesn't exist or has been moved.
+    </p>
+
+    <!-- Quick links -->
+    <div class="flex flex-col gap-2 mb-6">
+      <a href="/dashboard"
+         class="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-left"
+         style="background:var(--bg-row);border:1px solid var(--border);color:var(--text-primary);">
+        <svg class="w-4 h-4 shrink-0" style="color:#2563eb;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Go to Dashboard
+      </a>
+      <a href="/bookings"
+         class="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-left"
+         style="background:var(--bg-row);border:1px solid var(--border);color:var(--text-primary);">
+        <svg class="w-4 h-4 shrink-0" style="color:#2563eb;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+        </svg>
+        View Bookings
+      </a>
+      <a href="/vehicles"
+         class="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-left"
+         style="background:var(--bg-row);border:1px solid var(--border);color:var(--text-primary);">
+        <svg class="w-4 h-4 shrink-0" style="color:#2563eb;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+        </svg>
+        Manage Vehicles
+      </a>
+    </div>
+
+    <a href="javascript:history.back()"
+       class="text-xs font-medium" style="color:var(--text-secondary);">
+      ← Go back
+    </a>
+  </div>
+
+  <p class="text-xs mt-8" style="color:var(--text-secondary);opacity:0.5;">
+    © 2026 QuickRent · All rights reserved
+  </p>
+
+</body>
+</html>

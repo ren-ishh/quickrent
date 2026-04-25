@@ -13,18 +13,15 @@
 
   <div class="w-full max-w-sm px-6">
 
-    <!-- Logo -->
     <div class="flex flex-col items-center mb-8">
       <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold mb-3"
            style="background:#2563eb;">Q</div>
       <h1 class="text-xl font-bold" style="color:var(--text-primary);">QuickRent</h1>
-      <p class="text-sm mt-1" style="color:var(--text-secondary);">Sign in to your admin dashboard</p>
+      <p class="text-sm mt-1" style="color:var(--text-secondary);">Sign in to your Quickrent Account</p>
     </div>
 
-    <!-- Card -->
     <div class="rounded-2xl p-8" style="background:var(--bg-surface);border:1px solid var(--border);">
 
-      <!-- Error message — only shows when error variable is set by Flask -->
       {% if error %}
       <div class="mb-5 px-4 py-3 rounded-lg text-sm font-medium"
            style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">
@@ -32,16 +29,13 @@
       </div>
       {% endif %}
 
-      <!-- Login form -->
-      <!-- method="POST" sends data to Flask's login() function -->
-      <!-- action="/login" tells the browser where to send the form -->
       <form method="POST" action="/login">
 
         <div class="mb-4">
           <label class="block text-xs font-medium mb-1.5" for="email"
                  style="color:var(--text-secondary);">Email Address</label>
           <input id="email" name="email" type="email"
-                 placeholder="admin@quickrent.in" required
+                 placeholder="you@email.com" required
                  class="w-full text-sm px-3 py-2.5 rounded-lg outline-none"
                  style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);"
                  onfocus="this.style.borderColor='#2563eb'"
@@ -67,12 +61,17 @@
           Sign In
         </button>
 
+        <p class="text-center text-sm mt-5" style="color:var(--text-secondary);">
+          Don't have an account? 
+          <a href="/customer/register" class="font-medium transition-colors" style="color:#2563eb;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">Sign up here</a>
+        </p>
+
       </form>
 
     </div>
 
     <p class="text-center text-xs mt-6" style="color:var(--text-secondary);opacity:0.5;">
-      © 2026 QuickRent · Admin Portal
+      © 2026 QuickRent
     </p>
 
   </div>
