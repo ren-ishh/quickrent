@@ -56,16 +56,15 @@
     </div>
   </header>
 
-  <main class="flex-1 overflow-y-auto p-4 md:p-6" style="background:var(--bg-page);">
+  <main class="flex-1 flex flex-col overflow-hidden p-4 md:p-6" style="background:var(--bg-page);">
 
-    <div class="mb-5">
+    <div class="mb-5 shrink-0">
       <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Settings</h2>
       <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage your account and preferences</p>
     </div>
 
-    <div class="flex gap-6 flex-col md:flex-row">
+    <div class="flex gap-6 flex-col md:flex-row flex-1 overflow-hidden">
 
-      <!-- Left tab nav -->
       <div class="md:w-48 shrink-0">
         <nav class="flex md:flex-col gap-1">
           <button onclick="switchTab('profile')" id="tab-profile"
@@ -86,6 +85,10 @@
           </button>
         </nav>
       </div>
+
+      <div class="flex-1 max-w-2xl overflow-y-auto pr-2 pb-8">
+
+    
 
       <!-- Right content panels -->
       <div class="flex-1 max-w-2xl">
