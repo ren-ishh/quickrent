@@ -210,10 +210,15 @@ main {
 ──────────────────────────────────────────── */
 @media (max-width: 767px) {
   #sidebar {
-    width: 280px !important;  /* full drawer width on mobile */
-    hover: none;              /* disable hover expand on touch */
+    position: fixed !important;  /* MAGIC FIX: Forces it to float! */
+    top: 0;
+    left: 0;
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 280px !important;     /* full drawer width on mobile */
+    z-index: 50 !important;      /* keeps it above the dashboard */
+    hover: none;                 /* disable hover expand on touch */
   }
-
   /* Sidebar nav labels always visible on mobile */
   #sidebar .opacity-0 {
     opacity: 1 !important;
