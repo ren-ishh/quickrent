@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Vehicles</title>
+  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body style="background:var(--bg-page);min-height:100dvh;">
+
+<!-- TOP BAR -->
+<div class="sticky top-0 z-20 flex items-center justify-between px-4 h-14"
+     style="background:var(--bg-surface);border-bottom:1px solid #f1f5f9;">
+  <h1 class="font-bold text-base" style="color:var(--text-main);">All Vehicles</h1>
+  <button onclick="toggleTheme()" id="themeToggle"
+          class="w-8 h-8 rounded-xl flex items-center justify-center"
+          style="background:#f1f5f9;color:var(--text-muted);">
+    <svg id="iconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+    <svg id="iconMoon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+  </button>
+</div>
+
+<!-- FILTER TABS -->
+<div class="sticky top-14 z-10 px-4 py-3 flex gap-2 overflow-x-auto"
+     style="background:var(--bg-page);scrollbar-width:none;">
+
+  <!-- Status filters -->
+  <a href="/customer/vehicles?status=available&type={{ type_filter }}"
+     class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
+     style="{% if status_filter == 'available' %}background:#2563eb;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
+    Available
+  </a>
+  <a href="/customer/vehicles?status=all&type={{ type_filter }}"
+     class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
+     style="{% if status_filter == 'all' %}background:#2563eb;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
+    All
+  </a>
+
+  <div class="w-px shrink-0 self-stretch mx-1" style="background:#e2e8f0;"></div>
+
+  <!-- Type filters -->
+  <a href="/customer/vehicles?type=all&status={{ status_filter }}"
+     class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
+     style="{% if type_filter == 'all' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
+    🚘 All Types
+  </a>
+  <a href="/customer/vehicles?type=car&status={{ status_filter }}"
+     class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
+     style="{% if type_filter == 'car' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
+    🚗 Cars
+  </a>
+  <a href="/customer/vehicles?type=bike&status={{ status_filter }}"
+     class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
+     style="{% if type_filter == 'bike' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
+    🏍️ Bikes
+  </a>
+  <a href="/customer/vehicles?type=scooter&status={{ status_filter }}"
+     class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
+     style="{% if type_filter == 'scooter' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
+    🛵 Scooters
+  </a>
+</div>
+
+<!-- VEHICLE GRID -->
+<main class="customer-page max-w-lg mx-auto px-4 pb-4">
+
+  {% if vehicles %}
+  <div class="grid grid-cols-2 gap-3">
+    {% for v in vehicles %}
+    <div class="c-card overflow-hidden">
+
+      <!-- Vehicle image placeholder -->
+      <div class="h-28 flex items-center justify-center text-4xl relative"
+           style="background:{% if v.type == 'car' %}#eff6ff{% elif v.type == 'bike' %}#f0fdf4{% else %}#fdf4ff{% endif %};">
+        {% if v.type == 'car' %}🚗{% elif v.type == 'bike' %}🏍️{% else %}🛵{% endif %}
+
+        <!-- Availability badge -->
+        <div class="absolute top-2 right-2">
+          {% if v.status == 'available' %}
+          <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                style="background:#dcfce7;color:#16a34a;">Available</span>
+          {% elif v.status == 'maintenance' %}
+          <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                style="background:#fee2e2;color:#dc2626;">Service</span>
+          {% else %}
+          <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                style="background:#fef9c3;color:#a16207;">Rented</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="p-3">
+        <p class="font-bold text-sm leading-tight mb-0.5" style="color:var(--text-main);">{{ v.name }}</p>
+        <p class="text-[11px] mb-2" style="color:#94a3b8;">
+          {{ v.type|capitalize }}
+          {% if v.brand %} · {{ v.brand }}{% endif %}
+          {% if v.year %} · {{ v.year }}{% endif %}
+        </p>
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-sm font-bold" style="color:#2563eb;">₹{{ v.daily_rate }}</span>
+            <span class="text-[10px]" style="color:#94a3b8;">/day</span>
+          </div>
+          {% if v.status == 'available' %}
+          <button onclick="openBookingModal('{{ v.id }}', '{{ v.name }}', {{ v.daily_rate }}, '{{ v.type }}')"
+                  class="text-[11px] font-bold px-3 py-1.5 rounded-lg text-white"
+                  style="background:#2563eb;">
+            Book
+          </button>
+          {% else %}
+          <span class="text-[11px] font-semibold px-3 py-1.5 rounded-lg"
+                style="background:#f1f5f9;color:#94a3b8;">
+            Unavailable
+          </span>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="c-card p-10 text-center mt-4">
+    <p class="text-4xl mb-3">🔍</p>
+    <p class="font-bold" style="color:var(--text-main);">No vehicles found</p>
+    <p class="text-sm mt-1" style="color:var(--text-muted);">Try a different filter</p>
+  </div>
+  {% endif %}
+
+</main>
+
+<!-- BOOKING MODAL -->
+<div id="bookingModal" class="c-modal-backdrop hidden">
+  <div class="c-modal-box">
+
+    <!-- Handle bar -->
+    <div class="w-10 h-1 rounded-full mx-auto mb-5" style="background:#e2e8f0;"></div>
+
+    <h2 class="text-lg font-bold mb-1" style="color:var(--text-main);" id="modal_vehicle_name">Book Vehicle</h2>
+    <p class="text-sm mb-5" id="modal_vehicle_rate" style="color:var(--text-muted);"></p>
+
+    <div class="flex flex-col gap-4 mb-5">
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-muted);">PICK UP DATE</label>
+          <input type="date" id="book_start" class="c-input"
+                 min="{{ '' }}"
+                 onchange="calculateTotal()"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5" style="color:var(--text-muted);">RETURN DATE</label>
+          <input type="date" id="book_end" class="c-input"
+                 onchange="calculateTotal()"/>
+        </div>
+      </div>
+
+      <!-- Total calculator -->
+      <div id="book_total_section" class="hidden rounded-2xl p-4"
+           style="background:#eff6ff;">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold" style="color:#2563eb;">TOTAL AMOUNT</p>
+            <p class="text-2xl font-bold mt-0.5" id="book_total_display" style="color:var(--text-main);">₹0</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs" style="color:var(--text-muted);" id="book_days_display"></p>
+            <p class="text-xs" style="color:var(--text-muted);" id="book_rate_display"></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <p id="book_error" class="text-xs text-red-500 mb-3 hidden"></p>
+
+    <button onclick="submitBooking()"
+            class="w-full py-4 rounded-2xl text-sm font-bold text-white transition-colors"
+            style="background:#2563eb;">
+      Confirm Booking
+    </button>
+
+    <button onclick="closeBookingModal()"
+            class="w-full py-3 rounded-2xl text-sm font-semibold mt-2"
+            style="color:var(--text-muted);">
+      Cancel
+    </button>
+
+  </div>
+</div>
+
+{% include 'customer/nav.html' %}
+
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script>
+let selectedVehicleId   = null;
+let selectedDailyRate   = 0;
+let selectedVehicleName = '';
+
+// Set today as minimum date for both inputs
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('book_start').min = today;
+document.getElementById('book_end').min   = today;
+
+function openBookingModal(vehicleId, name, dailyRate, type) {
+  selectedVehicleId   = vehicleId;
+  selectedDailyRate   = dailyRate;
+  selectedVehicleName = name;
+
+  const emojis = { car: '🚗', bike: '🏍️', scooter: '🛵' };
+  document.getElementById('modal_vehicle_name').textContent =
+    (emojis[type] || '🚗') + ' ' + name;
+  document.getElementById('modal_vehicle_rate').textContent =
+    '₹' + dailyRate.toLocaleString('en-IN') + ' per day';
+
+  // Reset fields
+  document.getElementById('book_start').value = '';
+  document.getElementById('book_end').value   = '';
+  document.getElementById('book_total_section').classList.add('hidden');
+  document.getElementById('book_error').classList.add('hidden');
+
+  document.getElementById('bookingModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBookingModal() {
+  document.getElementById('bookingModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+// Close on backdrop click
+document.getElementById('bookingModal').addEventListener('click', function(e) {
+  if (e.target === this) closeBookingModal();
+});
+
+function calculateTotal() {
+  const start = document.getElementById('book_start').value;
+  const end   = document.getElementById('book_end').value;
+  if (!start || !end) return;
+
+  // Auto-set end min to start date
+  document.getElementById('book_end').min = start;
+
+  const days = Math.ceil(
+    (new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)
+  );
+
+  if (days <= 0) {
+    document.getElementById('book_total_section').classList.add('hidden');
+    return;
+  }
+
+  const total = days * selectedDailyRate;
+  document.getElementById('book_total_display').textContent =
+    '₹' + total.toLocaleString('en-IN');
+  document.getElementById('book_days_display').textContent = days + ' day' + (days > 1 ? 's' : '');
+  document.getElementById('book_rate_display').textContent =
+    '₹' + selectedDailyRate.toLocaleString('en-IN') + '/day';
+  document.getElementById('book_total_section').classList.remove('hidden');
+}
+
+async function submitBooking() {
+  const start = document.getElementById('book_start').value;
+  const end   = document.getElementById('book_end').value;
+  const err   = document.getElementById('book_error');
+
+  if (!start || !end) {
+    err.textContent = 'Please select both pickup and return dates.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  const days = Math.ceil((new Date(end) - new Date(start)) / (1000*60*60*24));
+  if (days <= 0) {
+    err.textContent = 'Return date must be after pickup date.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  err.classList.add('hidden');
+  const total = days * selectedDailyRate;
+
+  try {
+    const res = await fetch('/api/customer/bookings/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vehicle_id:   selectedVehicleId,
+        start_date:   start,
+        end_date:     end,
+        total_amount: total
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      closeBookingModal();
+      // Show success then redirect to bookings
+      alert('Booking confirmed! Reference: ' + data.booking_ref);
+      window.location.href = '/customer/bookings';
+    } else {
+      err.textContent = data.error || 'Booking failed. Please try again.';
+      err.classList.remove('hidden');
+    }
+  } catch(e) {
+    err.textContent = 'Network error. Please try again.';
+    err.classList.remove('hidden');
+  }
+}
+</script>
+</body>
+</html>
