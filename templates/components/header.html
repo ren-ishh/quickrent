@@ -2,12 +2,19 @@
         style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
 
   <button id="hamburger" onclick="toggleMobileSidebar()"
-          class="md:hidden p-1 rounded-md shrink-0" style="color:var(--text-secondary);">
+          class="p-1 rounded-md shrink-0" style="color:var(--text-secondary);" aria-label="Open navigation">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
     </svg>
   </button>
 
+  <a href="/dashboard" class="header-brand" aria-label="QuickRent home">
+    <span class="logo-mark logo-mark--small logo-mark--admin" aria-hidden="true">
+<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 21h3a2 2 0 1 1 4 0h6a2 2 0 1 1 4 0h7v-4l-3-1-2.5-5h-9L11 16l-5 1v4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span class="header-brand-name">QuickRent</span>
+  </a>
+  <span class="header-divider" aria-hidden="true">/</span>
   <h1 class="text-[15px] font-semibold shrink-0" style="color:var(--text-primary);">{{ page_title }}</h1>
 
   <div class="ml-auto flex items-center gap-2 shrink-0">

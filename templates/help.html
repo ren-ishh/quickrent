@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Help & Support</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -172,15 +172,15 @@
           </div>
 
           <div class="rounded-xl p-4 flex items-start gap-3" style="background:var(--bg-surface);border:1px solid var(--border);">
-            <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:#fef9c3;">
-              <svg class="w-4 h-4" style="color:#a16207;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style="background:var(--bg-row);">
+              <svg class="w-4 h-4" style="color:var(--text-secondary);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
               </svg>
             </div>
             <div>
               <p class="text-sm font-semibold" style="color:var(--text-primary);">Documentation</p>
               <p class="text-xs mt-0.5 mb-2" style="color:var(--text-secondary);">Step-by-step guides and tutorials</p>
-              <a href="#" class="text-xs font-medium" style="color:#a16207;">Browse Docs →</a>
+              <a href="#" class="text-xs font-medium" style="color:var(--text-secondary);">Browse Docs →</a>
             </div>
           </div>
 
@@ -194,7 +194,7 @@
             <button onclick="sendFeedback(this)"
                     class="mt-2.5 w-full text-sm font-medium text-white py-2 rounded-md transition-colors"
                     style="background:#2563eb;"
-                    onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                    onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#222222'">
               Send
             </button>
           </div>
@@ -243,7 +243,7 @@ function sendFeedback(btn) {
   btn.style.background = '#16a34a';
   setTimeout(() => {
     btn.textContent = 'Send';
-    btn.style.background = '#2563eb';
+    btn.style.background = '#222222';
   }, 3000);
 }
 </script>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Analytics</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <!-- Chart.js from CDN — this gives us the Chart object in JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
@@ -95,7 +95,7 @@
             <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#14b8a6;"></span>Bikes
           </div>
           <div class="flex items-center gap-1.5 text-xs" style="color:var(--text-secondary);">
-            <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#f97316;"></span>Scooters
+            <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#777777;"></span>Scooters
           </div>
         </div>
       </div>
@@ -287,7 +287,7 @@ window.addEventListener('DOMContentLoaded', function () {
       labels: ['Cars', 'Bikes', 'Scooters'],
       datasets: [{
         data: [{{ type_car }}, {{ type_bike }}, {{ type_scooter }}],
-        backgroundColor: ['#2563eb', '#14b8a6', '#f97316'],
+        backgroundColor: ['#222222', '#777777', '#bdbdbd'],
         borderWidth: 0,
         hoverOffset: 6
       }]

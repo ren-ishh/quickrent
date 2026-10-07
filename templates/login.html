@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Login</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="/static/css/theme.css"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -14,8 +14,9 @@
   <div class="w-full max-w-sm px-6">
 
     <div class="flex flex-col items-center mb-8">
-      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl font-bold mb-3"
-           style="background:#2563eb;">Q</div>
+      <div class="logo-mark logo-mark--login logo-mark--admin mb-3" aria-hidden="true">
+<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 21h3a2 2 0 1 1 4 0h6a2 2 0 1 1 4 0h7v-4l-3-1-2.5-5h-9L11 16l-5 1v4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
       <h1 class="text-xl font-bold" style="color:var(--text-primary);">QuickRent</h1>
       <p class="text-sm mt-1" style="color:var(--text-secondary);">Sign in to your Quickrent Account</p>
     </div>
@@ -56,14 +57,14 @@
         <button type="submit"
                 class="w-full text-sm font-semibold text-white py-2.5 rounded-lg transition-colors"
                 style="background:#2563eb;"
-                onmouseover="this.style.background='#1d4ed8'"
-                onmouseout="this.style.background='#2563eb'">
+                onmouseover="this.style.background='#000000'"
+                onmouseout="this.style.background='#222222'">
           Sign In
         </button>
 
         <p class="text-center text-sm mt-5" style="color:var(--text-secondary);">
           Don't have an account? 
-          <a href="/customer/register" class="font-medium transition-colors" style="color:#2563eb;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='#2563eb'">Sign up here</a>
+          <a href="/customer/register" class="font-medium transition-colors" style="color:#2563eb;" onmouseover="this.style.color='#000000'" onmouseout="this.style.color='#222222'">Sign up here</a>
         </p>
 
       </form>

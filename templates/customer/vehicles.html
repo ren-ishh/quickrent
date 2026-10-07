@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Vehicles</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -45,22 +45,22 @@
   <a href="/customer/vehicles?type=all&status={{ status_filter }}"
      class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
      style="{% if type_filter == 'all' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
-    🚘 All Types
+    ALL TYPES
   </a>
   <a href="/customer/vehicles?type=car&status={{ status_filter }}"
      class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
      style="{% if type_filter == 'car' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
-    🚗 Cars
+    CARS
   </a>
   <a href="/customer/vehicles?type=bike&status={{ status_filter }}"
      class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
      style="{% if type_filter == 'bike' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
-    🏍️ Bikes
+    BIKES
   </a>
   <a href="/customer/vehicles?type=scooter&status={{ status_filter }}"
      class="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full transition-all"
      style="{% if type_filter == 'scooter' %}background:#1a1a1a;color:#ffffff;{% else %}background:var(--bg-surface);color:var(--text-muted);border:1px solid #e2e8f0;{% endif %}">
-    🛵 Scooters
+    SCOOTERS
   </a>
 </div>
 
@@ -75,7 +75,7 @@
       <!-- Vehicle image placeholder -->
       <div class="h-28 flex items-center justify-center text-4xl relative"
            style="background:{% if v.type == 'car' %}#eff6ff{% elif v.type == 'bike' %}#f0fdf4{% else %}#fdf4ff{% endif %};">
-        {% if v.type == 'car' %}🚗{% elif v.type == 'bike' %}🏍️{% else %}🛵{% endif %}
+        <span class="vehicle-type-mark vehicle-type-mark--large">{% if v.type == 'car' %}CAR{% elif v.type == 'bike' %}BIKE{% else %}SCOOT{% endif %}</span>
 
         <!-- Availability badge -->
         <div class="absolute top-2 right-2">
@@ -87,7 +87,7 @@
                 style="background:#fee2e2;color:#dc2626;">Service</span>
           {% else %}
           <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                style="background:#fef9c3;color:#a16207;">Rented</span>
+                style="background:var(--bg-row);color:var(--text-secondary);">Rented</span>
           {% endif %}
         </div>
       </div>
@@ -125,7 +125,7 @@
 
   {% else %}
   <div class="c-card p-10 text-center mt-4">
-    <p class="text-4xl mb-3">🔍</p>
+    <p class="vehicle-type-mark vehicle-type-mark--empty mb-3">NO MATCH</p>
     <p class="font-bold" style="color:var(--text-main);">No vehicles found</p>
     <p class="text-sm mt-1" style="color:var(--text-muted);">Try a different filter</p>
   </div>
@@ -211,9 +211,9 @@ function openBookingModal(vehicleId, name, dailyRate, type) {
   selectedDailyRate   = dailyRate;
   selectedVehicleName = name;
 
-  const emojis = { car: '🚗', bike: '🏍️', scooter: '🛵' };
+  const emojis = { car: 'CAR', bike: 'BIKE', scooter: 'SCOOT' };
   document.getElementById('modal_vehicle_name').textContent =
-    (emojis[type] || '🚗') + ' ' + name;
+    (emojis[type] || 'CAR') + ' ' + name;
   document.getElementById('modal_vehicle_rate').textContent =
     '₹' + dailyRate.toLocaleString('en-IN') + ' per day';
 

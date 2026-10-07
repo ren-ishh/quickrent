@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Settings</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -111,7 +111,7 @@
               <div class="ml-auto">
                 <button onclick="saveProfile()" class="text-sm font-medium text-white px-4 py-2 rounded-md"
                         style="background:#2563eb;"
-                        onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                        onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#222222'">
                   Save Changes
                 </button>
               </div>
@@ -151,7 +151,7 @@
               <div class="ml-auto">
                 <button onclick="savePassword()" class="text-sm font-medium text-white px-4 py-2 rounded-md"
                         style="background:#2563eb;"
-                        onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                        onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#222222'">
                   Update Password
                 </button>
               </div>
@@ -273,7 +273,7 @@
             <div class="flex justify-end">
               <button onclick="addAdmin()" class="text-sm font-medium text-white px-4 py-2 rounded-md"
                       style="background:#2563eb;"
-                      onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+                      onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#222222'">
                 Add Admin
               </button>
             </div>
@@ -368,14 +368,14 @@ function togglePref(btn) {
     dot.style.right = 'auto'; dot.style.left = '2px';
   } else {
     btn.setAttribute('data-on', 'true');
-    btn.style.background = '#2563eb';
+    btn.style.background = '#222222';
     dot.style.left = 'auto'; dot.style.right = '2px';
   }
 }
 
 function setThemePref(theme) {
-  document.getElementById('themeLight').style.borderColor = theme === 'light' ? '#2563eb' : 'var(--border)';
-  document.getElementById('themeDark').style.borderColor  = theme === 'dark'  ? '#2563eb' : 'var(--border)';
+  document.getElementById('themeLight').style.borderColor = theme === 'light' ? '#222222' : 'var(--border)';
+  document.getElementById('themeDark').style.borderColor  = theme === 'dark'  ? '#222222' : 'var(--border)';
   document.documentElement.classList.remove('light','dark');
   document.documentElement.classList.add(theme);
   localStorage.setItem('qr-theme', theme);
@@ -403,7 +403,7 @@ document.getElementById('removeAdminModal').addEventListener('click', function(e
 // Swap addAdmin/removeAdmin bodies for API calls when backend is ready.
 
 const ROLE_COLORS = {
-  owner:   { bg:'#fef9c3', color:'#a16207' },
+  owner:   { bg:'#e5e5e5', color:'#555555' },
   admin:   { bg:'#eff6ff', color:'#2563eb' },
   manager: { bg:'#f0fdf4', color:'#16a34a' },
   viewer:  { bg:'#f8fafc', color:'#64748b' }
@@ -431,7 +431,7 @@ function renderAdminList() {
   list.innerHTML = admins.map(a => {
     const rc       = ROLE_COLORS[a.role] || ROLE_COLORS.admin;
     const initials = a.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-    const avatarBg = a.role === 'owner' ? '#f59e0b' : a.role === 'manager' ? '#10b981' : '#6366f1';
+    const avatarBg = a.role === 'owner' ? '#555555' : a.role === 'manager' ? '#10b981' : '#6366f1';
 
     return `
     <div class="flex items-center gap-4 px-5 py-4" style="border-bottom:1px solid var(--border);">

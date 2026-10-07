@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Vehicles</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -24,7 +24,7 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">Fleet Inventory</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage your vehicles</p>
       </div>
-      <button onclick="openModal('vehicleAddModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+      <button onclick="openModal('vehicleAddModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#222222'">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
         Add Vehicle
       </button>
@@ -40,15 +40,19 @@
     <!-- FIX: removed overflow-hidden from grid so View button dropdown isn't clipped -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="vehicleGrid">
     {% for vehicle in vehicles %}
-      <div class="vehicle-card rounded-xl overflow-hidden"
+      <div class="vehicle-card rounded-xl overflow-hidden" role="button" tabindex="0"
+           onclick="openVehicleModal('{{ vehicle.id }}')"
+           onkeydown="if(event.key==='Enter'||event.key===' ')openVehicleModal('{{ vehicle.id }}')"
            data-name="{{ vehicle.name|lower }}"
            data-type="{{ vehicle.type }}"
            data-avail="{{ 'available' if vehicle.status == 'available' else 'unavailable' }}"
            style="background:var(--bg-surface);border:1px solid var(--border);">
  
-        <div class="h-32 flex items-center justify-center text-4xl"
+        <div class="vehicle-mark h-32 flex items-center justify-center"
              style="background:{% if vehicle.type == 'car' %}#eff6ff{% elif vehicle.type == 'bike' %}#f0fdf4{% else %}#fdf4ff{% endif %};">
-          {% if vehicle.type == 'car' %}🚗{% elif vehicle.type == 'bike' %}🏍️{% else %}🛵{% endif %}
+          <span class="text-[11px] uppercase tracking-[0.22em] font-semibold">
+            {% if vehicle.type == 'car' %}Four wheel{% elif vehicle.type == 'bike' %}Two wheel{% else %}Scooter{% endif %}
+          </span>
         </div>
  
         <div class="p-4">
@@ -57,7 +61,7 @@
             {% if vehicle.status == 'available' %}
               <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#dcfce7;color:#16a34a;">Available</span>
             {% elif vehicle.status == 'rented' %}
-              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fef9c3;color:#a16207;">Rented</span>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:var(--bg-row);color:var(--text-secondary);">Rented</span>
             {% else %}
               <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:#fee2e2;color:#dc2626;">Maintenance</span>
             {% endif %}
@@ -95,9 +99,12 @@
      VEHICLE VIEW / EDIT / DELETE MODAL
 ════════════════════════════════════════════ -->
 <div id="vehicleModal" class="modal-backdrop hidden">
-  <div class="modal-box" style="max-width:500px;">
-    <div class="flex items-center justify-between mb-5">
-      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Vehicle Details</h2>
+  <div class="modal-box" style="max-width:640px;">
+    <div class="vehicle-modal-head flex items-center justify-between mb-5">
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.16em] mb-1" style="color:var(--text-secondary);">Fleet inventory</p>
+        <h2 id="vehicleModalTitle" class="text-base font-semibold" style="color:var(--text-primary);">Vehicle Details</h2>
+      </div>
       <button onclick="closeVehicleModal()" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
  
@@ -134,15 +141,25 @@
           <p class="text-sm font-semibold" id="v_status_display" style="color:var(--text-primary);"></p>
         </div>
       </div>
-      <div class="flex gap-2 justify-end">
-        <button onclick="confirmDeleteVehicle()" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">Delete</button>
+      <div class="vehicle-modal-actions">
+        <button onclick="confirmDeleteVehicle()" class="vehicle-modal-actions__danger text-sm px-4 py-2 rounded-lg font-medium" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">Delete vehicle</button>
         <button onclick="switchToEditMode()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Edit</button>
       </div>
     </div>
  
     <!-- EDIT MODE -->
     <div id="v_edit_mode" class="hidden">
-      <div class="grid grid-cols-2 gap-3 mb-3">
+      <div class="vehicle-editor-context">
+        <div id="ve_type_mark" class="vehicle-type-mark vehicle-type-mark--large">CAR</div>
+        <div class="min-w-0">
+          <p class="vehicle-editor-context__eyebrow">EDITING VEHICLE</p>
+          <p id="ve_context_name" class="vehicle-editor-context__name">Vehicle details</p>
+          <p class="vehicle-editor-context__hint">Update the fleet record below.</p>
+        </div>
+        <span class="vehicle-editor-context__dot" aria-hidden="true"></span>
+      </div>
+      <div class="vehicle-edit-form">
+        <div class="vehicle-edit-form__section">Vehicle information</div>
         <div class="col-span-2">
           <label class="modal-label">Vehicle Name</label>
           <input id="ve_name" class="modal-input"/>
@@ -184,8 +201,8 @@
           </select>
         </div>
       </div>
-      <p id="ve_error" class="text-xs text-red-500 mb-3 hidden"></p>
-      <div class="flex gap-2 justify-end">
+      <p id="ve_error" class="text-xs text-red-500 mt-3 hidden"></p>
+      <div class="vehicle-modal-actions">
         <button onclick="switchToViewMode()" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
         <button onclick="saveVehicleEdit()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#2563eb;">Save Changes</button>
       </div>
@@ -197,7 +214,7 @@
         <p class="text-sm font-semibold mb-1" style="color:#dc2626;">Delete this vehicle?</p>
         <p class="text-xs" style="color:#dc2626;">This action cannot be undone. All associated bookings may be affected.</p>
       </div>
-      <div class="flex gap-2 justify-end">
+      <div class="vehicle-modal-actions">
         <button onclick="switchToViewMode()" class="text-sm px-4 py-2 rounded-lg font-medium" style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
         <button onclick="executeDeleteVehicle()" class="text-sm px-4 py-2 rounded-lg font-medium text-white" style="background:#dc2626;">Yes, Delete</button>
       </div>
@@ -210,8 +227,11 @@
 ════════════════════════════════════════════ -->
 <div id="vehicleAddModal" class="modal-backdrop hidden">
   <div class="modal-box">
-    <div class="flex items-center justify-between mb-5">
-      <h2 class="text-base font-semibold" style="color:var(--text-primary);">Add New Vehicle</h2>
+    <div class="vehicle-modal-head flex items-center justify-between mb-5">
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.16em] mb-1" style="color:var(--text-secondary);">Fleet inventory</p>
+        <h2 class="text-base font-semibold" style="color:var(--text-primary);">Add New Vehicle</h2>
+      </div>
       <button onclick="closeModal('vehicleAddModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
     <div class="grid grid-cols-2 gap-3 mb-3">
@@ -296,10 +316,15 @@ function showVehicleMode(mode) {
   document.getElementById('v_view_mode').classList.toggle('hidden', mode !== 'view');
   document.getElementById('v_edit_mode').classList.toggle('hidden', mode !== 'edit');
   document.getElementById('v_delete_mode').classList.toggle('hidden', mode !== 'delete');
+  const title = document.getElementById('vehicleModalTitle');
+  if (title) title.textContent = mode === 'edit' ? 'Edit vehicle' : mode === 'delete' ? 'Remove vehicle' : 'Vehicle details';
 }
  
 function switchToViewMode()    { showVehicleMode('view'); }
 function switchToEditMode()    {
+  const vehicleName = document.getElementById('v_name_display').textContent;
+  const vehicleType = document.getElementById('v_type_display').textContent;
+  const vehicleStatus = document.getElementById('v_status_display').textContent;
   document.getElementById('ve_name').value  = document.getElementById('v_name_display').textContent;
   document.getElementById('ve_brand').value = document.getElementById('v_brand_display').textContent;
   document.getElementById('ve_year').value  = document.getElementById('v_year_display').textContent;
@@ -307,7 +332,11 @@ function switchToEditMode()    {
   document.getElementById('ve_type').value   = document.getElementById('v_type_display').textContent.toLowerCase();
   document.getElementById('ve_fuel').value   = document.getElementById('v_fuel_display').textContent;
   document.getElementById('ve_status').value = document.getElementById('v_status_display').textContent.toLowerCase();
+  document.getElementById('ve_context_name').textContent = vehicleName || 'Vehicle details';
+  document.getElementById('ve_type_mark').textContent = vehicleType ? vehicleType.toUpperCase() : 'CAR';
+  document.getElementById('ve_type_mark').classList.toggle('vehicle-type-mark--book', vehicleStatus.toLowerCase() === 'available');
   showVehicleMode('edit');
+  window.setTimeout(() => document.getElementById('ve_name').focus(), 50);
 }
 function confirmDeleteVehicle() { showVehicleMode('delete'); }
  
@@ -323,8 +352,8 @@ async function openVehicleModal(vehicleId) {
     const data = await res.json();
     const v    = data.vehicle;
  
-    const emojis = { car: '🚗', bike: '🏍️', scooter: '🛵' };
-    document.getElementById('v_emoji_display').textContent   = emojis[v.type] || '🚗';
+    const emojis = { car: 'CAR', bike: 'BIKE', scooter: 'SCOOT' };
+    document.getElementById('v_emoji_display').textContent   = emojis[v.type] || 'CAR';
     document.getElementById('v_name_display').textContent    = v.name;
     document.getElementById('v_type_display').textContent    = v.type.charAt(0).toUpperCase() + v.type.slice(1);
     document.getElementById('v_brand_display').textContent   = v.brand || '—';

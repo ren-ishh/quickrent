@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Notifications</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -83,10 +83,10 @@
       <!-- Unread notification — warning type -->
       <div class="notif-item mb-2.5 rounded-xl p-4 border-l-4 transition-all cursor-pointer"
            data-read="false"
-           style="background:#fef9c3;border-color:#a16207;border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);"
+           style="background:var(--bg-row);border-color:var(--border);border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);"
            onclick="markRead(this)">
         <div class="flex items-start gap-3">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#a16207;">!</div>
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5" style="background:#555;">!</div>
           <div class="flex-1">
             <div class="flex items-center justify-between">
               <p class="text-sm font-semibold" style="color:var(--text-primary);">Rental overdue</p>
@@ -94,7 +94,7 @@
             </div>
             <p class="text-xs mt-1" style="color:var(--text-secondary);">Arjun Mehta's rental of Royal Enfield was due on Apr 18. 3 days overdue.</p>
           </div>
-          <span class="w-2 h-2 rounded-full shrink-0 mt-1.5" style="background:#a16207;"></span>
+          <span class="w-2 h-2 rounded-full shrink-0 mt-1.5" style="background:#777;"></span>
         </div>
       </div>
 

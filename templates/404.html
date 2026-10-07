@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Page Not Found</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -13,8 +13,9 @@
       style="background:var(--bg-page);">
 
   <!-- Logo mark -->
-  <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-8"
-       style="background:#2563eb;">Q</div>
+  <div class="logo-mark logo-mark--login logo-mark--neutral mb-8" aria-hidden="true">
+<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 21h3a2 2 0 1 1 4 0h6a2 2 0 1 1 4 0h7v-4l-3-1-2.5-5h-9L11 16l-5 1v4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
 
   <!-- Error card -->
   <div class="rounded-2xl p-8 text-center w-full max-w-md"

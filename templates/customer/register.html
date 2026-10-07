@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Create Account</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -14,8 +14,9 @@
   <div class="w-full max-w-sm">
 
     <div class="flex flex-col items-center mb-8">
-      <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-lg"
-           style="background:#2563eb;">Q</div>
+      <div class="logo-mark logo-mark--login logo-mark--customer mb-3" aria-hidden="true">
+<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 21h3a2 2 0 1 1 4 0h6a2 2 0 1 1 4 0h7v-4l-3-1-2.5-5h-9L11 16l-5 1v4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
       <h1 class="text-2xl font-bold" style="color:var(--text-main);">Create Account</h1>
       <p class="text-sm mt-1" style="color:var(--text-muted);">Join QuickRent to book vehicles</p>
     </div>
@@ -96,8 +97,8 @@
         <button type="submit"
                 class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-colors"
                 style="background:#2563eb;"
-                onmouseover="this.style.background='#1d4ed8'"
-                onmouseout="this.style.background='#2563eb'">
+                onmouseover="this.style.background='#000000'"
+                onmouseout="this.style.background='#222222'">
           Create Account
         </button>
 

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Payments</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -102,7 +102,7 @@
               {% if payment.status == 'paid' %}
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Paid</span>
               {% elif payment.status == 'pending' %}
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:var(--bg-row);color:var(--text-secondary);">Pending</span>
               {% else %}
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Failed</span>
               {% endif %}
@@ -148,4 +148,3 @@ function searchPayments() {
 </script>
 </body>
 </html>
- 

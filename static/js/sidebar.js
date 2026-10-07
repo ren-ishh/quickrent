@@ -9,10 +9,9 @@ function setActiveNavItem() {
   });
 }
 
-// ── MOBILE SIDEBAR SETUP ───────────────────────────────────────
-// Sets up the sidebar correctly based on screen size.
-// On desktop: sidebar stays visible, hover to expand.
-// On mobile: sidebar starts hidden off-screen, slides in as drawer.
+// ── SIDEBAR SETUP ─────────────────────────────────────────────
+// The navigation is a hidden drawer at every breakpoint and is opened
+// explicitly from the header. This keeps the workspace focused on content.
 
 
 // ── MOBILE SIDEBAR TOGGLE ──────────────────────────────────────
@@ -61,7 +60,6 @@ document.addEventListener('click', function(e) {
 // When a nav link is tapped on mobile, close the sidebar
 // so the page transition feels smooth
 document.addEventListener('click', function(e) {
-  if (window.innerWidth >= 768) return; // desktop only needs hover
   const link = e.target.closest('[data-page]');
   if (link) {
     const sidebar = document.getElementById('sidebar');
@@ -82,13 +80,13 @@ window.addEventListener('resize', function() {
   if (!sidebar) return;
 
   if (window.innerWidth >= 768) {
-    // Desktop — remove mobile classes, reset inline styles
-    sidebar.classList.remove('fixed', 'top-0', 'left-0', 'h-full', '-translate-x-full');
+    // Keep the drawer closed after a breakpoint change.
+    sidebar.classList.add('-translate-x-full');
     sidebar.style.width = '';
     if (overlay) overlay.classList.add('hidden');
     document.body.style.overflow = '';
   } else {
-    // Mobile — re-init
+    // Mobile — keep the current drawer state and width.
     sidebar.style.width = '280px';
   }
 });

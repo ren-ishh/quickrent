@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — My Bookings</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -31,7 +31,7 @@
 
       <div class="h-1 w-full"
            style="background:{% if b.status == 'active' %}#16a34a
-                            {% elif b.status == 'pending' %}#f59e0b
+                            {% elif b.status == 'pending' %}#777777
                             {% elif b.status == 'cancelled' %}#94a3b8
                             {% elif b.status == 'overdue' %}#dc2626
                             {% else %}#cbd5e1{% endif %};"></div>
@@ -44,9 +44,7 @@
                  style="background:{% if b.vehicles and b.vehicles.type == 'car' %}rgba(37, 99, 235, 0.1)
                                    {% elif b.vehicles and b.vehicles.type == 'bike' %}rgba(22, 163, 74, 0.1)
                                    {% else %}rgba(217, 70, 239, 0.1){% endif %};">
-              {% if b.vehicles and b.vehicles.type == 'car' %}🚗
-              {% elif b.vehicles and b.vehicles.type == 'bike' %}🏍️
-              {% else %}🛵{% endif %}
+              <span class="vehicle-type-mark vehicle-type-mark--large">{% if b.vehicles and b.vehicles.type == 'car' %}CAR{% elif b.vehicles and b.vehicles.type == 'bike' %}BIKE{% else %}SCOOT{% endif %}</span>
             </div>
             <div class="min-w-0">
               <p class="font-bold text-sm truncate" style="color:var(--text-main);">
@@ -57,7 +55,7 @@
           </div>
           <span class="c-status shrink-0"
                 style="{% if b.status == 'active' %}background:rgba(22, 163, 74, 0.1);color:#16a34a;
-                       {% elif b.status == 'pending' %}background:rgba(245, 158, 11, 0.1);color:#d97706;
+                       {% elif b.status == 'pending' %}background:var(--bg-row);color:var(--text-secondary);
                        {% elif b.status == 'cancelled' %}background:var(--bg-page);color:var(--text-muted); border: 1px solid var(--border);
                        {% elif b.status == 'overdue' %}background:rgba(220, 38, 38, 0.1);color:#dc2626;
                        {% else %}background:var(--bg-page);color:var(--text-muted); border: 1px solid var(--border);{% endif %}">
@@ -87,7 +85,7 @@
             {% if b.payment_status == 'paid' %}
             <span class="text-[10px] font-bold" style="color:#16a34a;">✓ Paid</span>
             {% else %}
-            <span class="text-[10px] font-bold" style="color:#f59e0b;">⚠ Payment Pending</span>
+            <span class="text-[10px] font-bold" style="color:var(--text-secondary);">Payment Pending</span>
             {% endif %}
           </div>
 
@@ -119,7 +117,7 @@
 
   {% else %}
   <div class="c-card p-10 text-center mt-4" style="background:var(--bg-surface); border:1px solid var(--border);">
-    <p class="text-5xl mb-4">📋</p>
+    <p class="vehicle-type-mark vehicle-type-mark--empty mb-4">NO BOOKINGS</p>
     <p class="font-bold text-base mb-1" style="color:var(--text-main);">No bookings yet</p>
     <p class="text-sm mb-4" style="color:var(--text-muted);">Your rental history will appear here</p>
     <a href="/customer/vehicles"

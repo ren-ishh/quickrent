@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Booking Details</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
@@ -36,7 +36,7 @@
     
     <div class="inline-block px-4 py-1.5 rounded-full text-sm font-bold"
          style="{% if booking.payment_status == 'paid' %}background:rgba(22, 163, 74, 0.1);color:#16a34a;
-                {% else %}background:rgba(245, 158, 11, 0.1);color:#d97706;{% endif %}">
+                {% else %}background:var(--bg-row);color:var(--text-secondary);{% endif %}">
       {% if booking.payment_status == 'paid' %}
         ✓ Payment Complete
       {% else %}
@@ -46,11 +46,10 @@
   </div>
 
   <div class="c-card p-4 mb-4 flex items-center gap-4" style="background:var(--bg-surface); border:1px solid var(--border);">
-    <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0"
-         style="background:rgba(37, 99, 235, 0.1);">
-      {% if booking.vehicles and booking.vehicles.type == 'car' %}🚗
-      {% elif booking.vehicles and booking.vehicles.type == 'bike' %}🏍️
-      {% else %}🛵{% endif %}
+    <div class="vehicle-type-mark vehicle-type-mark--large w-16 h-16 rounded-2xl shrink-0">
+      {% if booking.vehicles and booking.vehicles.type == 'car' %}CAR
+      {% elif booking.vehicles and booking.vehicles.type == 'bike' %}BIKE
+      {% else %}SCOOT{% endif %}
     </div>
     <div>
       <p class="font-bold text-lg" style="color:var(--text-main);">{{ booking.vehicles.name if booking.vehicles else 'Unknown Vehicle' }}</p>
@@ -141,7 +140,7 @@ async function startRazorpayPayment(bookingId, amount) {
         name: '{{ customer.name }}', 
         email: '{{ customer.email }}' 
       },
-      theme: { color: '#2563eb' },
+      theme: { color: '#222222' },
       handler: async function(response) {
         // 3. Verify payment on your server
         const verifyRes = await fetch('/api/customer/payment/verify', {

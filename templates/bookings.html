@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Bookings</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -26,7 +26,7 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Bookings</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Manage and track all vehicle bookings</p>
       </div>
-      <button onclick="openBookingModal()" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+      <button onclick="openBookingModal()" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#222222'">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
         New Booking
       </button>
@@ -109,7 +109,7 @@
             style="background:#dcfce7;color:#16a34a;">Active</span>
     {% elif booking.status == 'pending' %}
       <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-            style="background:#fef9c3;color:#a16207;">Pending</span>
+            style="background:var(--bg-row);color:var(--text-secondary);">Pending</span>
     {% elif booking.status == 'overdue' %}
       <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
             style="background:#fee2e2;color:#dc2626;">Overdue</span>
@@ -151,7 +151,7 @@
       {% if booking.status != 'overdue' %}
       <button onclick="updateBookingStatus('{{ booking.id }}', 'overdue'); toggleMenu('{{ booking.id }}')"
               class="w-full text-left px-4 py-2.5 text-sm"
-              style="color:#a16207;"
+              style="color:var(--text-secondary);"
               onmouseover="this.style.background='var(--bg-row)'" onmouseout="this.style.background='transparent'">
         ⚠ Mark as Overdue
       </button>
@@ -225,21 +225,31 @@
  
 <!-- NEW BOOKING MODAL -->
 <div id="bookingModal" class="modal-backdrop hidden">
-  <div class="modal-box">
-    <div class="flex items-center justify-between mb-5">
-      <h2 class="text-base font-semibold" style="color:var(--text-primary);">New Booking</h2>
+  <div class="modal-box booking-editor-modal">
+    <div class="vehicle-modal-head flex items-center justify-between mb-5">
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.16em] mb-1" style="color:var(--text-secondary);">Bookings / create</p>
+        <h2 id="bookingModalTitle" class="text-base font-semibold" style="color:var(--text-primary);">New Booking</h2>
+      </div>
       <button onclick="closeModal('bookingModal')" class="text-xl leading-none" style="color:var(--text-secondary);">×</button>
     </div>
-    <div class="flex flex-col gap-3 mb-3">
+    <div class="booking-editor-context">
+      <span class="booking-editor-symbol">NEW</span>
       <div>
+        <p class="booking-editor-context__title">Create a reservation</p>
+        <p class="booking-editor-context__hint">Select a customer, vehicle, and rental window.</p>
+      </div>
+    </div>
+    <div class="booking-editor-form">
+      <div class="booking-field">
         <label class="modal-label">Customer</label>
         <select id="b_customer" class="modal-input"><option value="">Loading...</option></select>
       </div>
-      <div>
+      <div class="booking-field">
         <label class="modal-label">Vehicle</label>
         <select id="b_vehicle" class="modal-input"><option value="">Loading...</option></select>
       </div>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="booking-field booking-field--full booking-date-grid">
         <div>
           <label class="modal-label">Start Date</label>
           <input id="b_start" class="modal-input" type="date"/>
@@ -249,13 +259,13 @@
           <input id="b_end" class="modal-input" type="date"/>
         </div>
       </div>
-      <div>
+      <div class="booking-field booking-field--full">
         <label class="modal-label">Total Amount (₹)</label>
         <input id="b_amount" class="modal-input" type="number" placeholder="e.g. 2100"/>
       </div>
     </div>
     <p id="b_error" class="text-xs text-red-500 mb-3 hidden"></p>
-    <div class="flex gap-2 justify-end mt-4">
+    <div class="vehicle-modal-actions booking-editor-actions">
       <button onclick="closeModal('bookingModal')"
               class="text-sm px-4 py-2 rounded-lg font-medium"
               style="background:var(--bg-row);color:var(--text-secondary);border:1px solid var(--border);">Cancel</button>
@@ -367,14 +377,27 @@ async function submitPayment() {
 // ── New Booking modal ──────────────────────────────────────────
 async function openBookingModal() {
   openModal('bookingModal');
-  const [custRes, vehRes] = await Promise.all([
-    fetch('/api/customers/list').then(r => r.json()),
-    fetch('/api/vehicles/list').then(r => r.json())
-  ]);
-  document.getElementById('b_customer').innerHTML =
-    custRes.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-  document.getElementById('b_vehicle').innerHTML =
-    vehRes.vehicles.map(v => `<option value="${v.id}">${v.name} (${v.type}) — ₹${v.daily_rate}/day</option>`).join('');
+  const customerSelect = document.getElementById('b_customer');
+  const vehicleSelect = document.getElementById('b_vehicle');
+  const error = document.getElementById('b_error');
+  customerSelect.disabled = true;
+  vehicleSelect.disabled = true;
+  error.classList.add('hidden');
+  try {
+    const [custRes, vehRes] = await Promise.all([
+      fetch('/api/customers/list').then(r => r.json()),
+      fetch('/api/vehicles/list').then(r => r.json())
+    ]);
+    customerSelect.innerHTML = custRes.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    vehicleSelect.innerHTML = vehRes.vehicles.map(v => `<option value="${v.id}">${v.name} (${v.type}) — ₹${v.daily_rate}/day</option>`).join('');
+    customerSelect.focus();
+  } catch (errorValue) {
+    error.textContent = 'Could not load customers and vehicles. Please close and try again.';
+    error.classList.remove('hidden');
+  } finally {
+    customerSelect.disabled = false;
+    vehicleSelect.disabled = false;
+  }
 }
  
 async function submitBooking() {

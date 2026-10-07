@@ -8,11 +8,11 @@
     window.tailwind = window.tailwind || {};
     window.tailwind.config = { darkMode: 'class' };
   </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
- 
+
 <body class="flex overflow-hidden" style="background:var(--bg-page);height:100vh;height:100dvh;">
  
 {% include 'components/sidebar.html' %}
@@ -48,50 +48,38 @@
  
       <div class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
  
-        <div class="rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
+        <div class="dashboard-stat dashboard-card rounded-xl p-5" role="button" tabindex="0" onclick="openDashboardDetail('vehicles')" onkeydown="if(event.key==='Enter'||event.key===' ')openDashboardDetail('vehicles')" style="background: var(--bg-surface); border: 1px solid var(--border);">
           <div class="flex items-center justify-between mb-4">
             <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-secondary);">Total Vehicles</span>
-            <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background: #eff6ff;">
-              <svg class="w-4 h-4" style="color:#2563eb;" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
-              </svg>
-            </div>
+            <div class="metric-symbol" aria-hidden="true">FLEET</div>
           </div>
           <p class="text-3xl font-bold" style="color:var(--text-primary);">{{ total_vehicles }}</p>
           <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">{{ available_vehicles }} available</p>
         </div>
  
-        <div class="rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
+        <div class="dashboard-stat dashboard-card rounded-xl p-5" role="button" tabindex="0" onclick="openDashboardDetail('bookings')" onkeydown="if(event.key==='Enter'||event.key===' ')openDashboardDetail('bookings')" style="background: var(--bg-surface); border: 1px solid var(--border);">
           <div class="flex items-center justify-between mb-4">
             <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-secondary);">Active Bookings</span>
-            <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background: #eff6ff;">
-              <svg class="w-4 h-4" style="color:#2563eb;" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
-              </svg>
-            </div>
+            <div class="metric-symbol" aria-hidden="true">LIVE</div>
           </div>
           <p class="text-3xl font-bold" style="color:var(--text-primary);">{{ active_bookings }}</p>
           <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">{{ pending_bookings }} pending</p>
         </div>
  
-        <div class="rounded-xl p-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
+        <div class="dashboard-stat dashboard-card rounded-xl p-5" role="button" tabindex="0" onclick="openDashboardDetail('revenue')" onkeydown="if(event.key==='Enter'||event.key===' ')openDashboardDetail('revenue')" style="background: var(--bg-surface); border: 1px solid var(--border);">
           <div class="flex items-center justify-between mb-4">
             <span class="text-xs font-medium uppercase tracking-wide" style="color: var(--text-secondary);">Monthly Revenue</span>
-            <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background: #eff6ff;">
-              <svg class="w-4 h-4" style="color:#2563eb;" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75"/>
-              </svg>
-            </div>
+            <div class="metric-symbol" aria-hidden="true">₹ / MO</div>
           </div>
-          <p class="text-3xl font-bold" style="color:var(--text-primary);">₹{{ "{:,}".format(total_revenue) }}</p>
+          <p class="text-3xl font-bold" style="color:var(--text-primary);">₹{{ "{:,}".format(monthly_revenue) }}</p>
           <p class="text-xs mt-1.5 font-medium" style="color:#16a34a;">₹{{ "{:,}".format(total_revenue) }} total</p>
         </div>
  
       </div>
  
       <!-- Quick stats blue card -->
-      <div class="rounded-xl p-5 text-white flex flex-col" style="background: #2563eb;">
-        <p class="text-sm font-semibold mb-4 opacity-90">Quick Stats</p>
+      <div class="dashboard-brief dashboard-card rounded-xl p-5 text-white flex flex-col" role="button" tabindex="0" onclick="openDashboardDetail('snapshot')" onkeydown="if(event.key==='Enter'||event.key===' ')openDashboardDetail('snapshot')" style="background: #2563eb;">
+        <p class="text-xs font-semibold mb-4 opacity-90 uppercase tracking-[0.16em]">Fleet snapshot</p>
         <div class="flex flex-col gap-0 flex-1 justify-between">
           <div class="flex justify-between items-center py-2.5" style="border-bottom:1px solid rgba(255,255,255,0.2);">
             <span class="text-sm opacity-80">Available</span>
@@ -115,7 +103,7 @@
     </div>
  
     <!-- Recent bookings -->
-    <div class="rounded-xl p-5 mb-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
+    <div class="booking-feed rounded-xl p-5 mb-5" style="background: var(--bg-surface); border: 1px solid var(--border);">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-sm font-semibold" style="color: var(--text-primary);">Recent Bookings</h3>
         <a href="/bookings" class="text-xs font-medium" style="color: #2563eb;">View all →</a>
@@ -144,7 +132,7 @@
           {% if booking.status == 'active' %}
             <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#dcfce7;color:#16a34a;">Active</span>
           {% elif booking.status == 'pending' %}
-            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fef9c3;color:#a16207;">Pending</span>
+            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:var(--bg-row);color:var(--text-secondary);">Pending</span>
           {% elif booking.status == 'overdue' %}
             <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style="background:#fee2e2;color:#dc2626;">Overdue</span>
           {% else %}
@@ -164,7 +152,7 @@
          Add Vehicle   → opens vehicleAddModal if on vehicles page, else goes to /vehicles
          Generate Report → /analytics
     ════════════════════════════════════════════ -->
-    <div class="flex flex-wrap gap-2.5">
+    <div class="workspace-actions flex flex-wrap gap-2.5">
  
       <a href="/bookings"
          class="flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-md"
@@ -201,6 +189,19 @@
  
   </main>
 </div>
+
+<div id="dashboardDetail" class="dashboard-detail hidden" aria-hidden="true">
+  <div class="dashboard-detail__panel" role="dialog" aria-modal="true" aria-labelledby="dashboardDetailTitle">
+    <div class="dashboard-detail__head">
+      <div>
+        <p id="dashboardDetailKicker" class="dashboard-detail__kicker">DETAIL VIEW</p>
+        <h2 id="dashboardDetailTitle">Dashboard detail</h2>
+      </div>
+      <button type="button" class="dashboard-detail__close" onclick="closeDashboardDetail()" aria-label="Close detail">×</button>
+    </div>
+    <div id="dashboardDetailBody" class="dashboard-detail__body"></div>
+  </div>
+</div>
  
 <div id="mobileOverlay" onclick="toggleMobileSidebar()"
      class="fixed inset-0 z-30 hidden" style="background: rgba(0,0,0,0.35);"></div>
@@ -226,8 +227,50 @@ function setDynamicGreeting() {
 
 // Run the function as soon as the page loads
 setDynamicGreeting();
+
+const dashboardDetails = {
+  vehicles: {
+    kicker: 'FLEET / INVENTORY', title: 'Vehicle availability', action: '/vehicles', actionLabel: 'Open fleet inventory',
+    rows: [['Total vehicles', '{{ total_vehicles }}'], ['Available now', '{{ available_vehicles }}'], ['Currently rented', '{{ rented_vehicles }}'], ['In maintenance', '{{ maintenance_vehicles }}']]
+  },
+  bookings: {
+    kicker: 'BOOKINGS / LIVE', title: 'Booking pipeline', action: '/bookings', actionLabel: 'Review all bookings',
+    rows: [['Active', '{{ active_bookings }}'], ['Pending confirmation', '{{ pending_bookings }}'], ['Overdue', '{{ overdue_bookings }}'], ['View', 'Latest 5 in activity feed']]
+  },
+  revenue: {
+    kicker: 'FINANCE / RECEIPTS', title: 'Revenue summary', action: '/payments', actionLabel: 'Open payments',
+    rows: [['This month', '₹{{ "{:,}".format(monthly_revenue) }}'], ['All time', '₹{{ "{:,}".format(total_revenue) }}'], ['Collection status', 'Paid receipts only']]
+  },
+  snapshot: {
+    kicker: 'FLEET / SNAPSHOT', title: 'At-a-glance operations', action: '/analytics', actionLabel: 'Open analytics',
+    rows: [['Available', '{{ available_vehicles }} vehicles'], ['Rented', '{{ rented_vehicles }} vehicles'], ['Pending returns', '{{ pending_bookings }}'], ['Overdue', '{{ overdue_bookings }}']]
+  }
+};
+
+function openDashboardDetail(key) {
+  const detail = dashboardDetails[key];
+  const modal = document.getElementById('dashboardDetail');
+  const body = document.getElementById('dashboardDetailBody');
+  if (!detail || !modal || !body) return;
+  document.getElementById('dashboardDetailKicker').textContent = detail.kicker;
+  document.getElementById('dashboardDetailTitle').textContent = detail.title;
+  body.innerHTML = detail.rows.map(row => `<div class="dashboard-detail__row"><span>${row[0]}</span><strong>${row[1]}</strong></div>`).join('') + `<a class="dashboard-detail__action" href="${detail.action}">${detail.actionLabel} <span>→</span></a>`;
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDashboardDetail() {
+  const modal = document.getElementById('dashboardDetail');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeDashboardDetail(); });
+document.getElementById('dashboardDetail')?.addEventListener('click', event => { if (event.target.id === 'dashboardDetail') closeDashboardDetail(); });
 </script>
  
 </body>
 </html>
- 

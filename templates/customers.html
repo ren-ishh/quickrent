@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Customers</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -22,7 +22,7 @@
         <h2 class="text-xl font-semibold" style="color:var(--text-primary);">All Customers</h2>
         <p class="text-sm mt-0.5" style="color:var(--text-secondary);">View and manage your customer base</p>
       </div>
-      <button onclick="openModal('customerAddModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+      <button onclick="openModal('customerAddModal')" class="flex items-center gap-1.5 text-sm font-medium text-white px-3.5 py-2 rounded-md" style="background:#2563eb;" onmouseover="this.style.background='#000000'" onmouseout="this.style.background='#222222'">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>Add Customer
       </button>
     </div>
@@ -329,7 +329,7 @@ async function openCustomerModal(customerId) {
     } else {
       const statusColors = {
         active:    'background:#dcfce7;color:#16a34a',
-        pending:   'background:#fef9c3;color:#a16207',
+        pending:   'background:var(--bg-row);color:var(--text-secondary)',
         overdue:   'background:#fee2e2;color:#dc2626',
         completed: 'background:#f1f5f9;color:#64748b'
       };

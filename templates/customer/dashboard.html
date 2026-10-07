@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Home</title>
   <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -14,8 +14,9 @@
 <div class="sticky top-0 z-20 flex items-center justify-between px-4 h-14"
      style="background:var(--bg-surface); border-bottom:1px solid var(--border);">
   <div class="flex items-center gap-2">
-    <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-bold"
-         style="background:#2563eb;">Q</div>
+    <div class="logo-mark logo-mark--small logo-mark--customer" aria-hidden="true">
+<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 21h3a2 2 0 1 1 4 0h6a2 2 0 1 1 4 0h7v-4l-3-1-2.5-5h-9L11 16l-5 1v4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
     <span class="font-bold text-sm" style="color:var(--text-main);">QuickRent</span>
   </div>
   <button onclick="toggleTheme()" id="themeToggle"
@@ -29,12 +30,12 @@
 <main class="customer-page max-w-lg mx-auto px-4 py-5 pb-24">
 
   <div class="rounded-2xl p-5 mb-5 relative overflow-hidden"
-       style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">
+       style="background:var(--navy);">
     <div class="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10"
          style="background:var(--bg-surface);transform:translate(20%,-30%);"></div>
     <p class="text-white text-xs font-medium opacity-80 mb-1">Welcome back</p>
     <h1 class="text-white text-xl font-bold mb-3">
-      {{ customer.name.split()[0] }} 👋
+      {{ customer.name.split()[0] }}
     </h1>
     <div class="flex gap-3">
       <div class="rounded-xl px-3 py-2 text-center" style="background:rgba(255,255,255,0.15);">
@@ -55,8 +56,7 @@
   <div class="grid grid-cols-2 gap-3 mb-5">
     <a href="/customer/vehicles"
        class="c-card flex items-center gap-3 p-4 no-underline" style="background:var(--bg-surface); border:1px solid var(--border);">
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-           style="background:rgba(37, 99, 235, 0.1);">🚗</div>
+      <div class="vehicle-type-mark w-10 h-10 rounded-xl flex items-center justify-center shrink-0">CAR</div>
       <div>
         <p class="text-sm font-semibold" style="color:var(--text-main);">Browse</p>
         <p class="text-xs" style="color:var(--text-muted);">All vehicles</p>
@@ -64,8 +64,7 @@
     </a>
     <a href="/customer/bookings"
        class="c-card flex items-center gap-3 p-4 no-underline" style="background:var(--bg-surface); border:1px solid var(--border);">
-      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-           style="background:rgba(22, 163, 74, 0.1);">📋</div>
+      <div class="vehicle-type-mark vehicle-type-mark--book w-10 h-10 rounded-xl flex items-center justify-center shrink-0">BOOK</div>
       <div>
         <p class="text-sm font-semibold" style="color:var(--text-main);">My Bookings</p>
         <p class="text-xs" style="color:var(--text-muted);">{{ total_bookings }} total</p>
@@ -83,14 +82,14 @@
     {% for b in active_bookings %}
     <div class="c-card overflow-hidden" style="background:var(--bg-surface); border:1px solid var(--border);">
       <div class="h-1.5 w-full"
-           style="background:{% if b.status == 'active' %}#16a34a{% else %}#f59e0b{% endif %};"></div>
+           style="background:{% if b.status == 'active' %}#16a34a{% else %}#777777{% endif %};"></div>
       <div class="p-4">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-3">
-            <span class="text-2xl">
-              {% if b.vehicles and b.vehicles.type == 'car' %}🚗
-              {% elif b.vehicles and b.vehicles.type == 'bike' %}🏍️
-              {% else %}🛵{% endif %}
+            <span class="vehicle-type-mark vehicle-type-mark--large">
+              {% if b.vehicles and b.vehicles.type == 'car' %}CAR
+              {% elif b.vehicles and b.vehicles.type == 'bike' %}BIKE
+              {% else %}SCOOT{% endif %}
             </span>
             <div>
               <p class="font-bold text-sm" style="color:var(--text-main);">
@@ -101,7 +100,7 @@
           </div>
           <span class="c-status"
                 style="{% if b.status == 'active' %}background:rgba(22, 163, 74, 0.1);color:#16a34a;
-                       {% else %}background:rgba(245, 158, 11, 0.1);color:#d97706;{% endif %}">
+                       {% else %}background:var(--bg-row);color:var(--text-secondary);{% endif %}">
             {{ b.status }}
           </span>
         </div>
@@ -136,7 +135,7 @@
 
   {% if not active_bookings and not past_bookings %}
   <div class="c-card p-10 text-center" style="background:var(--bg-surface); border:1px solid var(--border);">
-    <p class="text-5xl mb-4">🛵</p>
+    <p class="vehicle-type-mark vehicle-type-mark--empty mb-4">NO TRIPS</p>
     <p class="font-bold text-base mb-1" style="color:var(--text-main);">No rentals yet</p>
     <p class="text-sm mb-4" style="color:var(--text-muted);">Browse our vehicles and make your first booking</p>
     <a href="/customer/vehicles"
