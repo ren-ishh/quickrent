@@ -93,6 +93,31 @@ header { position: relative; z-index: 20; }
 html.dark .logo-mark--admin { --logo-cutout: #d2d2d2; background: #d2d2d2; color: #050505; }
 html.dark .logo-mark--customer { --logo-cutout: #7890ae; background: #7890ae; color: #050505; }
 html.dark .logo-mark--neutral { --logo-cutout: #777; background: #777; color: #050505; }
+
+/* Authentication pages use local styles so their layout does not depend on
+   the optional Tailwind CDN script being available at runtime. */
+.auth-page { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; margin: 0; padding: 32px 20px; background: var(--bg-page); color: var(--text-main); }
+.auth-shell { width: min(100%, 400px); margin: auto; }
+.auth-heading { display: flex; flex-direction: column; align-items: center; margin: 0 0 28px; text-align: center; }
+.auth-heading h1 { margin: 14px 0 0; color: var(--text-primary); font-size: 24px; font-weight: 700; line-height: 1.2; letter-spacing: -.035em; }
+.auth-heading p { margin: 7px 0 0; color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+.auth-card { padding: 30px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); box-shadow: var(--shadow); }
+.auth-form { display: flex; flex-direction: column; gap: 18px; }
+.auth-field { display: flex; flex-direction: column; gap: 7px; }
+.auth-field label { color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+.auth-input { display: block; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px; outline: none; background: var(--bg-input); color: var(--text-primary); font: inherit; font-size: 14px; }
+.auth-input::placeholder { color: var(--text-muted); opacity: .8; }
+.auth-input:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
+.auth-submit { width: 100%; min-height: 44px; margin-top: 2px; padding: 11px 16px; border: 0; border-radius: 7px; background: var(--accent); color: var(--bg-page); cursor: pointer; font: inherit; font-size: 14px; font-weight: 650; }
+.auth-submit:hover { background: var(--accent-strong) !important; }
+.auth-submit:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
+.auth-switch { margin: 21px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; text-align: center; }
+.auth-switch a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.auth-switch a:hover { text-decoration: underline; }
+.auth-footer { margin: 22px 0 0; color: var(--text-muted); font-size: 12px; opacity: .72; text-align: center; }
+.auth-error { padding: 11px 13px; border: 1px solid #fecaca; border-radius: 7px; background: #fee2e2; color: #dc2626; font-size: 13px; font-weight: 500; }
+html.dark .auth-error { border-color: #3e3030; background: #292020; color: #e5a6a1; }
+@media (max-width: 480px) { .auth-page { padding: 24px 16px; } .auth-card { padding: 24px 20px; } }
 header h1 { color: var(--text-muted) !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: .12em; text-transform: uppercase; }
 header button, header a[href="/notifications"] { border-radius: 5px !important; background: transparent !important; border-color: transparent !important; color: var(--text-muted) !important; }
 header button:hover, header a[href="/notifications"]:hover { background: var(--bg-surface) !important; color: var(--text-main) !important; }
