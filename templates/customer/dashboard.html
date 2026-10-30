@@ -470,7 +470,7 @@
       <button type="button" class="shops-location-btn" id="findNearbyShops">Use my location</button>
     </div>
     <div class="shops-location-note" style="margin:0 0 10px 2px;">Search by a popular area or use your current location.</div>
-    <div class="shops-state" id="nearbyShopsResults" aria-live="polite">Allow location access to see mapped car and motorcycle rental shops nearby.</div>
+    <div class="shops-state" id="nearbyShopsResults" aria-live="polite">Finding rental shops near your current location…</div>
   </section>
 
   <!-- ── ACTIVE RENTALS ── -->
@@ -671,20 +671,22 @@ window.addEventListener('DOMContentLoaded', function () {
       .finally(()=>{clearTimeout(timer);button.disabled=false;button.textContent='Search again';});
   }
 
-  button.addEventListener('click',()=>{
-    if(!navigator.geolocation){results.textContent='Location access is not supported by this browser.';return;}
+  function requestCurrentLocation(){
+    if(!navigator.geolocation){button.disabled=false;button.textContent='Location unavailable';results.className='shops-state';results.textContent='Location access is not supported by this browser. Search by city, area, or landmark instead.';return;}
     button.disabled=true;button.textContent='Finding location…';
     navigator.geolocation.getCurrentPosition(position=>searchNearby({lat:position.coords.latitude,lng:position.coords.longitude,area:areaInput.value.trim()}),()=>{
       button.disabled=false;button.textContent='Try location again';
-      results.className='shops-state';results.textContent='We could not access your location. Allow location access in your browser settings, then try again.';
+      results.className='shops-state';results.textContent='We could not access your location. Enter a city, area, or landmark to find nearby rental shops.';
     },{enableHighAccuracy:false,maximumAge:300000,timeout:10000});
-  });
+  }
+  button.addEventListener('click',requestCurrentLocation);
   areaButton.addEventListener('click',()=>{
     const area=areaInput.value.trim();
     if(!area){areaInput.focus();results.className='shops-state';results.textContent='Enter a city, area, or landmark to search nearby rental shops.';return;}
     searchNearby({area});
   });
   areaInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();areaButton.click();}});
+  requestCurrentLocation();
 });
 </script>
   <script src="{{ url_for('static', filename='js/navigation.js') }}" defer></script>
