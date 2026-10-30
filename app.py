@@ -6,6 +6,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import os, random, string
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
@@ -82,6 +83,7 @@ def send_booking_confirmation(customer_email, customer_name, booking_ref, vehicl
 # UNIFIED LOGIN (ADMIN & CUSTOMER)
 # ══════════════════════════════════════
 @app.route('/login', methods=['GET', 'POST'])
+@app.route('/customer/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
         return redirect(url_for('dashboard'))
@@ -127,7 +129,8 @@ def login():
         except Exception as e:
             error = 'Invalid email or password. Please try again.'
 
-    return render_template('login.html', error=error)
+    template = 'customer/login.html' if request.path == '/customer/login' else 'login.html'
+    return render_template(template, error=error)
 
 @app.route('/logout')
 def logout():
@@ -553,7 +556,8 @@ def customer_booking_detail(booking_id):
         if days == 0: days = 1
     except: days = 1
         
-    daily = b['vehicles']['daily_rate'] if b.get('vehicles') else 0
+    vehicle = b.get('vehicles') or {}
+    daily = vehicle.get('daily_rate', 0)
     base = daily * days
     tax = round(base * 0.18, 2)
     return render_template('customer/booking_detail.html', booking=b, payments=payments.data or [], days=days, base_rate=base, tax=tax, total=base+tax)
@@ -608,7 +612,6 @@ def customer_invoices():
 @app.route('/customer/invoice/<booking_id>/pdf')
 @customer_login_required
 def download_invoice(booking_id):
-    from weasyprint import HTML
     cid = session['customer']['id']
     booking = db.table('bookings').select('*, vehicles(name,type,daily_rate), customers(name,email,phone)').eq('id', booking_id).eq('customer_id', cid).execute()
     if not booking.data: return redirect(url_for('customer_invoices'))
@@ -619,12 +622,61 @@ def download_invoice(booking_id):
         if days == 0: days = 1
     except: days = 1
         
-    daily = b['vehicles']['daily_rate'] if b.get('vehicles') else 0
+    invoice_vehicle = b.get('vehicles') or {}
+    invoice_customer = b.get('customers') or {}
+    daily = invoice_vehicle.get('daily_rate', 0)
     base = daily * days
     tax = round(base * 0.18, 2)
-    html_str = render_template('customer/invoice_pdf.html', booking=b, days=days, base=base, tax=tax, total=base+tax, generated=datetime.now().strftime('%d %b %Y'))
-    pdf = HTML(string=html_str).write_pdf()
-    return app.response_class(pdf, mimetype='application/pdf', headers={'Content-Disposition': f'attachment; filename=invoice-{b["booking_ref"]}.pdf'})
+    total = round(base + tax, 2)
+    safe = lambda value: str(value).encode('ascii', 'replace').decode('ascii').replace('\\', '\\\\').replace('(', '\\(').replace(')', '\\)')
+    rows = [
+        'RENTAL INVOICE',
+        f'Invoice date: {datetime.now().strftime("%d %b %Y")}',
+        f'Booking reference: {b.get("booking_ref", "-")}',
+        f'Customer: {invoice_customer.get("name", session["customer"].get("name", "Customer"))}',
+        f'Email: {invoice_customer.get("email", session["customer"].get("email", "-"))}',
+        f'Vehicle: {invoice_vehicle.get("name", "Vehicle rental")}',
+        f'Pickup: {b.get("start_date", "-")}',
+        f'Return: {b.get("end_date", "-")}',
+        f'Rental duration: {days} day(s)',
+        f'Daily rate: INR {daily:,.2f}',
+        f'Base amount: INR {base:,.2f}',
+        f'Tax (18%): INR {tax:,.2f}',
+        f'Total: INR {total:,.2f}',
+        f'Payment status: {b.get("payment_status", "pending")}',
+        'Thank you for choosing QuickRent.',
+    ]
+    content_lines = ['BT', '/F2 20 Tf', '50 740 Td', '(QuickRent) Tj', '/F1 12 Tf', '0 -32 Td']
+    for index, row in enumerate(rows):
+        if index:
+            content_lines.append('0 -25 Td')
+        if row == 'RENTAL INVOICE':
+            content_lines.append('/F2 14 Tf')
+        elif index > 0:
+            content_lines.append('/F1 11 Tf')
+        content_lines.append(f'({safe(row)}) Tj')
+    content_lines.append('ET')
+    content = ('\n'.join(content_lines) + '\n').encode('ascii')
+    pdf_objects = [
+        b'<< /Type /Catalog /Pages 2 0 R >>',
+        b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>',
+        b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+        b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
+        b'<< /Length ' + str(len(content)).encode('ascii') + b' >>\nstream\n' + content + b'endstream',
+    ]
+    pdf = bytearray(b'%PDF-1.4\n')
+    offsets = [0]
+    for index, obj in enumerate(pdf_objects, start=1):
+        offsets.append(len(pdf))
+        pdf.extend(f'{index} 0 obj\n'.encode('ascii') + obj + b'\nendobj\n')
+    xref_offset = len(pdf)
+    pdf.extend(f'xref\n0 {len(offsets)}\n0000000000 65535 f \n'.encode('ascii'))
+    for offset in offsets[1:]:
+        pdf.extend(f'{offset:010d} 00000 n \n'.encode('ascii'))
+    pdf.extend(f'trailer\n<< /Size {len(offsets)} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF\n'.encode('ascii'))
+    filename = secure_filename(f'invoice-{b.get("booking_ref", "QuickRent")}.pdf')
+    return app.response_class(bytes(pdf), mimetype='application/pdf', headers={'Content-Disposition': f'attachment; filename="{filename}"'})
 
 # ══════════════════════════════════════
 # CUSTOMER API ROUTES (Booking, Canceling, etc.)
@@ -774,7 +826,7 @@ def verify_razorpay_payment():
 def not_found(e): return render_template('404.html'), 404
 
 @app.errorhandler(500)
-def server_error(e): return render_template('500.html'), 500
+def server_error(e): return render_template('505.html'), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

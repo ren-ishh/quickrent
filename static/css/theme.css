@@ -46,7 +46,15 @@ html.dark {
 
 * { box-sizing: border-box; }
 html { font-family: "Avenir Next", "Segoe UI", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif; }
-body { color: var(--text-main); background: var(--bg-page); }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
+body { margin: 0; color: var(--text-main); background: var(--bg-page); }
+button, input, optgroup, select, textarea { margin: 0; color: inherit; font: inherit; letter-spacing: inherit; }
+button, select { text-transform: none; }
+button, [type="button"], [type="reset"], [type="submit"] { appearance: button; border: 0; background: transparent; background-image: none; cursor: pointer; }
+input, select, textarea { border: 1px solid var(--border); border-radius: 5px; background: var(--bg-input); color: var(--text-main); }
+textarea { resize: vertical; }
+svg, img { display: block; vertical-align: middle; }
+img { max-width: 100%; height: auto; }
 button, a, input, select, textarea { transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease; }
 html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
@@ -112,6 +120,8 @@ html.dark .logo-mark--neutral { --logo-cutout: #777; background: #777; color: #0
 .auth-input::placeholder { color: var(--text-muted); opacity: .8; }
 .auth-input:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
 .auth-submit { width: 100%; min-height: 44px; margin-top: 2px; padding: 11px 16px; border: 0; border-radius: 7px; background: var(--accent); color: var(--bg-page); cursor: pointer; font: inherit; font-size: 14px; font-weight: 650; }
+.auth-submit--inline { width: auto; min-width: 82px; flex: 0 0 auto; }
+.auth-submit:disabled { cursor: wait; opacity: .62; }
 .auth-submit:hover { background: var(--accent-strong) !important; }
 .auth-submit:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
 .auth-switch { margin: 21px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; text-align: center; }
@@ -141,7 +151,7 @@ header #avatarBtn { background: var(--accent) !important; color: #fff !important
 #vehicleModal .modal-box { width: min(100%, 640px); }
 .c-modal-backdrop { background: rgba(16,20,18,.72); }
 .c-modal-box { border-radius: 10px !important; box-shadow: var(--shadow); }
-.modal-input, .c-input { border-radius: 5px; min-height: 42px; background: var(--bg-input); border-color: var(--border); color: var(--text-main); }
+.modal-input, .c-input { border: 1px solid var(--border); border-radius: 5px; min-height: 42px; padding: 10px 12px; background: var(--bg-input); color: var(--text-main); }
 .modal-input:focus, .c-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 17%, transparent); }
 .modal-label { color: var(--text-secondary); font-weight: 650; letter-spacing: .02em; }
 .vehicle-edit-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
@@ -267,8 +277,9 @@ html.dark .dashboard-card:hover, html.dark .dashboard-card:focus-visible { borde
 /* Customer experience */
 .customer-page { padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
 .c-card { border-radius: 8px; box-shadow: none; }
-.bottom-nav { height: 70px; background: var(--bg-surface); box-shadow: 0 -8px 24px rgba(0,0,0,.06); }
-.bottom-nav-item { border-radius: 4px; }
+.bottom-nav { position: fixed; inset: auto 0 0; z-index: 40; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; height: calc(70px + env(safe-area-inset-bottom, 0px)); padding: 4px 8px env(safe-area-inset-bottom, 0px); border-top: 1px solid var(--border); background: var(--bg-surface); box-shadow: 0 -8px 24px rgba(0,0,0,.06); }
+.bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; border-radius: 4px; color: var(--text-muted); text-decoration: none; font-size: 10px; font-weight: 600; line-height: 1.1; }
+.bottom-nav-item svg { display: block; width: 20px; height: 20px; flex: 0 0 auto; }
 .bottom-nav-item.active { background: var(--accent-soft); }
 .bottom-nav-item.active svg, .bottom-nav-item.active span { stroke: var(--accent); color: var(--accent); }
 

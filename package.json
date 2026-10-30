@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/utilities.css --minify",
+    "copy:vendor": "mkdir -p ./static/js/vendor && cp ./node_modules/chart.js/dist/chart.umd.js ./static/js/vendor/chart.umd.js && cp ./node_modules/chart.js/LICENSE.md ./static/js/vendor/CHARTJS-LICENSE.md",
+    "build:assets": "npm run build:css && npm run copy:vendor"
+  },
+  "devDependencies": {
+    "chart.js": "4.4.7",
+    "tailwindcss": "3.4.17"
+  }
+}
