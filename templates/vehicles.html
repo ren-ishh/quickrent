@@ -139,6 +139,10 @@
           <p class="text-[10px] font-medium uppercase mb-1" style="color:var(--text-secondary);">Status</p>
           <p class="text-sm font-semibold" id="v_status_display" style="color:var(--text-primary);"></p>
         </div>
+        <div class="col-span-2 rounded-lg p-3" style="background:var(--bg-row);">
+          <p class="text-[10px] font-medium uppercase mb-1" style="color:var(--text-secondary);">Pickup coordinates</p>
+          <p class="text-sm font-semibold" id="v_location_display" style="color:var(--text-primary);"></p>
+        </div>
       </div>
       <div class="vehicle-modal-actions">
         <button onclick="confirmDeleteVehicle()" class="vehicle-modal-actions__danger text-sm px-4 py-2 rounded-lg font-medium" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;">Delete vehicle</button>
@@ -165,11 +169,19 @@
         </div>
         <div>
           <label class="modal-label">Type</label>
-          <select id="ve_type" class="modal-input">
+          <select id="ve_type" class="modal-input" onchange="syncBodyStyle('ve_type','ve_body_style')">
             <option value="car">Car</option>
             <option value="bike">Bike</option>
             <option value="scooter">Scooter</option>
           </select>
+        </div>
+        <div>
+          <label class="modal-label">Vehicle class</label>
+          <select id="ve_tier" class="modal-input"><option value="regular">Regular</option><option value="premium">Premium</option></select>
+        </div>
+        <div>
+          <label class="modal-label">Body style</label>
+          <select id="ve_body_style" class="modal-input"><option value="suv">SUV</option><option value="sedan">Sedan</option><option value="hatchback">Hatchback</option><option value="motorcycle">Motorcycle</option><option value="scooter">Scooter</option></select>
         </div>
         <div>
           <label class="modal-label">Brand</label>
@@ -198,6 +210,15 @@
             <option value="rented">Rented</option>
             <option value="maintenance">Maintenance</option>
           </select>
+        </div>
+        <div class="vehicle-edit-form__section">Pickup map location (optional)</div>
+        <div>
+          <label class="modal-label">Latitude</label>
+          <input id="ve_latitude" class="modal-input" type="number" min="-90" max="90" step="any" placeholder="e.g. 12.9716"/>
+        </div>
+        <div>
+          <label class="modal-label">Longitude</label>
+          <input id="ve_longitude" class="modal-input" type="number" min="-180" max="180" step="any" placeholder="e.g. 77.5946"/>
         </div>
       </div>
       <p id="ve_error" class="text-xs text-red-500 mt-3 hidden"></p>
@@ -240,11 +261,19 @@
       </div>
       <div>
         <label class="modal-label">Type</label>
-        <select id="va_type" class="modal-input">
+          <select id="va_type" class="modal-input" onchange="syncBodyStyle('va_type','va_body_style')">
           <option value="car">Car</option>
           <option value="bike">Bike</option>
           <option value="scooter">Scooter</option>
         </select>
+      </div>
+      <div>
+        <label class="modal-label">Vehicle class</label>
+        <select id="va_tier" class="modal-input"><option value="regular">Regular</option><option value="premium">Premium</option></select>
+      </div>
+      <div>
+        <label class="modal-label">Body style</label>
+        <select id="va_body_style" class="modal-input"><option value="sedan">Sedan</option><option value="suv">SUV</option><option value="hatchback">Hatchback</option><option value="motorcycle">Motorcycle</option><option value="scooter">Scooter</option></select>
       </div>
       <div>
         <label class="modal-label">Brand</label>
@@ -266,6 +295,14 @@
         <label class="modal-label">Daily Rate (₹)</label>
         <input id="va_rate" class="modal-input" type="number" placeholder="e.g. 700"/>
       </div>
+      <div>
+        <label class="modal-label">Pickup Latitude (optional)</label>
+        <input id="va_latitude" class="modal-input" type="number" min="-90" max="90" step="any" placeholder="12.9716"/>
+      </div>
+      <div>
+        <label class="modal-label">Pickup Longitude (optional)</label>
+        <input id="va_longitude" class="modal-input" type="number" min="-180" max="180" step="any" placeholder="77.5946"/>
+      </div>
     </div>
     <p id="va_error" class="text-xs text-red-500 mb-3 hidden"></p>
     <div class="flex gap-2 justify-end mt-4">
@@ -282,6 +319,13 @@
 // ── Generic modal helpers ──────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function syncBodyStyle(typeId, styleId) {
+  const type = document.getElementById(typeId).value;
+  const style = document.getElementById(styleId);
+  if (type === 'bike') style.value = 'motorcycle';
+  else if (type === 'scooter') style.value = 'scooter';
+  else if (!['suv', 'sedan', 'hatchback'].includes(style.value)) style.value = 'sedan';
+}
  
 // Close vehicleAddModal on backdrop click
 document.getElementById('vehicleAddModal').addEventListener('click', function(e) {
@@ -329,8 +373,13 @@ function switchToEditMode()    {
   document.getElementById('ve_year').value  = document.getElementById('v_year_display').textContent;
   document.getElementById('ve_rate').value  = document.getElementById('v_rate_display').textContent.replace('₹','').replace('/day','').trim();
   document.getElementById('ve_type').value   = document.getElementById('v_type_display').textContent.toLowerCase();
+  document.getElementById('ve_tier').value = currentVehicleData?.tier || 'regular';
+  document.getElementById('ve_body_style').value = currentVehicleData?.body_style || 'sedan';
   document.getElementById('ve_fuel').value   = document.getElementById('v_fuel_display').textContent;
   document.getElementById('ve_status').value = document.getElementById('v_status_display').textContent.toLowerCase();
+  const location = document.getElementById('v_location_display');
+  document.getElementById('ve_latitude').value = location.dataset.latitude || '';
+  document.getElementById('ve_longitude').value = location.dataset.longitude || '';
   document.getElementById('ve_context_name').textContent = vehicleName || 'Vehicle details';
   document.getElementById('ve_type_mark').textContent = vehicleType ? vehicleType.toUpperCase() : 'CAR';
   document.getElementById('ve_type_mark').classList.toggle('vehicle-type-mark--book', vehicleStatus.toLowerCase() === 'available');
@@ -338,6 +387,8 @@ function switchToEditMode()    {
   window.setTimeout(() => document.getElementById('ve_name').focus(), 50);
 }
 function confirmDeleteVehicle() { showVehicleMode('delete'); }
+
+let currentVehicleData = null;
  
 // Open View modal and fetch vehicle data from API
 async function openVehicleModal(vehicleId) {
@@ -350,6 +401,7 @@ async function openVehicleModal(vehicleId) {
     const res  = await fetch(`/api/vehicles/${vehicleId}`);
     const data = await res.json();
     const v    = data.vehicle;
+    currentVehicleData = v;
  
     const emojis = { car: 'CAR', bike: 'BIKE', scooter: 'SCOOT' };
     document.getElementById('v_emoji_display').textContent   = emojis[v.type] || 'CAR';
@@ -360,6 +412,10 @@ async function openVehicleModal(vehicleId) {
     document.getElementById('v_fuel_display').textContent    = v.fuel  || '—';
     document.getElementById('v_rate_display').textContent    = '₹' + v.daily_rate + '/day';
     document.getElementById('v_status_display').textContent  = v.status.charAt(0).toUpperCase() + v.status.slice(1);
+    const location = document.getElementById('v_location_display');
+    location.dataset.latitude = v.latitude ?? '';
+    location.dataset.longitude = v.longitude ?? '';
+    location.textContent = v.latitude != null && v.longitude != null ? `${v.latitude}, ${v.longitude}` : 'Not set';
   } catch(err) {
     document.getElementById('v_name_display').textContent = 'Failed to load.';
   }
@@ -376,6 +432,15 @@ async function saveVehicleEdit() {
     err.classList.remove('hidden');
     return;
   }
+  const latitude = document.getElementById('ve_latitude').value.trim();
+  const longitude = document.getElementById('ve_longitude').value.trim();
+  if ((latitude && !longitude) || (!latitude && longitude) ||
+      (latitude && (Number(latitude) < -90 || Number(latitude) > 90)) ||
+      (longitude && (Number(longitude) < -180 || Number(longitude) > 180))) {
+    err.textContent = 'Enter both valid pickup coordinates, or leave both blank.';
+    err.classList.remove('hidden');
+    return;
+  }
   err.classList.add('hidden');
  
   try {
@@ -385,11 +450,15 @@ async function saveVehicleEdit() {
       body: JSON.stringify({
         name,
         type:       document.getElementById('ve_type').value,
+        tier:       document.getElementById('ve_tier').value,
+        body_style: document.getElementById('ve_body_style').value,
         brand:      document.getElementById('ve_brand').value,
         year:       parseInt(document.getElementById('ve_year').value) || null,
         fuel:       document.getElementById('ve_fuel').value,
         daily_rate: rate,
-        status:     document.getElementById('ve_status').value
+        status:     document.getElementById('ve_status').value,
+        latitude: latitude ? Number(latitude) : null,
+        longitude: longitude ? Number(longitude) : null
       })
     });
     const data = await res.json();
@@ -430,6 +499,15 @@ async function submitVehicle() {
     err.classList.remove('hidden');
     return;
   }
+  const latitude = document.getElementById('va_latitude').value.trim();
+  const longitude = document.getElementById('va_longitude').value.trim();
+  if ((latitude && !longitude) || (!latitude && longitude) ||
+      (latitude && (Number(latitude) < -90 || Number(latitude) > 90)) ||
+      (longitude && (Number(longitude) < -180 || Number(longitude) > 180))) {
+    err.textContent = 'Enter both valid pickup coordinates, or leave both blank.';
+    err.classList.remove('hidden');
+    return;
+  }
   err.classList.add('hidden');
  
   try {
@@ -439,10 +517,14 @@ async function submitVehicle() {
       body: JSON.stringify({
         name,
         type:       document.getElementById('va_type').value,
+        tier:       document.getElementById('va_tier').value,
+        body_style: document.getElementById('va_body_style').value,
         brand:      document.getElementById('va_brand').value.trim(),
         year:       parseInt(document.getElementById('va_year').value) || null,
         fuel:       document.getElementById('va_fuel').value,
-        daily_rate: rate
+        daily_rate: rate,
+        latitude: latitude ? Number(latitude) : null,
+        longitude: longitude ? Number(longitude) : null
       })
     });
     const data = await res.json();
@@ -458,5 +540,6 @@ async function submitVehicle() {
   }
 }
 </script>
+  <script src="{{ url_for('static', filename='js/navigation.js') }}" defer></script>
 </body>
 </html>

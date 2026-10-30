@@ -4,7 +4,9 @@ from config import SUPABASE_URL, SUPABASE_KEY, FLASK_SECRET_KEY, SENDGRID_API_KE
 from functools import wraps
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-import os, random, string
+import os, random, string, math
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
@@ -85,13 +87,14 @@ def send_booking_confirmation(customer_email, customer_name, booking_ref, vehicl
 @app.route('/login', methods=['GET', 'POST'])
 @app.route('/customer/login', methods=['GET', 'POST'])
 def login():
-    if 'user' in session:
+    if 'user' in session and request.path == '/login':
         return redirect(url_for('dashboard'))
-    if 'customer' in session:
+    if 'customer' in session and request.path == '/customer/login':
         return redirect(url_for('customer_dashboard'))
 
     error = None
     if request.method == 'POST':
+        session.clear()
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '').strip()
 
@@ -206,13 +209,12 @@ def sidebar_component():
 def dashboard():
     try:
         current_month = datetime.now().strftime('%Y-%m')
-        vehicles_res = db.table('vehicles').select('*', count='exact').execute()
-        active_bookings = db.table('bookings').select('*', count='exact').eq('status', 'active').execute()
-        pending_bookings = db.table('bookings').select('*', count='exact').eq('status', 'pending').execute()
-        overdue_bookings = db.table('bookings').select('*', count='exact').eq('status', 'overdue').execute()
-        available = db.table('vehicles').select('*', count='exact').eq('status', 'available').execute()
-        rented = db.table('vehicles').select('*', count='exact').eq('status', 'rented').execute()
-        maintenance = db.table('vehicles').select('*', count='exact').eq('status', 'maintenance').execute()
+        # Fetch status-only rows once per collection instead of making seven
+        # sequential count requests to Supabase for the dashboard cards.
+        vehicles_res = db.table('vehicles').select('status').execute()
+        booking_statuses = db.table('bookings').select('status').execute()
+        vehicle_statuses = [v.get('status') for v in (vehicles_res.data or [])]
+        booking_statuses = [b.get('status') for b in (booking_statuses.data or [])]
 
         recent_bookings = db.table('bookings')\
             .select('*, customers(name), vehicles(name, type)')\
@@ -226,9 +228,9 @@ def dashboard():
         ) if payments_res.data else 0
 
         return render_template('dashboard.html',
-            total_vehicles=vehicles_res.count or 0, total_revenue=total_revenue, monthly_revenue=monthly_revenue,
-            available_vehicles=available.count or 0, rented_vehicles=rented.count or 0, maintenance_vehicles=maintenance.count or 0,
-            active_bookings=active_bookings.count or 0, pending_bookings=pending_bookings.count or 0, overdue_bookings=overdue_bookings.count or 0,
+            total_vehicles=len(vehicle_statuses), total_revenue=total_revenue, monthly_revenue=monthly_revenue,
+            available_vehicles=vehicle_statuses.count('available'), rented_vehicles=vehicle_statuses.count('rented'), maintenance_vehicles=vehicle_statuses.count('maintenance'),
+            active_bookings=booking_statuses.count('active'), pending_bookings=booking_statuses.count('pending'), overdue_bookings=booking_statuses.count('overdue'),
             recent_bookings=recent_bookings.data or []
         )
     except Exception as e:
@@ -244,13 +246,10 @@ def bookings():
         if status_filter != 'all': query = query.eq('status', status_filter)
         bookings_res = query.execute()
 
-        counts = {
-            'all': db.table('bookings').select('*', count='exact').execute().count or 0,
-            'active': db.table('bookings').select('*', count='exact').eq('status', 'active').execute().count or 0,
-            'pending': db.table('bookings').select('*', count='exact').eq('status', 'pending').execute().count or 0,
-            'overdue': db.table('bookings').select('*', count='exact').eq('status', 'overdue').execute().count or 0,
-            'completed': db.table('bookings').select('*', count='exact').eq('status', 'completed').execute().count or 0,
-        }
+        statuses = db.table('bookings').select('status').execute()
+        status_values = [booking.get('status') for booking in (statuses.data or [])]
+        counts = {key: status_values.count(key) for key in ('active', 'pending', 'overdue', 'completed')}
+        counts['all'] = len(status_values)
         return render_template('bookings.html', bookings=bookings_res.data or [], counts=counts, active_filter=status_filter)
     except Exception as e:
         return render_template('bookings.html')
@@ -273,7 +272,7 @@ def vehicles():
 def customers():
     try:
         customers_res = db.table('customers').select('*').order('created_at', desc=True).execute()
-        counts = {'total': db.table('customers').select('*', count='exact').execute().count or 0}
+        counts = {'total': len(customers_res.data or [])}
         return render_template('customers.html', customers=customers_res.data or [], counts=counts)
     except Exception as e:
         return render_template('customers.html')
@@ -300,7 +299,7 @@ def payments():
 def analytics():
     try:
         vehicles_res = db.table('vehicles').select('*').execute()
-        bookings_res = db.table('bookings').select('*').execute()
+        bookings_res = db.table('bookings').select('status, vehicles(type)').execute()
         customers_res = db.table('customers').select('*').execute()
         payments_res = db.table('payments').select('amount, status, created_at').execute()
 
@@ -317,9 +316,8 @@ def analytics():
         chart_data = [monthly[m] for m in sorted_months]
 
         all_bookings = bookings_res.data or []
-        bookings_with_vehicles = db.table('bookings').select('*, vehicles(type)').execute()
         type_counts = {'car': 0, 'bike': 0, 'scooter': 0}
-        for b in (bookings_with_vehicles.data or []):
+        for b in all_bookings:
             if b.get('vehicles') and b['vehicles'].get('type'):
                 t = b['vehicles']['type']
                 type_counts[t] = type_counts.get(t, 0) + 1
@@ -355,16 +353,40 @@ def help_page(): return render_template('help.html')
 # ══════════════════════════════════════
 # ADMIN API ROUTES
 # ══════════════════════════════════════
+def vehicle_coordinates(data):
+    latitude, longitude = data.get('latitude'), data.get('longitude')
+    if latitude in ('', None) and longitude in ('', None):
+        return None, None
+    try:
+        latitude, longitude = float(latitude), float(longitude)
+    except (TypeError, ValueError):
+        raise ValueError('Enter both valid pickup coordinates, or leave both blank.')
+    if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+        raise ValueError('Pickup coordinates are outside the valid range.')
+    return latitude, longitude
+
 @app.route('/api/vehicles/add', methods=['POST'])
 @login_required
 def add_vehicle():
-    data = request.json
-    result = db.table('vehicles').insert({
-        'name': data['name'], 'type': data['type'], 'brand': data.get('brand', ''),
-        'year': data.get('year'), 'fuel': data.get('fuel', 'Petrol'),
-        'daily_rate': data['daily_rate'], 'status': 'available'
-    }).execute()
-    return jsonify({'success': True, 'vehicle': result.data})
+    data = request.get_json(silent=True) or {}
+    try:
+        if not data.get('name') or data.get('type') not in ('car', 'bike', 'scooter'):
+            raise ValueError('Enter a vehicle name and valid type.')
+        latitude, longitude = vehicle_coordinates(data)
+        tier = data.get('tier', 'regular')
+        body_style = data.get('body_style') or {'car': 'sedan', 'bike': 'motorcycle', 'scooter': 'scooter'}[data['type']]
+        valid_styles = {'car': ('suv', 'sedan', 'hatchback'), 'bike': ('motorcycle',), 'scooter': ('scooter',)}
+        if tier not in ('regular', 'premium') or body_style not in valid_styles[data['type']]:
+            raise ValueError('Choose a valid vehicle class and body style.')
+        result = db.table('vehicles').insert({
+            'name': data['name'], 'type': data['type'], 'brand': data.get('brand', ''),
+            'year': data.get('year'), 'fuel': data.get('fuel', 'Petrol'),
+            'daily_rate': data['daily_rate'], 'status': 'available',
+            'latitude': latitude, 'longitude': longitude, 'tier': tier, 'body_style': body_style
+        }).execute()
+        return jsonify({'success': True, 'vehicle': result.data})
+    except (KeyError, ValueError) as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/customers/add', methods=['POST'])
 @login_required
@@ -438,9 +460,20 @@ def get_vehicle(vehicle_id):
 @app.route('/api/vehicles/<vehicle_id>/update', methods=['POST'])
 @login_required
 def update_vehicle(vehicle_id):
-    data = request.json
-    db.table('vehicles').update({'name': data['name'], 'type': data['type'], 'brand': data.get('brand', ''), 'year': data.get('year'), 'fuel': data.get('fuel', 'Petrol'), 'daily_rate': data['daily_rate'], 'status': data['status']}).eq('id', vehicle_id).execute()
-    return jsonify({'success': True})
+    data = request.get_json(silent=True) or {}
+    try:
+        if not data.get('name') or data.get('type') not in ('car', 'bike', 'scooter') or data.get('status') not in ('available', 'rented', 'maintenance'):
+            raise ValueError('Enter a vehicle name, type, and valid status.')
+        latitude, longitude = vehicle_coordinates(data)
+        tier = data.get('tier', 'regular')
+        body_style = data.get('body_style') or {'car': 'sedan', 'bike': 'motorcycle', 'scooter': 'scooter'}[data['type']]
+        valid_styles = {'car': ('suv', 'sedan', 'hatchback'), 'bike': ('motorcycle',), 'scooter': ('scooter',)}
+        if tier not in ('regular', 'premium') or body_style not in valid_styles[data['type']]:
+            raise ValueError('Choose a valid vehicle class and body style.')
+        db.table('vehicles').update({'name': data['name'], 'type': data['type'], 'brand': data.get('brand', ''), 'year': data.get('year'), 'fuel': data.get('fuel', 'Petrol'), 'daily_rate': data['daily_rate'], 'status': data['status'], 'latitude': latitude, 'longitude': longitude, 'tier': tier, 'body_style': body_style}).eq('id', vehicle_id).execute()
+        return jsonify({'success': True})
+    except (KeyError, ValueError) as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/vehicles/<vehicle_id>/delete', methods=['POST'])
 @login_required
@@ -508,12 +541,184 @@ def customer_dashboard():
     try:
         customer_id = session['customer']['id']
         bookings = db.table('bookings').select('*, vehicles(name, type, daily_rate, brand, year)').eq('customer_id', customer_id).order('created_at', desc=True).execute()
+        try:
+            nearby_vehicles = db.table('vehicles').select('id, name, type, daily_rate, latitude, longitude').eq('status', 'available').execute()
+            nearby_vehicles = nearby_vehicles.data or []
+        except Exception:
+            nearby_vehicles = []
         active_bookings = [b for b in (bookings.data or []) if b['status'] in ['active', 'pending']]
         past_bookings   = [b for b in (bookings.data or []) if b['status'] in ['completed', 'overdue', 'cancelled']]
         total_spent = sum(b['total_amount'] for b in (bookings.data or []) if b['status'] == 'completed')
-        return render_template('customer/dashboard.html', active_bookings=active_bookings, past_bookings=past_bookings, total_spent=total_spent, total_bookings=len(bookings.data or []), current_page='home')
+        return render_template('customer/dashboard.html', active_bookings=active_bookings, past_bookings=past_bookings, total_spent=total_spent, total_bookings=len(bookings.data or []), nearby_vehicles=nearby_vehicles, current_page='home')
     except Exception as e:
-        return render_template('customer/dashboard.html', active_bookings=[], past_bookings=[], total_spent=0, total_bookings=0, current_page='home')
+        return render_template('customer/dashboard.html', active_bookings=[], past_bookings=[], total_spent=0, total_bookings=0, nearby_vehicles=[], current_page='home')
+
+@app.route('/api/customer/nearby-shops')
+@customer_login_required
+def customer_nearby_shops():
+    """Find mapped rental businesses near a browser-provided location.
+
+    If the public map service is unavailable, return the closest geocoded
+    QuickRent vehicles, then available inventory as a useful final fallback.
+    """
+    area = request.args.get('area', '').strip()[:140]
+    lat = lng = None
+    if request.args.get('lat') and request.args.get('lng'):
+        try:
+            lat, lng = float(request.args['lat']), float(request.args['lng'])
+            if not (-90 <= lat <= 90 and -180 <= lng <= 180):
+                raise ValueError('Coordinates are outside valid bounds')
+        except (TypeError, ValueError):
+            return jsonify({'success': False, 'error': 'The current location is invalid.'}), 400
+    elif not area:
+        return jsonify({'success': False, 'error': 'Share your location or enter a city, area, or landmark.'}), 400
+
+    if area and (lat is None or lng is None):
+        try:
+            geocoded = requests.get('https://photon.komoot.io/api/', params={'q': area, 'limit': 1}, timeout=(1.5, 3), headers={'User-Agent': 'QuickRent/1.0 nearby-shop-search'})
+            geocoded.raise_for_status()
+            features = geocoded.json().get('features') or []
+            if features:
+                coords = features[0].get('geometry', {}).get('coordinates') or []
+                if len(coords) >= 2:
+                    lng, lat = float(coords[0]), float(coords[1])
+        except (requests.RequestException, ValueError, TypeError):
+            pass
+
+    def distance_km(point_lat, point_lng):
+        rad = math.pi / 180
+        dlat, dlng = (point_lat - lat) * rad, (point_lng - lng) * rad
+        h = math.sin(dlat / 2) ** 2 + math.cos(lat * rad) * math.cos(point_lat * rad) * math.sin(dlng / 2) ** 2
+        return 6371 * 2 * math.atan2(math.sqrt(h), math.sqrt(max(0, 1 - h)))
+
+    # Prefer Google's Places data when configured. Keep the credential on the
+    # server (GOOGLE_MAPS_API_KEY); the browser only receives public place data.
+    google_api_key = os.getenv('GOOGLE_MAPS_API_KEY', '').strip()
+    if google_api_key:
+        try:
+            search_text = f'vehicle rental shops near {area}' if area else 'car and motorcycle rental shops'
+            payload = {'textQuery': search_text, 'languageCode': 'en', 'maxResultCount': 10}
+            if lat is not None and lng is not None:
+                payload['locationBias'] = {'circle': {'center': {'latitude': lat, 'longitude': lng}, 'radius': 20000}}
+            response = requests.post(
+                'https://places.googleapis.com/v1/places:searchText', json=payload,
+                headers={'X-Goog-Api-Key': google_api_key,
+                         'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.googleMapsUri,places.rating,places.nationalPhoneNumber'},
+                timeout=(2, 5),
+            )
+            response.raise_for_status()
+            places = []
+            for place in response.json().get('places', []):
+                location = place.get('location') or {}
+                point_lat, point_lng = location.get('latitude'), location.get('longitude')
+                if point_lat is None or point_lng is None:
+                    continue
+                point_lat, point_lng = float(point_lat), float(point_lng)
+                distance = distance_km(point_lat, point_lng) if lat is not None and lng is not None else None
+                places.append({
+                    'name': (place.get('displayName') or {}).get('text') or 'Vehicle rental shop',
+                    'type': 'Vehicle rental', 'address': place.get('formattedAddress', ''),
+                    'lat': point_lat, 'lng': point_lng,
+                    'distance_km': round(distance, 1) if distance is not None else None,
+                    'rating': place.get('rating'), 'phone': place.get('nationalPhoneNumber'),
+                    'maps_url': place.get('googleMapsUri'),
+                })
+            places.sort(key=lambda item: item.get('distance_km') if item.get('distance_km') is not None else 0)
+            if places:
+                return jsonify({'success': True, 'source': 'google-places', 'items': places[:8]})
+        except (requests.RequestException, ValueError, TypeError) as error:
+            app.logger.warning('Google Places search failed; using open-map fallback: %s', error)
+
+    if lat is not None and lng is not None:
+        query = (
+            f'[out:json][timeout:6];(node(around:20000,{lat},{lng})[amenity~"car_rental|motorcycle_rental"];'
+            f'way(around:20000,{lat},{lng})[amenity~"car_rental|motorcycle_rental"];'
+            f'relation(around:20000,{lat},{lng})[amenity~"car_rental|motorcycle_rental"];);out center tags;'
+        )
+        endpoints = ('https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter')
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            pending = [pool.submit(requests.post, endpoint, data={'data': query}, timeout=(1.5, 3), headers={'User-Agent': 'QuickRent/1.0 nearby-shop-search'}) for endpoint in endpoints]
+            try:
+                completed = as_completed(pending, timeout=4.5)
+                for future in completed:
+                    try:
+                        response = future.result()
+                        response.raise_for_status()
+                        elements = response.json().get('elements', [])
+                        shops = []
+                        for item in elements:
+                            tags = item.get('tags') or {}
+                            point_lat = item.get('lat', (item.get('center') or {}).get('lat'))
+                            point_lng = item.get('lon', (item.get('center') or {}).get('lon'))
+                            if not tags.get('name') or point_lat is None or point_lng is None:
+                                continue
+                            point_lat, point_lng = float(point_lat), float(point_lng)
+                            address = ', '.join(filter(None, (tags.get('addr:housenumber'), tags.get('addr:street'), tags.get('addr:suburb') or tags.get('addr:city'))))
+                            shops.append({'name': tags['name'], 'type': 'Vehicle rental', 'address': address, 'lat': point_lat, 'lng': point_lng, 'distance_km': round(distance_km(point_lat, point_lng), 1)})
+                        shops.sort(key=lambda shop: shop['distance_km'])
+                        if shops:
+                            return jsonify({'success': True, 'source': 'openstreetmap', 'items': shops[:8]})
+                    except (requests.RequestException, ValueError, TypeError):
+                        continue
+            except FuturesTimeoutError:
+                pass
+
+    # Photon indexes named real-world places from OpenStreetMap and biases
+    # matches toward the requested coordinates. It fills gaps where a shop is
+    # mapped but lacks the specific amenity tag Overpass searches above.
+    try:
+        photon_query = f'car rental near {area}' if area else 'car rental'
+        params = {'q': photon_query, 'limit': 12}
+        if lat is not None and lng is not None:
+            params.update({'lat': lat, 'lon': lng})
+        response = requests.get('https://photon.komoot.io/api/', params=params, timeout=(1.5, 3), headers={'User-Agent': 'QuickRent/1.0 nearby-shop-search'})
+        response.raise_for_status()
+        places = []
+        for feature in response.json().get('features', []):
+            props = feature.get('properties') or {}
+            coordinates = (feature.get('geometry') or {}).get('coordinates') or []
+            if not props.get('name') or len(coordinates) < 2:
+                continue
+            point_lng, point_lat = float(coordinates[0]), float(coordinates[1])
+            distance = distance_km(point_lat, point_lng) if lat is not None and lng is not None else None
+            if distance is not None and distance > 30:
+                continue
+            address = ', '.join(filter(None, (props.get('housenumber'), props.get('street'), props.get('district') or props.get('city'))))
+            places.append({'name': props['name'], 'type': 'Rental search result', 'address': address, 'lat': point_lat, 'lng': point_lng, 'distance_km': round(distance, 1) if distance is not None else None})
+        places.sort(key=lambda place: place.get('distance_km') if place.get('distance_km') is not None else 0)
+        if places:
+            return jsonify({'success': True, 'source': 'photon', 'items': places[:8]})
+    except (requests.RequestException, ValueError, TypeError):
+        pass
+
+    try:
+        vehicles = db.table('vehicles').select('id, name, type, daily_rate, latitude, longitude').eq('status', 'available').execute().data or []
+    except Exception:
+        # Location columns may not exist in older Supabase deployments until
+        # their schema migration is applied. Still return available inventory.
+        try:
+            vehicles = db.table('vehicles').select('id, name, type, daily_rate').eq('status', 'available').execute().data or []
+        except Exception:
+            vehicles = []
+    nearby = []
+    inventory = []
+    for vehicle in vehicles:
+        item = {'id': vehicle.get('id'), 'name': vehicle.get('name') or 'Available vehicle', 'type': vehicle.get('type') or 'vehicle', 'daily_rate': vehicle.get('daily_rate')}
+        inventory.append(item)
+        try:
+            point_lat, point_lng = float(vehicle['latitude']), float(vehicle['longitude'])
+            if -90 <= point_lat <= 90 and -180 <= point_lng <= 180:
+                item.update({'lat': point_lat, 'lng': point_lng, 'distance_km': round(distance_km(point_lat, point_lng), 1)})
+                nearby.append(item)
+        except (KeyError, TypeError, ValueError):
+            continue
+    nearby.sort(key=lambda vehicle: vehicle['distance_km'])
+    if nearby:
+        return jsonify({'success': True, 'source': 'quickrent-nearby', 'items': nearby[:8]})
+    if inventory:
+        return jsonify({'success': True, 'source': 'quickrent-inventory', 'items': inventory[:8]})
+    map_search = f'car rental shops near {area}' if area else f'car rental shops near {lat},{lng}'
+    return jsonify({'success': True, 'source': 'open-map-search', 'items': [{'name': f'Car rental shops near {area}' if area else 'Car rental shops near your location', 'type': 'OpenStreetMap search', 'address': 'Open the map search to see vehicle rental businesses in this area.', 'search_query': map_search, 'lat': lat, 'lng': lng}]})
 
 @app.route('/customer/vehicles')
 @customer_login_required
@@ -521,13 +726,18 @@ def customer_vehicles():
     try:
         type_filter = request.args.get('type', 'all')
         status_filter = request.args.get('status', 'all')
+        tier_filter = request.args.get('tier', 'all')
+        body_style_filter = request.args.get('body_style', 'all')
         query = db.table('vehicles').select('*').order('name')
         if type_filter != 'all': query = query.eq('type', type_filter)
         if status_filter == 'available': query = query.eq('status', 'available')
+        if tier_filter in ('regular', 'premium'):
+            query = query.eq('type', 'car').eq('tier', tier_filter)
+        if body_style_filter in ('suv', 'sedan', 'hatchback', 'motorcycle', 'scooter'): query = query.eq('body_style', body_style_filter)
         vehicles_res = query.execute()
-        return render_template('customer/vehicles.html', vehicles=vehicles_res.data or [], type_filter=type_filter, status_filter=status_filter, current_page='vehicles')
+        return render_template('customer/vehicles.html', vehicles=vehicles_res.data or [], type_filter=type_filter, status_filter=status_filter, tier_filter=tier_filter, body_style_filter=body_style_filter, current_page='vehicles')
     except Exception:
-        return render_template('customer/vehicles.html', vehicles=[], type_filter='all', status_filter='all', current_page='vehicles')
+        return render_template('customer/vehicles.html', vehicles=[], type_filter='all', status_filter='all', tier_filter='all', body_style_filter='all', current_page='vehicles')
 
 @app.route('/customer/bookings')
 @customer_login_required
@@ -560,7 +770,7 @@ def customer_booking_detail(booking_id):
     daily = vehicle.get('daily_rate', 0)
     base = daily * days
     tax = round(base * 0.18, 2)
-    return render_template('customer/booking_detail.html', booking=b, payments=payments.data or [], days=days, base_rate=base, tax=tax, total=base+tax)
+    return render_template('customer/booking_detail.html', booking=b, payments=payments.data or [], days=days, base_rate=base, tax=tax, total=base+tax, current_page='bookings')
 
 @app.route('/customer/profile', methods=['GET', 'POST'])
 @customer_login_required
@@ -591,7 +801,7 @@ def customer_wishlist():
     wishlist = db.table('wishlists').select('*, vehicles(id,name,type,daily_rate,fuel,year,status)').eq('customer_id', cid).execute()
     all_vehicles = db.table('vehicles').select('*').eq('status', 'available').execute()
     wishlisted_ids = [w['vehicle_id'] for w in (wishlist.data or [])]
-    return render_template('customer/wishlist.html', wishlist=wishlist.data or [], all_vehicles=all_vehicles.data or [], wishlisted_ids=wishlisted_ids)
+    return render_template('customer/wishlist.html', wishlist=wishlist.data or [], all_vehicles=all_vehicles.data or [], wishlisted_ids=wishlisted_ids, current_page='vehicles')
 
 @app.route('/customer/reviews')
 @customer_login_required
@@ -600,14 +810,14 @@ def customer_reviews():
     completed = db.table('bookings').select('*, vehicles(id,name,type)').eq('customer_id', cid).eq('status', 'completed').execute()
     existing = db.table('reviews').select('*').eq('customer_id', cid).execute()
     reviewed_booking_ids = [r['booking_id'] for r in (existing.data or [])]
-    return render_template('customer/reviews.html', completed=completed.data or [], existing_reviews=existing.data or [], reviewed_booking_ids=reviewed_booking_ids)
+    return render_template('customer/reviews.html', completed=completed.data or [], existing_reviews=existing.data or [], reviewed_booking_ids=reviewed_booking_ids, current_page='profile')
 
 @app.route('/customer/invoices')
 @customer_login_required
 def customer_invoices():
     cid = session['customer']['id']
     bookings = db.table('bookings').select('*, vehicles(name,type)').eq('customer_id', cid).in_('status', ['active', 'completed']).order('created_at', desc=True).execute()
-    return render_template('customer/invoices.html', bookings=bookings.data or [])
+    return render_template('customer/invoices.html', bookings=bookings.data or [], current_page='bookings')
 
 @app.route('/customer/invoice/<booking_id>/pdf')
 @customer_login_required
@@ -685,21 +895,61 @@ def download_invoice(booking_id):
 @customer_login_required
 def customer_create_booking():
     try:
-        data = request.json
+        data = request.get_json(silent=True) or {}
         customer_id = session['customer']['id']
+        try:
+            start_date = datetime.strptime(data.get('start_date', ''), '%Y-%m-%d').date()
+            end_date = datetime.strptime(data.get('end_date', ''), '%Y-%m-%d').date()
+        except (TypeError, ValueError):
+            return jsonify({'success': False, 'error': 'Choose valid rental dates.'}), 400
+        if start_date < datetime.now().date() or end_date <= start_date:
+            return jsonify({'success': False, 'error': 'Choose a future pickup date and a later return date.'}), 400
+        if not data.get('vehicle_id'):
+            return jsonify({'success': False, 'error': 'Choose a vehicle to continue.'}), 400
+
         vehicle = db.table('vehicles').select('status, daily_rate, name').eq('id', data['vehicle_id']).execute()
         
         if not vehicle.data: return jsonify({'success': False, 'error': 'Vehicle not found'}), 404
         if vehicle.data[0]['status'] != 'available': return jsonify({'success': False, 'error': 'Vehicle is no longer available'}), 400
 
+        route_fields = ('pickup_location', 'dropoff_location', 'pickup_latitude', 'pickup_longitude', 'dropoff_latitude', 'dropoff_longitude', 'distance_km')
+        if any(data.get(field) is not None for field in route_fields):
+            try:
+                if not str(data.get('pickup_location') or '').strip() or not str(data.get('dropoff_location') or '').strip():
+                    raise ValueError('Missing pickup or drop-off label')
+                pickup_lat = float(data['pickup_latitude'])
+                pickup_lng = float(data['pickup_longitude'])
+                dropoff_lat = float(data['dropoff_latitude'])
+                dropoff_lng = float(data['dropoff_longitude'])
+                distance_km = float(data['distance_km'])
+                duration_value = data.get('estimated_duration_minutes')
+                duration_minutes = int(duration_value) if duration_value is not None else None
+                if not (-90 <= pickup_lat <= 90 and -180 <= pickup_lng <= 180 and
+                        -90 <= dropoff_lat <= 90 and -180 <= dropoff_lng <= 180 and 0 <= distance_km <= 50000):
+                    raise ValueError('Out-of-range coordinates or distance')
+                if duration_minutes is not None and not 0 <= duration_minutes <= 100000:
+                    raise ValueError('Out-of-range route duration')
+            except (KeyError, TypeError, ValueError):
+                return jsonify({'success': False, 'error': 'Choose valid pickup and drop-off points.'}), 400
+        else:
+            pickup_lat = pickup_lng = dropoff_lat = dropoff_lng = distance_km = None
+            duration_minutes = None
+
         ref = 'BK-' + ''.join(random.choices(string.digits, k=4))
+        rental_days = (end_date - start_date).days
+        total_amount = round(rental_days * float(vehicle.data[0]['daily_rate']), 2)
         db.table('bookings').insert({
             'booking_ref': ref, 'customer_id': customer_id, 'vehicle_id': data['vehicle_id'],
-            'start_date': data['start_date'], 'end_date': data['end_date'], 'total_amount': data['total_amount'],
+            'start_date': start_date.isoformat(), 'end_date': end_date.isoformat(), 'total_amount': total_amount,
+            'pickup_location': data.get('pickup_location'), 'dropoff_location': data.get('dropoff_location'),
+            'pickup_latitude': pickup_lat, 'pickup_longitude': pickup_lng,
+            'dropoff_latitude': dropoff_lat, 'dropoff_longitude': dropoff_lng,
+            'distance_km': distance_km,
+            'estimated_duration_minutes': duration_minutes,
             'status': 'pending', 'payment_status': 'pending'
         }).execute()
         db.table('vehicles').update({'status': 'rented'}).eq('id', data['vehicle_id']).execute()
-        return jsonify({'success': True, 'booking_ref': ref})
+        return jsonify({'success': True, 'booking_ref': ref, 'total_amount': total_amount})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

@@ -6,7 +6,7 @@
   <title>QuickRent — Booking Details</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
 <body style="background:var(--bg-page); color:var(--text-main); min-height:100dvh;" class="transition-colors duration-300">
@@ -68,6 +68,19 @@
       <p class="text-sm font-bold" style="color:var(--text-main);">{{ booking.end_date }}</p>
     </div>
   </div>
+
+  {% if booking.pickup_location or booking.dropoff_location %}
+  <div class="c-card p-4 mb-4" style="background:var(--bg-surface); border:1px solid var(--border);">
+    <h2 class="font-bold text-sm mb-3" style="color:var(--text-main);">Trip route</h2>
+    {% if booking.pickup_location %}<p class="text-sm mb-2" style="color:var(--text-secondary);"><strong>Pickup:</strong> {{ booking.pickup_location }}</p>{% endif %}
+    {% if booking.dropoff_location %}<p class="text-sm" style="color:var(--text-secondary);"><strong>Drop-off:</strong> {{ booking.dropoff_location }}</p>{% endif %}
+    {% if booking.distance_km is not none %}<p class="text-sm font-semibold mt-3" style="color:var(--text-main);">{{ "%.1f"|format(booking.distance_km|float) }} km estimated route</p>{% endif %}
+    {% if booking.estimated_duration_minutes %}<p class="text-xs mt-1" style="color:var(--text-muted);">About {{ booking.estimated_duration_minutes }} minutes, depending on traffic.</p>{% endif %}
+    {% if booking.pickup_latitude is not none and booking.dropoff_latitude is not none %}
+    <a class="inline-block mt-3 text-sm font-semibold" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&origin={{ booking.pickup_latitude }},{{ booking.pickup_longitude }}&destination={{ booking.dropoff_latitude }},{{ booking.dropoff_longitude }}">Open directions</a>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <div class="c-card p-5 mb-6" style="background:var(--bg-surface); border:1px solid var(--border);">
     <h3 class="font-bold text-sm mb-4" style="color:var(--text-main);">Price Breakdown</h3>
@@ -173,5 +186,6 @@ async function startRazorpayPayment(bookingId, amount) {
   }
 }
 </script>
+  <script src="{{ url_for('static', filename='js/navigation.js') }}" defer></script>
 </body>
 </html>

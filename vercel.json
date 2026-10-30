@@ -1,0 +1,6 @@
+{
+  "framework": "flask",
+  "buildCommand": "pip install -r requirements.txt",
+  "port": 8080,
+  "installCommand": "pip install -r requirements.txt"
+}
