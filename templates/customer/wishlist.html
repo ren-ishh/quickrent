@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuickRent — Saved Vehicles</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
+  <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
+</head>
+<body style="background:var(--bg-page);color:var(--text-main);min-height:100dvh;">
+<header class="sticky top-0 z-20 flex items-center justify-between px-4 h-14" style="background:var(--bg-surface);border-bottom:1px solid var(--border);">
+  <h1 class="font-bold text-base" style="color:var(--text-main);">Saved vehicles</h1>
+  <button onclick="toggleTheme()" id="themeToggle" class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:var(--bg-page);color:var(--text-muted);" aria-label="Toggle theme">◐</button>
+</header>
+<main class="customer-page max-w-lg mx-auto px-4 py-5 pb-24">
+  <p class="text-sm mb-4" style="color:var(--text-muted);">Vehicles you save will be easy to find here.</p>
+  <div id="wishlist-message" class="hidden c-status mb-4" role="status"></div>
+  {% if wishlist %}
+  <div class="flex flex-col gap-3">
+    {% for item in wishlist %}
+    {% if item.vehicles %}
+    <article class="c-card flex items-center justify-between gap-3 p-4" style="background:var(--bg-surface);border:1px solid var(--border);">
+      <div class="min-w-0">
+        <span class="vehicle-type-mark vehicle-type-mark--large">{{ (item.vehicles.type or 'vehicle')|upper }}</span>
+        <h2 class="font-bold text-sm mt-2 truncate" style="color:var(--text-main);">{{ item.vehicles.name }}</h2>
+        <p class="text-xs mt-1" style="color:var(--text-muted);">₹{{ "{:,}".format(item.vehicles.daily_rate|int) }} / day{% if item.vehicles.year %} · {{ item.vehicles.year }}{% endif %}</p>
+      </div>
+      <button type="button" class="auth-submit auth-submit--inline" data-wishlist-toggle data-vehicle-id="{{ item.vehicle_id }}">Remove</button>
+    </article>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <section class="c-card p-8 text-center" style="background:var(--bg-surface);border:1px solid var(--border);">
+    <p class="vehicle-type-mark vehicle-type-mark--empty mb-4">SAVED</p>
+    <h2 class="font-bold text-base mb-1" style="color:var(--text-main);">No saved vehicles yet</h2>
+    <p class="text-sm mb-4" style="color:var(--text-muted);">Browse the fleet and save vehicles you may want to rent.</p>
+    <a href="/customer/vehicles" class="inline-block text-sm font-bold px-6 py-2.5 rounded-xl text-white" style="background:#2563eb;">Browse vehicles</a>
+  </section>
+  {% endif %}
+  {% if all_vehicles %}
+  <section class="mt-8">
+    <h2 class="font-bold text-base mb-3" style="color:var(--text-main);">Available vehicles</h2>
+    <div class="flex flex-col gap-3">
+      {% for vehicle in all_vehicles %}
+      <article class="c-card flex items-center justify-between gap-3 p-4" style="background:var(--bg-surface);border:1px solid var(--border);">
+        <div class="min-w-0"><p class="font-semibold text-sm truncate" style="color:var(--text-main);">{{ vehicle.name }}</p><p class="text-xs mt-1" style="color:var(--text-muted);">₹{{ "{:,}".format(vehicle.daily_rate|int) }} / day</p></div>
+        <button type="button" class="auth-submit auth-submit--inline" data-wishlist-toggle data-vehicle-id="{{ vehicle.id }}" {% if vehicle.id in wishlisted_ids %}disabled{% endif %}>{% if vehicle.id in wishlisted_ids %}Saved{% else %}Save{% endif %}</button>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</main>
+{% include 'customer/nav.html' %}
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script>
+document.querySelectorAll('[data-wishlist-toggle]').forEach(button => button.addEventListener('click', async () => {
+  button.disabled = true;
+  try {
+    const response = await fetch('/api/customer/wishlist/toggle', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({vehicle_id:button.dataset.vehicleId})});
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.error || 'Could not update saved vehicles.');
+    location.reload();
+  } catch (error) {
+    const message = document.getElementById('wishlist-message');
+    message.textContent = error.message;
+    message.classList.remove('hidden');
+    button.disabled = false;
+  }
+}));
+</script>
+</body>
+</html>

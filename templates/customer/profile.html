@@ -4,8 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>QuickRent — Profile</title>
-  <script>window.tailwind={};window.tailwind.config={darkMode:'class'};</script>
-  <script src="https://cdn.tailwindcss.com" defer></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}"/>
   <script>(function(){const t=localStorage.getItem('qr-theme')||'light';document.documentElement.classList.add(t);})();</script>
 </head>
@@ -111,6 +110,42 @@
           <span class="text-sm font-medium" style="color:var(--text-main);">Browse Vehicles</span>
         </div>
         <svg class="w-4 h-4" style="color:#94a3b8;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+        </svg>
+      </a>
+
+      <a href="/customer/wishlist"
+         class="flex items-center justify-between py-3.5 no-underline"
+         style="border-bottom:1px solid var(--border);">
+        <div class="flex items-center gap-3">
+          <span class="vehicle-type-mark px-2 py-1">SAVE</span>
+          <span class="text-sm font-medium" style="color:var(--text-main);">Saved Vehicles</span>
+        </div>
+        <svg class="w-4 h-4" style="color:var(--text-muted);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+        </svg>
+      </a>
+
+      <a href="/customer/reviews"
+         class="flex items-center justify-between py-3.5 no-underline"
+         style="border-bottom:1px solid var(--border);">
+        <div class="flex items-center gap-3">
+          <span class="vehicle-type-mark px-2 py-1">RATE</span>
+          <span class="text-sm font-medium" style="color:var(--text-main);">Reviews</span>
+        </div>
+        <svg class="w-4 h-4" style="color:var(--text-muted);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+        </svg>
+      </a>
+
+      <a href="/customer/invoices"
+         class="flex items-center justify-between py-3.5 no-underline"
+         style="border-bottom:1px solid var(--border);">
+        <div class="flex items-center gap-3">
+          <span class="vehicle-type-mark px-2 py-1">BILL</span>
+          <span class="text-sm font-medium" style="color:var(--text-main);">Invoices</span>
+        </div>
+        <svg class="w-4 h-4" style="color:var(--text-muted);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
         </svg>
       </a>
