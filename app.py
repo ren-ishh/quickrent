@@ -728,11 +728,10 @@ def customer_vehicles():
         status_filter = request.args.get('status', 'all')
         tier_filter = request.args.get('tier', 'all')
         body_style_filter = request.args.get('body_style', 'all')
-        # Return only fields used by the map, searchable list, and booking sheet.
-        # Avoid transferring internal columns and large optional vehicle fields.
-        query = db.table('vehicles').select(
-            'id, name, type, status, daily_rate, latitude, longitude, brand, year, fuel, tier, body_style'
-        ).order('name')
+        # Some existing Supabase deployments have not applied the optional map
+        # and category migrations yet, so avoid selecting columns that may not
+        # exist (a failed select made the page silently render an empty list).
+        query = db.table('vehicles').select('*').order('name')
         if type_filter != 'all': query = query.eq('type', type_filter)
         if status_filter == 'available': query = query.eq('status', 'available')
         if tier_filter in ('regular', 'premium'):
