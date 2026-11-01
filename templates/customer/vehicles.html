@@ -193,6 +193,7 @@
     border-radius: 4px;
   }
   .vrow:last-child { border-bottom: none; }
+  .vrow[hidden] { display:none !important; }
   .vrow:active { background: #f8f8f8; }
 
   /* thumb */
@@ -242,6 +243,10 @@
   .vempty-icon svg { width:40px; height:40px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
   .vempty-title { font-size: 18px; font-weight: 700; color: #111; letter-spacing: -0.03em; }
   .vempty-sub { font-size: 14px; color: #aaa; margin-top: 5px; font-weight: 500; }
+  .vehicle-search-wrap { padding:12px 20px 4px; }
+  .vehicle-search { width:100%; min-height:44px; border:1px solid #e7e7e7; border-radius:13px; padding:0 14px; background:#f7f7f7; color:#111; font:inherit; font-size:14px; outline:none; }
+  .vehicle-search:focus { border-color:#777; background:#fff; box-shadow:0 0 0 3px rgba(0,0,0,.06); }
+  .vehicle-search-empty { padding:34px 16px; text-align:center; color:#888; font-size:14px; }
 
   /* ═══════════════════════════════════════════
      MAP PINS
@@ -392,6 +397,17 @@
     .date-row { gap:7px; }
     .date-box { padding:12px 9px 10px; }
     .location-action { min-width:calc(50% - 4px); padding:9px 8px; font-size:11px; }
+    .vehicle-search-wrap { padding:10px 16px 2px; }
+  }
+
+  /* Wide screens use a fixed vehicle list beside the interactive map. */
+  @media (min-width:900px) {
+    #topbar { max-width:540px; }
+    #sheet { top:132px; bottom:calc(92px + env(safe-area-inset-bottom,0px)); left:16px; right:auto; width:min(430px,calc(100vw - 32px)); height:auto !important; max-height:none; border-radius:20px; }
+    #sheetPill { display:none; }
+    #sheetHead { padding:18px 20px 0; }
+    #sheetBody { padding:8px 18px 20px; }
+    #mapFabs { bottom:104px !important; }
   }
 
   /* error */
@@ -444,6 +460,9 @@
   html.dark .bk-detail-card, html.dark .shop-card { background:#0b0b0b; border-color:#303030; }
   html.dark .bk-detail-card span, html.dark .shop-card small { color:#aaa; }
   html.dark .shop-message { background:#161616; color:#bbb; }
+  html.dark .vehicle-search { background:#252525; border-color:#383838; color:#f4f4f4; }
+  html.dark .vehicle-search:focus { background:#1a1a1a; border-color:#777; }
+  html.dark .vehicle-search-empty { color:#aaa; }
   html.dark .shop-select { background:#f2f2f2; color:#111; }
   html.dark #bkErr { background:#251616; border-color:#482929; color:#ff9b9b; }
   html.dark #bkThumb { background:#292929 !important; color:#f5f5f5 !important; }
@@ -556,12 +575,17 @@
     </div>
   </div>
 
+  <div class="vehicle-search-wrap">
+    <input class="vehicle-search" id="vehicleSearch" type="search" autocomplete="off" placeholder="Search name, type, brand, or category" aria-label="Search vehicles"/>
+  </div>
+
   <div id="sheetBody">
     {% if vehicles %}
       {% for v in vehicles %}
       <div class="vrow" role="button" tabindex="0" aria-label="View {{ v.name }} vehicle details"
            data-id="{{ v.id }}"
-           data-name="{{ v.name }}" data-rate="{{ v.daily_rate }}" data-type="{{ v.type }}" data-status="{{ v.status }}">
+           data-name="{{ v.name }}" data-rate="{{ v.daily_rate }}" data-type="{{ v.type }}" data-status="{{ v.status }}"
+           data-search="{{ (v.name|string ~ ' ' ~ (v.brand or '')|string ~ ' ' ~ (v.year or '')|string ~ ' ' ~ v.type|string ~ ' ' ~ v.status|string ~ ' ' ~ (v.tier or '')|string ~ ' ' ~ (v.body_style or '')|string)|lower }}">
         <div class="vthumb vthumb--{{ v.type }}">
           {% if v.type == 'car' %}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -608,6 +632,7 @@
       <div class="vempty-sub">Try a different filter</div>
     </div>
     {% endif %}
+    {% if vehicles %}<div class="vehicle-search-empty" id="vehicleSearchEmpty" hidden>No vehicles match that search.</div>{% endif %}
   </div>
 </div>
 
@@ -901,10 +926,16 @@ const sFabs  = document.getElementById('mapFabs');
 const SHEET_PEEK = 230;
 const NAV_SPACE = () => 92 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--qr-safe-bottom')) || 0);
 const SHEET_FULL = () => Math.round(window.innerHeight * 0.68);
+const WIDE_LAYOUT = window.matchMedia('(min-width: 900px)');
 
 let dragY0 = 0, dragH0 = 0, isDragging = false;
 
 function sheetSetH(h, animate = true) {
+  if (WIDE_LAYOUT.matches) {
+    sheet.style.height = 'auto';
+    sFabs.style.bottom = '104px';
+    return;
+  }
   const min = SHEET_PEEK, max = Math.max(SHEET_PEEK, Math.round(window.innerHeight * 0.84) - NAV_SPACE());
   const clamped = Math.min(Math.max(h, min), max);
   if (!animate) sheet.style.transition = 'none';
@@ -914,7 +945,10 @@ function sheetSetH(h, animate = true) {
   sFabs.style.bottom = (clamped + NAV_SPACE() + 12) + 'px';
 }
 
-function sheetExpand() { sheetSetH(SHEET_FULL()); }
+function sheetExpand() {
+  if (WIDE_LAYOUT.matches) document.getElementById('vehicleSearch')?.focus();
+  else sheetSetH(SHEET_FULL());
+}
 
 sPill.addEventListener('pointerdown', e => {
   isDragging = true;
@@ -939,6 +973,7 @@ sPill.addEventListener('pointerup', () => {
 
 /* Init */
 sheetSetH(SHEET_PEEK + 50);
+WIDE_LAYOUT.addEventListener('change', () => sheetSetH(SHEET_PEEK + 50));
 
 /* ═══ ROW CLICK ═══ */
 function onRow(id, name, rate, type, status) {
@@ -961,6 +996,28 @@ document.querySelectorAll('.vrow').forEach(row => {
     if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openDetails(); }
   });
 });
+
+const vehicleSearch = document.getElementById('vehicleSearch');
+const vehicleCount = document.getElementById('sheetCount');
+const vehicleSearchEmpty = document.getElementById('vehicleSearchEmpty');
+const vehicleRows = [...document.querySelectorAll('.vrow')];
+function filterVehicleList() {
+  const term = vehicleSearch.value.trim().toLocaleLowerCase();
+  let visibleCount = 0;
+  vehicleRows.forEach(row => {
+    const visible = !term || (row.dataset.search || '').includes(term);
+    row.hidden = !visible;
+    if (visible) visibleCount++;
+    const marker = markers[row.dataset.id];
+    if (HAS_MAP && marker) {
+      if (visible && !map.hasLayer(marker)) marker.addTo(map);
+      else if (!visible && map.hasLayer(marker)) map.removeLayer(marker);
+    }
+  });
+  if (vehicleSearchEmpty) vehicleSearchEmpty.hidden = visibleCount > 0;
+  vehicleCount.textContent = `${visibleCount} vehicle${visibleCount === 1 ? '' : 's'}`;
+}
+vehicleSearch?.addEventListener('input', filterVehicleList, {passive:true});
 
 /* ═══ BOOKING SHEET ═══ */
 let selId = null, selRate = 0;
